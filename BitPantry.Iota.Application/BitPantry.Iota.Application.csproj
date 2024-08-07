@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.35" />
+    <PackageReference Include="MediatR" Version="12.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BitPantry.Iota.Data.Entity\BitPantry.Iota.Data.Entity.csproj" />
+    <ProjectReference Include="..\BitPantry.Iota.Infrastructure\BitPantry.Iota.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
