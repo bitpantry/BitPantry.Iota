@@ -1,3 +1,8 @@
+using BitPantry.Iota.Web.Identity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using WebApplication3.Data;
+
 namespace BitPantry.Iota.Web
 {
     public class Program
@@ -6,13 +11,21 @@ namespace BitPantry.Iota.Web
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            builder.Services.AddScoped<IUserStore<IotaWebIdentity>, IotaWebUserStore>();
+
+            builder.Services.AddDefaultIdentity<IotaWebIdentity>(options => options.SignIn.RequireConfirmedAccount = true)
+                .AddUserStore<IotaWebUserStore>();
+
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if (!app.Environment.IsDevelopment())
+            if (app.Environment.IsDevelopment())
+            {
+                //app.UseMigrationsEndPoint();
+            }
+            else
             {
                 app.UseExceptionHandler("/Home/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
@@ -29,6 +42,7 @@ namespace BitPantry.Iota.Web
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
+            app.MapRazorPages();
 
             app.Run();
         }

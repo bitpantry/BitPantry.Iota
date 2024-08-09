@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitPantry.Iota.Web", "BitPantry.Iota.Web\BitPantry.Iota.Web.csproj", "{283A2768-5F58-43D6-9B0F-40098927DDE0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitPantry.Iota.Application", "BitPantry.Iota.Application\BitPantry.Iota.Application.csproj", "{26CC1DC4-56D3-4AEE-AE9B-72E3C0FB060A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitPantry.Iota.Application", "BitPantry.Iota.Application\BitPantry.Iota.Application.csproj", "{26CC1DC4-56D3-4AEE-AE9B-72E3C0FB060A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitPantry.Iota.Data.Entity", "BitPantry.Iota.Data.Entity\BitPantry.Iota.Data.Entity.csproj", "{C2BE6733-B6F2-4EA0-B877-6BCEA5636A4C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitPantry.Iota.Data.Entity", "BitPantry.Iota.Data.Entity\BitPantry.Iota.Data.Entity.csproj", "{C2BE6733-B6F2-4EA0-B877-6BCEA5636A4C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitPantry.Iota.Infrastructure", "BitPantry.Iota.Infrastructure\BitPantry.Iota.Infrastructure.csproj", "{1D1E4DF0-7F7D-401C-BA64-B495C15F2DA9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitPantry.Iota.Infrastructure", "BitPantry.Iota.Infrastructure\BitPantry.Iota.Infrastructure.csproj", "{1D1E4DF0-7F7D-401C-BA64-B495C15F2DA9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitPantry.Iota.Web", "BitPantry.Iota.Web\BitPantry.Iota.Web.csproj", "{846DC0DE-FE94-4945-B8AC-BAC4F8EA7F3F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{283A2768-5F58-43D6-9B0F-40098927DDE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{283A2768-5F58-43D6-9B0F-40098927DDE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{283A2768-5F58-43D6-9B0F-40098927DDE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{283A2768-5F58-43D6-9B0F-40098927DDE0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{26CC1DC4-56D3-4AEE-AE9B-72E3C0FB060A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{26CC1DC4-56D3-4AEE-AE9B-72E3C0FB060A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{26CC1DC4-56D3-4AEE-AE9B-72E3C0FB060A}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -33,6 +29,10 @@ Global
 		{1D1E4DF0-7F7D-401C-BA64-B495C15F2DA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1D1E4DF0-7F7D-401C-BA64-B495C15F2DA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1D1E4DF0-7F7D-401C-BA64-B495C15F2DA9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{846DC0DE-FE94-4945-B8AC-BAC4F8EA7F3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{846DC0DE-FE94-4945-B8AC-BAC4F8EA7F3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{846DC0DE-FE94-4945-B8AC-BAC4F8EA7F3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{846DC0DE-FE94-4945-B8AC-BAC4F8EA7F3F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
