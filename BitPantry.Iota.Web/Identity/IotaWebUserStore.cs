@@ -1,97 +1,131 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using BitPantry.Iota.Application.CRQS.Identity.Commands;
+using BitPantry.Iota.Application.CRQS.Identity.Queries;
+using BitPantry.Iota.Data.Entity;
+using MediatR;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 
 namespace BitPantry.Iota.Web.Identity
 {
-    public class IotaWebUserStore : IUserStore<IotaWebIdentity>, IUserEmailStore<IotaWebIdentity>
+    public class IotaWebUserStore : IUserStore<IotaWebUser>, IUserEmailStore<IotaWebUser>
     {
-        public Task<IdentityResult> CreateAsync(IotaWebIdentity user, CancellationToken cancellationToken)
+        private IMediator _med;
+
+        public IotaWebUserStore(IMediator med) {
+            _med = med;
+        }
+        public async Task<IdentityResult> CreateAsync(IotaWebUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            await _med.Send(new CreateUserCommand
+            {
+                EmailAddress = user.EmailAddress,
+                Password = user.Password,
+                PasswordHash = user.PasswordHash
+            }, cancellationToken);
+
+            return IdentityResult.Success;
         }
 
-        public Task<IdentityResult> DeleteAsync(IotaWebIdentity user, CancellationToken cancellationToken)
+        public async Task<IdentityResult> DeleteAsync(IotaWebUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            await _med.Send(new DeleteUserCommand {  UserId = user.Id }, cancellationToken);
+            return IdentityResult.Success;
         }
 
-        public void Dispose()
+        public void Dispose() { /* do nothing */ }
+
+        public async Task<IotaWebUser?> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken)
         {
-            //throw new NotImplementedException();
+            var resp = await _med.Send(new FindUserByEmailQuery(normalizedEmail), cancellationToken);
+            if (resp == null) return null;
+            return new IotaWebUser(resp);
         }
 
-        public Task<IotaWebIdentity?> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken)
+        public async Task<IotaWebUser?> FindByIdAsync(string userId, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var resp = await _med.Send(new FindUserByIdQuery(long.Parse(userId)), cancellationToken);
+            if (resp == null) return null;
+            return new IotaWebUser(resp);
         }
 
-        public Task<IotaWebIdentity?> FindByIdAsync(string userId, CancellationToken cancellationToken)
+        public async Task<IotaWebUser?> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var resp = await _med.Send(new FindUserByEmailQuery(normalizedUserName), cancellationToken);
+            if (resp == null) return null;
+            return new IotaWebUser(resp);
         }
 
-        public Task<IotaWebIdentity?> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
+        public async Task<string?> GetEmailAsync(IotaWebUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var resp = await _med.Send(new FindUserByIdQuery(user.Id), cancellationToken);
+            if (resp == null) return null;
+            return resp.EmailAddress;
         }
 
-        public Task<string?> GetEmailAsync(IotaWebIdentity user, CancellationToken cancellationToken)
+        public async Task<bool> GetEmailConfirmedAsync(IotaWebUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var resp = await _med.Send(new FindUserByIdQuery(user.Id), cancellationToken);
+            if (resp == null) return false;
+            return resp.IsEmailConfirmed;
         }
 
-        public Task<bool> GetEmailConfirmedAsync(IotaWebIdentity user, CancellationToken cancellationToken)
+        public async Task<string?> GetNormalizedEmailAsync(IotaWebUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var resp = await _med.Send(new FindUserByIdQuery(user.Id), cancellationToken);
+            if (resp == null) return null;
+            return resp.NormalizedEmailAddress;
         }
 
-        public Task<string?> GetNormalizedEmailAsync(IotaWebIdentity user, CancellationToken cancellationToken)
+        public async Task<string?> GetNormalizedUserNameAsync(IotaWebUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var resp = await _med.Send(new FindUserByIdQuery(user.Id), cancellationToken);
+            if (resp == null) return null;
+            return resp.NormalizedEmailAddress;
         }
 
-        public Task<string?> GetNormalizedUserNameAsync(IotaWebIdentity user, CancellationToken cancellationToken)
+        public async Task<string> GetUserIdAsync(IotaWebUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var resp = await _med.Send(new FindUserByEmailQuery(user.NormalizedEmailAddress), cancellationToken);
+            if (resp == null) return "0";
+            return resp.Id.ToString();
         }
 
-        public Task<string> GetUserIdAsync(IotaWebIdentity user, CancellationToken cancellationToken)
+        public async Task<string?> GetUserNameAsync(IotaWebUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var resp = await _med.Send(new FindUserByIdQuery(user.Id), cancellationToken);
+            if (resp == null) return null;
+            return resp.EmailAddress;
         }
 
-        public Task<string?> GetUserNameAsync(IotaWebIdentity user, CancellationToken cancellationToken)
+        public async Task SetEmailAsync(IotaWebUser user, string? email, CancellationToken cancellationToken)
+            => await _med.Send(new SetEmailAddressCommand(user.Id, email), cancellationToken);
+
+        public async Task SetEmailConfirmedAsync(IotaWebUser user, bool confirmed, CancellationToken cancellationToken)
+            => await _med.Send(new SetIsEmailConfirmedCommand(user.Id, confirmed), cancellationToken);
+
+        public async Task SetNormalizedEmailAsync(IotaWebUser user, string? normalizedEmail, CancellationToken cancellationToken)
+            => await _med.Send(new SetNormalizedEmailAddressCommand(user.Id, normalizedEmail), cancellationToken);
+
+        public async Task SetNormalizedUserNameAsync(IotaWebUser user, string? normalizedName, CancellationToken cancellationToken)
+            => await _med.Send(new SetNormalizedEmailAddressCommand(user.Id, normalizedName), cancellationToken);
+
+        public async Task SetUserNameAsync(IotaWebUser user, string? userName, CancellationToken cancellationToken)
+            => await _med.Send(new SetEmailAddressCommand(user.Id, userName), cancellationToken);
+
+        public async Task<IdentityResult> UpdateAsync(IotaWebUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            await _med.Send(new UpdateUserCommand
+            {
+                Id = user.Id,
+                EmailAddress = user.EmailAddress,
+                NormalizedEmailAddress = user.NormalizedEmailAddress,
+                Password = user.Password,
+                PasswordHash = user.PasswordHash,
+                IsEmailConfirmed = user.IsEmailConfirmed
+            }, cancellationToken);
+
+            return IdentityResult.Success;
         }
 
-        public Task SetEmailAsync(IotaWebIdentity user, string? email, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task SetEmailConfirmedAsync(IotaWebIdentity user, bool confirmed, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task SetNormalizedEmailAsync(IotaWebIdentity user, string? normalizedEmail, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task SetNormalizedUserNameAsync(IotaWebIdentity user, string? normalizedName, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task SetUserNameAsync(IotaWebIdentity user, string? userName, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IdentityResult> UpdateAsync(IotaWebIdentity user, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

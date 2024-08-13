@@ -1,8 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using BitPantry.Iota.Web.Identity
 
-@inject SignInManager<IotaWebIdentity> SignInManager
-@inject UserManager<IotaWebIdentity> UserManager
+@inject SignInManager<IotaWebUser> SignInManager
+@inject UserManager<IotaWebUser> UserManager
 
 <ul class="navbar-nav">
 @if (SignInManager.IsSignedIn(User))

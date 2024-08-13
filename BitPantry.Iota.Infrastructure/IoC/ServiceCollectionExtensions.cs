@@ -24,18 +24,18 @@ namespace BitPantry.Iota.Infrastructure.IoC
 
             // extensions
 
-            
+
 
             // repositories
 
-     
+
 
             // services
 
 
             // components
 
-            services.AddSingleton<AppSettings>();
+            services.AddSingleton<AppSettings>(settings);
 
             // configure caching
 

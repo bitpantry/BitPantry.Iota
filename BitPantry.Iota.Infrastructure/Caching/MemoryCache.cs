@@ -1,8 +1,4 @@
-﻿using BitPantry.Iota.Infrastructure.Caching;
-using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Microsoft.Extensions.Caching.Memory;
 
 namespace BitPantry.Iota.Infrastructure.Caching
 {

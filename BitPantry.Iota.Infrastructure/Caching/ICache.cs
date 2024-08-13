@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace BitPantry.Iota.Infrastructure.Caching
+﻿namespace BitPantry.Iota.Infrastructure.Caching
 {
     public interface ICache
     {

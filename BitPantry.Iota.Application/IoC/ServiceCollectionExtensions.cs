@@ -1,9 +1,4 @@
-﻿using BitPantry.Iota.Data.Entity;
-using BitPantry.Iota.Infrastructure.Settings;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
-using BitPantry.Iota.Infrastructure.Caching;
-using BitPantry.Iota.Infrastructure.IoC;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace BitPantry.Iota.Application.IoC
 {
@@ -11,8 +6,7 @@ namespace BitPantry.Iota.Application.IoC
     public static class ServiceCollectionExtensions
     {
         public static void ConfigureApplicationServices(
-            this IServiceCollection services,
-            AppSettings settings)
+            this IServiceCollection services)
         {
 
             // CRQS

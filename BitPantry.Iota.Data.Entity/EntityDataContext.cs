@@ -1,10 +1,4 @@
-﻿using BitPantry.Iota.Data.Entity;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace BitPantry.Iota.Data.Entity
 {
@@ -16,6 +10,8 @@ namespace BitPantry.Iota.Data.Entity
         {
             base.OnModelCreating(modelBuilder);
         }
+
+        public DbSet<User> Users { get; set; }
 
     }
 

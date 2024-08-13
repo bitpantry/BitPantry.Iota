@@ -1,7 +1,7 @@
 using BitPantry.Iota.Web.Identity;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using WebApplication3.Data;
+using BitPantry.Iota.Infrastructure.IoC;
+using BitPantry.Iota.Infrastructure.Settings;
+using BitPantry.Iota.Application.IoC;
 
 namespace BitPantry.Iota.Web
 {
@@ -9,12 +9,22 @@ namespace BitPantry.Iota.Web
     {
         public static void Main(string[] args)
         {
+            // create builder
+
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddScoped<IUserStore<IotaWebIdentity>, IotaWebUserStore>();
+            // configure logging
 
-            builder.Services.AddDefaultIdentity<IotaWebIdentity>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddUserStore<IotaWebUserStore>();
+            builder.Logging.ClearProviders();
+            builder.Logging.AddConsole();
+
+            // configure services
+
+            var settings = new AppSettings(builder.Configuration);
+
+            builder.Services.ConfigureIdentityServices();
+            builder.Services.ConfigureInfrastructureServices(settings, CachingStrategy.InMemory);
+            builder.Services.ConfigureApplicationServices();
 
             builder.Services.AddControllersWithViews();
 
@@ -23,7 +33,7 @@ namespace BitPantry.Iota.Web
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
-                //app.UseMigrationsEndPoint();
+                // app.UseMigrationsEndPoint();
             }
             else
             {
@@ -42,6 +52,7 @@ namespace BitPantry.Iota.Web
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
+
             app.MapRazorPages();
 
             app.Run();

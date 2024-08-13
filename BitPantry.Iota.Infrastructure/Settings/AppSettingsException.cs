@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace BitPantry.Iota.Infrastructure.Settings
+﻿namespace BitPantry.Iota.Infrastructure.Settings
 {
     public class AppSettingsException : Exception
     {

@@ -1,6 +1,5 @@
 ﻿using BitPantry.Parsing.Strings;
 using Microsoft.Extensions.Configuration;
-using System;
 
 namespace BitPantry.Iota.Infrastructure.Settings
 {

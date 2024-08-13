@@ -1,7 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using BitPantry.Iota.Web.Identity
 
-@inject SignInManager<IotaWebIdentity> SignInManager
+@inject SignInManager<IotaWebUser> SignInManager
 @{
     var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
 }
