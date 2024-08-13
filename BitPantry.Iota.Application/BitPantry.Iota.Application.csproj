@@ -16,4 +16,8 @@
     <ProjectReference Include="..\BitPantry.Iota.Infrastructure\BitPantry.Iota.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="CRQS\Identity\Common\" />
+  </ItemGroup>
+
 </Project>

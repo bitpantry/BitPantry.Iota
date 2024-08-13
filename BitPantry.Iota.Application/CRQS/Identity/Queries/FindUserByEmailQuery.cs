@@ -1,35 +1,22 @@
-﻿using BitPantry.Iota.Application.CRQS.Identity.Common;
+using System;
 using BitPantry.Iota.Data.Entity;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace BitPantry.Iota.Application.CRQS.Identity.Queries
+namespace BitPantry.Iota.Application.CRQS.Identity.Queries;
+
+public class FindUserIdByEmailAddressQueryHandler : IRequestHandler<FindUserIdByEmailAddressQuery, long>
 {
-    public class FindUserByEmailQueryHandler : IRequestHandler<FindUserByEmailQuery, FindUserByEmailQueryResponse>
+    private EntityDataContext _dbCtx;
+
+    public FindUserIdByEmailAddressQueryHandler(EntityDataContext dbCtx) { _dbCtx = dbCtx; }
+    public async Task<long> Handle(FindUserIdByEmailAddressQuery request, CancellationToken cancellationToken)
     {
-        private readonly EntityDataContext _dbCtx;
-
-        public FindUserByEmailQueryHandler(EntityDataContext dbCtx) { _dbCtx = dbCtx; }
-
-        public async Task<FindUserByEmailQueryResponse> Handle(FindUserByEmailQuery request, CancellationToken cancellationToken)
-        {
-            return await _dbCtx.Users
-                .AsNoTracking()
-                .Where(u => u.NormalizedEmailAddress.Equals(request.NormalizedEmailAddress.ToUpper()))
-                .Select(u => new FindUserByEmailQueryResponse(u))
-                .SingleOrDefaultAsync(cancellationToken);
-        }
-    }
-
-    public record FindUserByEmailQuery(string NormalizedEmailAddress) : IRequest<FindUserByEmailQueryResponse> { }
-   
-    public class FindUserByEmailQueryResponse : FindUserResponse 
-    {
-        internal FindUserByEmailQueryResponse(User user) : base(user) { }
+        return await _dbCtx.Users
+            .Where(u => u.EmailAddress.ToUpper().Equals(request.EmailAddress.ToUpper()))
+            .Select(u => u.Id)
+            .SingleOrDefaultAsync();
     }
 }
+
+public record FindUserIdByEmailAddressQuery(string EmailAddress) : IRequest<long> { }

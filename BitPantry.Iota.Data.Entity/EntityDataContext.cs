@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using BitPantry.Iota.Data.Entity.Entity.Mapping;
+using Microsoft.EntityFrameworkCore;
 
 namespace BitPantry.Iota.Data.Entity
 {
@@ -9,6 +10,8 @@ namespace BitPantry.Iota.Data.Entity
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            UserMapping.OnModelCreating(modelBuilder);
         }
 
         public DbSet<User> Users { get; set; }

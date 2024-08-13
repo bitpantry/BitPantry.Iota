@@ -49,7 +49,8 @@ namespace BitPantry.Iota.Web
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+                pattern: "{controller=Home}/{action=Index}/{id?}")
+            .RequireAuthorization();
 
             app.Run();
         }

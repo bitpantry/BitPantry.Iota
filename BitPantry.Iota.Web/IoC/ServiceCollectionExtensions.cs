@@ -1,4 +1,5 @@
 ﻿using BitPantry.Iota.Infrastructure.Settings;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 
@@ -8,9 +9,13 @@ namespace BitPantry.Iota.Web.IoC
     {
         public static IServiceCollection ConfigureIdentityServices(this IServiceCollection services, AppSettings settings)
         {
+            services.AddTransient<IClaimsTransformation, AddClaimsTransformation>();
+
             services.AddAuthentication(o => 
                 o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme)
-            .AddCookie()
+            .AddCookie(builder => {
+                builder.LoginPath = "/auth";
+            })
             .AddGoogle(GoogleDefaults.AuthenticationScheme, o =>
             {
                 o.ClientId = "243088652396-lmumnpr93c3enkk0cphcq39epgc1h51g.apps.googleusercontent.com";
