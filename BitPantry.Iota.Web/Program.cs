@@ -22,6 +22,7 @@ namespace BitPantry.Iota.Web
 
             var settings = new AppSettings(builder.Configuration);
 
+            builder.Services.ConfigureWebServices(settings);
             builder.Services.ConfigureIdentityServices(settings);
             builder.Services.ConfigureInfrastructureServices(settings, CachingStrategy.InMemory);
             builder.Services.ConfigureApplicationServices();
@@ -51,6 +52,8 @@ namespace BitPantry.Iota.Web
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}")
             .RequireAuthorization();
+
+            app.UseMiddleware<AppStateCookieMiddleware>();
 
             app.Run();
         }

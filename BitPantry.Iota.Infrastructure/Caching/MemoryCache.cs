@@ -20,5 +20,6 @@ namespace BitPantry.Iota.Infrastructure.Caching
         {
             _cache.Set(key, obj, new MemoryCacheEntryOptions { SlidingExpiration = slidingExpiration });
         }
+       
     }
 }

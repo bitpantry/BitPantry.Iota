@@ -35,7 +35,7 @@ namespace BitPantry.Iota.Infrastructure.IoC
 
             // components
 
-            services.AddSingleton<AppSettings>(settings);
+            services.AddSingleton(settings);
 
             // configure caching
 

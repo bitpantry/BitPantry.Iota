@@ -1,7 +1,9 @@
 ﻿using BitPantry.Iota.Infrastructure.Settings;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.DataProtection.Repositories;
+using System.Runtime.CompilerServices;
 
 namespace BitPantry.Iota.Web.IoC
 {
@@ -9,8 +11,6 @@ namespace BitPantry.Iota.Web.IoC
     {
         public static IServiceCollection ConfigureIdentityServices(this IServiceCollection services, AppSettings settings)
         {
-            services.AddTransient<IClaimsTransformation, AddClaimsTransformation>();
-
             services.AddAuthentication(o => 
                 o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(builder => {
@@ -24,5 +24,36 @@ namespace BitPantry.Iota.Web.IoC
 
             return services;
         }
+
+        public static IServiceCollection ConfigureWebServices(this IServiceCollection services, AppSettings settings)
+        {
+            // components
+
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddScoped<AppStateCookie>();
+            services.AddScoped<UserIdentity>();
+
+            // data protection
+
+            // see https://learn.microsoft.com/en-us/aspnet/core/security/data-protection/using-data-protection?view=aspnetcore-8.0
+            // for reference on how data protection is configured with custom key store below
+            services.AddDataProtection();
+            services.AddOptions<KeyManagementOptions>()
+                .Configure<IServiceScopeFactory>((options, factory) => options.XmlRepository = new DatabaseDataProtectionKeyStore(factory));
+
+            // application cookies
+
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.Cookie.HttpOnly = true; // Prevents client-side script access
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Ensures the cookie is only sent over HTTPS
+                options.Cookie.SameSite = SameSiteMode.Strict; // Helps prevent cross-site request forgery
+            });
+
+            return services;
+        }
+
     }
+
+    
 }
