@@ -4,7 +4,7 @@
     <h3 class="font-weight-bold">Create a new card</h3>
 </div>
 
-<form asp-controller="Card" asp-action="Create" method="post" class="form-horizontal">
+<form asp-controller="Card" asp-action="GetBiblePassage" method="get" class="form-horizontal">
 
     <div class="form-group row">
         <label asp-for="SelectedTranslation" class="col-sm-1 col-form-label">Translation</label>
@@ -24,9 +24,32 @@
 
     <div class="form-group row mt-4">
         <div class="col-sm-10 offset-sm-1">
-            <button type="submit" class="btn btn-primary">Create Card</button>
+            <button type="submit" class="btn btn-primary">Lookup</button>
         </div>
     </div>
 
 </form>
+
+<div id="bible-passage-container"></div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#lookup-form').submit(function(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            var bibleId = $('#SelectedTranslation').val();
+            var passage = $('#Passage').val();
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: $(this).attr('method'),
+                data: { bibleId: bibleId, passage: passage },
+                success: function(data) {
+                    $('#bible-passage-container').html(data);
+                }
+            });
+        });
+    });
+</script>
 

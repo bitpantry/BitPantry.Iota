@@ -48,6 +48,8 @@ namespace BitPantry.Iota.Infrastructure.IoC
                 default:
                     throw new ArgumentOutOfRangeException($"Caching strategy value, \"{cachingStrategy}\", is not defined for this switch");
             }
+
+            services.AddTransient<CacheService>();
         }
     }
 }

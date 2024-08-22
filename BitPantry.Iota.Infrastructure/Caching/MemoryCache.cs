@@ -16,6 +16,18 @@ namespace BitPantry.Iota.Infrastructure.Caching
             return _cache.Get<T>(key);
         }
 
+        public bool TryGetValue<T>(string key, out T outVal)
+        {
+            if(_cache.TryGetValue(key, out object cachedData))
+            {
+                outVal = (T)cachedData;
+                return true;
+            }
+
+            outVal = default;
+            return false;
+        }
+
         public void Set(string key, object obj, TimeSpan slidingExpiration)
         {
             _cache.Set(key, obj, new MemoryCacheEntryOptions { SlidingExpiration = slidingExpiration });

@@ -15,4 +15,8 @@
     <Folder Include="Migrations\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\BitPantry.Iota.Common\BitPantry.Iota.Common.csproj" />
+  </ItemGroup>
+
 </Project>

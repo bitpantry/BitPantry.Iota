@@ -20,6 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\BitPantry.Iota.Application\BitPantry.Iota.Application.csproj" />
     <ProjectReference Include="..\BitPantry.Iota.Infrastructure\BitPantry.Iota.Infrastructure.csproj" />
+    <ProjectReference Include="..\BitPantry.Iota.Common\BitPantry.Iota.Common.csproj" />
   </ItemGroup>
 
 </Project>

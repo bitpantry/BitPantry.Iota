@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BitPantry.Iota.Infrastructure.Parsing
+namespace BitPantry.Iota.Application.Parsers.BibleData
 {
-    public class BibleDataParsingException : Exception
+    internal class BibleDataParsingException : Exception
     {
         public BibleDataParsingException(string message) : base(message) { }
         public BibleDataParsingException(string message,  Exception innerException) : base(message, innerException) { }

@@ -15,29 +15,19 @@ namespace BitPantry.Iota.Application.CRQS.Bible.Query
         private const string KEY_TRANSLATIONS_CACHE = "bitpantry.iota.cache.bibletranslations";
 
         private readonly EntityDataContext _dbCtx;
-        private readonly ICache _cache;
+        private readonly CacheService _cacheSvc;
 
-        public GetBibleTranslationsQueryHandler(EntityDataContext dbCtx, ICache cache)
+        public GetBibleTranslationsQueryHandler(EntityDataContext dbCtx, CacheService cacheSvc)
         {
             _dbCtx = dbCtx;
-            _cache = cache;
+            _cacheSvc = cacheSvc;
         }
 
         public async Task<GetBibleTranslationsQueryResponse> Handle(GetBibleTranslationsQuery request, CancellationToken cancellationToken)
         {
-            var items = _cache.Get<List<GetBibleTranslationsQueryResponseItem>>(KEY_TRANSLATIONS_CACHE);
-
-            if(items == null)
-            {
-                items = await _dbCtx.Bibles
-                .AsNoTracking()
-                .Select(b => new GetBibleTranslationsQueryResponseItem(b.Id, b.TranslationShortName, b.TranslationLongName))
-                .ToListAsync();
-
-                _cache.Set(KEY_TRANSLATIONS_CACHE, items, TimeSpan.FromMinutes(15));
-            }
-
-            return new GetBibleTranslationsQueryResponse(items);
+            var bibles = await _dbCtx.Bibles.AsNoTracking().WithCaching(_cacheSvc).ToListAsync();
+            return new GetBibleTranslationsQueryResponse(
+                bibles.Select(b => new GetBibleTranslationsQueryResponseItem(b.Id, b.TranslationShortName, b.TranslationLongName)).ToList());
         }
     }
 

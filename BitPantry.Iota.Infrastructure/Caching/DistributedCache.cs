@@ -21,9 +21,24 @@ namespace BitPantry.Iota.Infrastructure.Caching
             return default(T);
         }
 
+        public bool TryGetValue<T>(string key, out T outVal)
+        {
+            var bytes = _cache.Get(key);
+            if(bytes == null)
+            {
+                outVal = default;
+                return false;
+            }
+
+            outVal = Serialization.Deserialize<T>(bytes);
+            return true;
+        }
+
         public void Set(string key, object obj, TimeSpan slidingExpiration)
         {
             _cache.Set(key, Serialization.Serialize(obj), new DistributedCacheEntryOptions { SlidingExpiration = slidingExpiration });
         }
+
+
     }
 }

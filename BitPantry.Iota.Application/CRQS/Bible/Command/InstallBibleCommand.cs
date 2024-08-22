@@ -1,5 +1,5 @@
 ﻿using BitPantry.Iota.Data.Entity;
-using BitPantry.Iota.Infrastructure.Parsing;
+using BitPantry.Iota.Application.Parsers.BibleData;
 using MediatR;
 using System;
 using System.Collections.Generic;

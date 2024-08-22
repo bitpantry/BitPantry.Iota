@@ -100,9 +100,9 @@ Here's an example XML document that exemplifies this schema --------------------
 
 
 
-namespace BitPantry.Iota.Infrastructure.Parsing
+namespace BitPantry.Iota.Application.Parsers.BibleData
 {
-    public class DefaultXmlBibleDataParser : IBibleParser
+    internal class DefaultXmlBibleDataParser : IBibleDataParser
     {
         public Bible Parse(string dataFilePath)
         {

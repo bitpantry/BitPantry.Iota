@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BitPantry.Iota.Infrastructure.Parsing
+namespace BitPantry.Iota.Application.Parsers.BibleData
 {
-    public interface IBibleParser
+    internal interface IBibleDataParser
     {
         public Bible Parse(string dataFilePath);
     }
