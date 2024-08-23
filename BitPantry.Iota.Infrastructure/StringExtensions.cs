@@ -24,8 +24,14 @@ namespace BitPantry.Iota.Infrastructure
             }
         }
 
-        public static int CalculateLevenshteinDistance(this string source, string target)
+        public static int CalculateLevenshteinDistance(this string source, string target, bool caseInsensitive = false, double thresholdPercentage = 0.2)
         {
+            if(caseInsensitive)
+            {
+                source = source.ToLower();
+                target = target.ToLower();
+            }
+
             if (string.IsNullOrEmpty(source))
                 return string.IsNullOrEmpty(target) ? 0 : target.Length;
 
@@ -54,7 +60,11 @@ namespace BitPantry.Iota.Infrastructure
                 }
             }
 
-            return distanceMatrix[sourceLength, targetLength];
+            var distance = distanceMatrix[sourceLength, targetLength];
+            var maxLength = Math.Max(sourceLength, targetLength);
+            var threshold = maxLength * thresholdPercentage;
+
+            return distance <= threshold ? distance : int.MaxValue;
         }
     }
 }

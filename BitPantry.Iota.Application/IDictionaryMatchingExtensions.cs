@@ -6,7 +6,7 @@ namespace BitPantry.Iota.Application;
 
 public static class IDictionaryMatchingExtensions
 {
-    public static TKey MatchValue<TKey>(this IDictionary<TKey, string> dict, string str)
+    public static TKey MatchValue<TKey>(this IDictionary<TKey, string> dict, string str, bool caseInsensitive = false)
     {
         TKey matchingKey = default;
 
@@ -14,7 +14,7 @@ public static class IDictionaryMatchingExtensions
 
         foreach (var item in dict)
         {
-            int distance = str.CalculateLevenshteinDistance(item.Value);
+            int distance = str.CalculateLevenshteinDistance(item.Value, caseInsensitive);
             
             if (distance < minDistance)
             {
@@ -25,7 +25,6 @@ public static class IDictionaryMatchingExtensions
 
         return matchingKey;
     }
-
 
 }
 

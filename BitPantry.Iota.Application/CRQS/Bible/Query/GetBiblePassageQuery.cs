@@ -1,6 +1,7 @@
 using System;
 using BitPantry.Iota.Application.Parsers;
 using BitPantry.Iota.Data.Entity;
+using BitPantry.Iota.Infrastructure;
 using BitPantry.Iota.Infrastructure.Caching;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -29,12 +30,25 @@ public class GetBiblePassageQueryHandler : IRequestHandler<GetBiblePassageQuery,
         // get the target bible translation
 
         var bibleList = await _dbCtx.Bibles.AsNoTracking().WithCaching(_cacheSvc).ToListAsync();
-        var bible = bibleList.Single(b => b.Id == request.BibleId);
+        var bible = request.BibleId == 0 ? bibleList.First() : bibleList.Single(b => b.Id == request.BibleId);
 
         // resolve the given book name to an actual book
 
-        var bookList = BibleClassificationBookList.GetBookList(bible.Classification);
-        var matchingBookNumber = bookList.MatchValue(parser.Book);
+        int minDistance = int.MaxValue;
+        int matchingBookNumber = 0;
+
+        var bookNameList = BookNameDictionary.Get(bible.Classification);
+
+        foreach (var item in bookNameList)
+        {
+            int distance = item.Value.CalculateShortestLevenshteinDistance(parser.Book);
+
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                matchingBookNumber = item.Key;
+            }
+        }
 
         if(matchingBookNumber == 0)
             return new GetBiblePassageQueryResponse();
@@ -56,10 +70,7 @@ public class GetBiblePassageQueryHandler : IRequestHandler<GetBiblePassageQuery,
         return new GetBiblePassageQueryResponse(
             true,
             bible.Id,
-            bible.TranslationShortName,
-            bible.TranslationLongName,
-            matchingBookNumber,
-            bookList[matchingBookNumber],
+            bookNameList[matchingBookNumber].Name,
             parser.Chapter,
             parser.VerseStart,
             parser.VerseEnd,
@@ -71,14 +82,11 @@ public class GetBiblePassageQueryHandler : IRequestHandler<GetBiblePassageQuery,
 
 }
 
-public record GetBiblePassageQuery(long BibleId, string Address) : IRequest<GetBiblePassageQueryResponse>;
+public record GetBiblePassageQuery(string Address, long BibleId) : IRequest<GetBiblePassageQueryResponse>;
 
 public record GetBiblePassageQueryResponse(
-    bool IsValid = false,
+    bool IsValidAddress = false,
     long BibleId = 0, 
-    string TranslationShortName = null, 
-    string TranslationLongName = null,
-    int BookNumber = 0,
     string BookName = null,
     int ChapterNumber = 0,
     int VerseNumberFrom = 0,

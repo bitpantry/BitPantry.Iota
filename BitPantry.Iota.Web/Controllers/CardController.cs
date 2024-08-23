@@ -16,35 +16,34 @@ namespace BitPantry.Iota.Web.Controllers
             _med = med;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult> Create(string address, long bibleId)
         {
-            return View(new CreateCardModel(await GetBibleTranslationsSelectList()));
-        }
+            if (string.IsNullOrEmpty(address))
+                return View(new BiblePassage());
 
-        [HttpGet]
-        public async Task<IActionResult> GetBiblePassage(long bibleId, string passage)
-        {
-            var resp = await _med.Send(new GetBiblePassageQuery(bibleId, passage));
-    
-            return PartialView("_BiblePassage", new BiblePassage
+            var resp = await _med.Send(new GetBiblePassageQuery(address, bibleId));
+
+            return View(new BiblePassage
             {
-                IsValid = resp.IsValid,
+                QueryAddress = address,
+                IsValidAddress = resp.IsValidAddress,
                 BibleId = resp.BibleId,
-                TranslationShortName = resp.TranslationShortName,
-                TranslationLongName = resp.TranslationLongName,
-                BookNumber = resp.BookNumber,
                 BookName = resp.BookName,
                 ChapterNumber = resp.ChapterNumber,
                 VerseNumberFrom = resp.VerseNumberFrom,
                 VerseNumberTo = resp.VerseNumberTo,
-                Verses = resp.Verses
+                Verses = resp.Verses,
+                Bibles = await GetAvailableBibleTranslations()
             });
         }
 
+        private async Task<List<SelectListItem>> GetAvailableBibleTranslations()
+            => (await _med.Send(new GetBibleTranslationsQuery())).Translations.Select(t => new SelectListItem($"{t.LongName} ({t.ShortName})", t.Id.ToString())).ToList();
 
-        private async Task<List<SelectListItem>> GetBibleTranslationsSelectList()
-            => (await _med.Send(new GetBibleTranslationsQuery())).Translations.Select(t => new SelectListItem(t.ShortName, t.Id.ToString())).ToList();
-        
+
+
+
+
+
     }
 }
