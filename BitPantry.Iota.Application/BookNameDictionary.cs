@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using BitPantry.Iota.Data.Entity;
+using Microsoft.Identity.Client;
 
 namespace BitPantry.Iota.Application
 {
@@ -169,6 +170,30 @@ namespace BitPantry.Iota.Application
                 default:
                     throw new ArgumentException($"BibleClassification, {classification}, is undefined for this switch");
             }
+        }
+
+        public static KeyValuePair<int, BookName> Get(BibleClassification classification, string bookName)
+        {
+            var bookNameList = Get(classification);
+
+            int minDistance = int.MaxValue;
+            int matchingBookNumber = 0;
+
+            foreach (var item in bookNameList)
+            {
+                int distance = item.Value.CalculateShortestLevenshteinDistance(bookName);
+
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    matchingBookNumber = item.Key;
+                }
+            }
+
+            if(matchingBookNumber == 0)
+                return new KeyValuePair<int, BookName>(0, null);
+
+            return new KeyValuePair<int, BookName>(matchingBookNumber, bookNameList[matchingBookNumber]);
         }
     }
 }

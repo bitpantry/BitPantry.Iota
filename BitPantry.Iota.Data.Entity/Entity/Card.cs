@@ -62,10 +62,9 @@ namespace BitPantry.Iota.Data.Entity
     {
         public long UserId { get; set; }
         public User User { get; set; }
-
         public DateTime AddedOn { get; set; }
         public DateTime LastMovedOn { get; set; }
-        public List<Verse> Verses { get; set; } = new List<Verse>();
+        public List<Verse> Verses { get; set; } 
         public Divider Divider { get; set; }
         public int Order { get; set; }
     }

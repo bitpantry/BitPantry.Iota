@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using BitPantry.Iota.Application.Service;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BitPantry.Iota.Application.IoC
 {
@@ -15,14 +16,15 @@ namespace BitPantry.Iota.Application.IoC
 
             // extensions
 
-            
+
 
             // repositories
 
-     
+
 
             // services
 
+            services.AddScoped<BibleService>();
 
             // components
 

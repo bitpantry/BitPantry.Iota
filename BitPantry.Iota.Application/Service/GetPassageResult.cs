@@ -1,0 +1,32 @@
+﻿using BitPantry.Iota.Data.Entity;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace BitPantry.Iota.Application.Service
+{
+    public enum GetPassageResultCode : int
+    {
+        Ok = 0,
+        CannotParseAddress = 1,
+        BookNotFound = 2
+    }
+
+    public class GetPassageResult
+    {
+        public GetPassageResultCode Code { get; set; }
+        public long BibleId { get; internal set; }
+        public string BookName { get; internal set; }
+        public int ChapterNumber { get; internal set; }
+        public int FromVerseNumber { get; set; }
+        public int ToVerseNumber { get; set; }
+        public List<Verse> Verses { get; set; }
+
+    }
+
+    
+
+    
+}

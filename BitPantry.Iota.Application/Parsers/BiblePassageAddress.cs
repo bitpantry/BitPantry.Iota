@@ -8,8 +8,8 @@ public class BiblePassageAddress
     public bool IsValid { get; private set; } = true;
     public string Book { get; private set; }
     public int Chapter { get; private set; }
-    public int VerseStart { get; private set; }
-    public int VerseEnd { get; private set; }
+    public int FromVerseNumber { get; private set; }
+    public int ToVerseNumber { get; private set; }
 
 
     public BiblePassageAddress(string addressString)
@@ -25,8 +25,8 @@ public class BiblePassageAddress
         {
             Book = match.Groups["Book"].Value.Trim();
             Chapter = int.Parse(match.Groups["Chapter"].Value);
-            VerseStart = int.Parse(match.Groups["StartVerse"].Value);
-            VerseEnd = match.Groups["EndVerse"].Success ? int.Parse(match.Groups["EndVerse"].Value) : 0;
+            FromVerseNumber = int.Parse(match.Groups["StartVerse"].Value);
+            ToVerseNumber = match.Groups["EndVerse"].Success ? int.Parse(match.Groups["EndVerse"].Value) : 0;
         }
     }
 
