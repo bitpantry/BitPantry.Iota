@@ -1,0 +1,40 @@
+﻿@model SetIndexModel
+
+<div>
+
+    <div class="container mt-4">
+
+        <!-- QUEUE -->
+
+        <div class="row mb-4">
+            <partial name="_SetCardCollectionPartial" model='new { BackgroundColor = "var(--bs-gray-200)", Title = "Queue", Count = Model.QueueCardCount, Action = "Queue" }' />
+        </div>
+
+        <!-- ODD AND EVEN -->
+
+        <div class="row mb-4">
+            <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "#d6f3e2", Title = "Even", Card = Model.Even }' />
+            <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "#d6f3e2", Title = "Odd", Card = Model.Odd }' />
+        </div>
+
+        <!-- DAYS OF THE WEEK -->
+
+        <div class="row mb-4">
+            <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "#d8d6f3", Title = "Sunday", Card = Model.Sunday }' />
+            <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "#d8d6f3", Title = "Monday", Card = Model.Monday }' />
+            <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "#d8d6f3", Title = "Tuesday", Card = Model.Tuesday }' />
+            <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "#d8d6f3", Title = "Wednesday", Card = Model.Wednesday }' />
+            <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "#d8d6f3", Title = "Thursday", Card = Model.Thursday }' />
+            <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "#d8d6f3", Title = "Friday", Card = Model.Friday }' />
+            <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "#d8d6f3", Title = "Saturday", Card = Model.Saturday }' />
+        </div>
+
+        <!-- DAYS OF THE MONTH -->
+
+        <div class="row">
+            <partial name="_SetCardCollectionPartial" model='new { BackgroundColor = "#f3eed6", Title = "Days of the Month", Count = Model.DaysOfTheMonthCardCount, Action = "DaysOfTheMonth" }' />
+        </div>
+
+    </div>
+
+</div>

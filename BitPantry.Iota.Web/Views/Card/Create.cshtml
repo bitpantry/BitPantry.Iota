@@ -1,0 +1,122 @@
+﻿@model CreateCardModel
+
+<div class="text-center mb-4">
+    <h3 class="font-weight-bold">Create new card</h3>
+</div>
+
+<form id="lookup-form" asp-controller="Card" asp-action="Create" method="post" class="form-horizontal">
+
+    @* Search Bar *@
+
+    <div class="container">
+        <div class="form-group row justify-content-center">
+            <div class="col-auto">
+                <div class="input-group">
+                    <input name="address" class="form-control" placeholder="e.g., romans 12:1-2" style="min-width: 400px" />
+                    <div class="input-group-append">
+                        <button type="submit" class="btn btn-primary" name="action" value="search">Go</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+@if (Model.LastAction == "create") @* Successful Create Message *@
+{
+    <div class="container mt-4">
+        <div class="align-content-center">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p>Card added to your queue</p>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else if (Model.LastAction == "search" || Model.LastAction == "changeBible")
+{
+    @if(Model.IsValidAddress)
+    {
+
+        @* Passage Form *@
+
+        <div class="container mt-4">
+            <div class="row align-items-center">
+                <div class="col-12 d-flex justify-content-between">
+                    <span id="address" class="lead">@Model.Address</span>
+                    @Html.DropDownListFor(m => m.BibleId, Model.Bibles, new { @class = "form-control form-select form-select-sm", id = "bibleId", style = "max-width: 275px" })
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    @foreach (var chapter in Model.Verses)
+                    {
+                        foreach(var verse in chapter.Value)
+                        {
+                            <span><sup><strong>@verse.Key</strong></sup> @verse.Value </span>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <input type="hidden" name="passageAddress" value="@Model.Address" />
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+
+                const bibleIdElement = document.getElementById('bibleId');
+
+                bibleIdElement.addEventListener('change', () => {
+
+                    const actionInput = document.createElement('input');
+                    actionInput.type = 'hidden';
+                    actionInput.name = 'action';
+                    actionInput.value = 'changeBible';
+
+                    const form = document.getElementById('lookup-form');
+                    form.appendChild(actionInput);
+
+                    form.submit();
+                });
+            });
+        </script>
+
+        @* Create Button *@
+
+        <div class="container mt-5">
+            <div class="form-group row justify-content-center">
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary" name="action" value="create">Create Card</button>
+                </div>
+            </div>
+        </div>
+
+    }
+    else
+    {
+        <div class="container mt-4">
+            <div class="align-content-center">
+                <div class="row">
+                    <div class="col-12 text-center">
+                        <p>No passage found</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+</form>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelector('input[name="address"]').focus();
+    });
+</script>
+
+
+

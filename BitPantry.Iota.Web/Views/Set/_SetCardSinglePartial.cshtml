@@ -1,0 +1,28 @@
+﻿@model dynamic
+
+@*
+    Requires model with the following properties:
+
+    string BackgroundColor
+    string Title
+    Card Card
+
+*@
+
+<div class="col-md-4 mb-4">
+    <div class="card text-center" style="background-color: @Model.BackgroundColor">
+        <div class="card-body">
+            <h5 class="card-title">@Model.Title</h5>
+            <p class="card-text">
+                @if(Model.Card != null)
+                {
+                    <a asp-action="Index" asp-controller="Card" asp-route-id="@Model.Id">Model.Card.Address</a>
+                }
+                else
+                {
+                    <span>No Card</span>
+                }
+            </p>
+        </div>
+    </div>
+</div>

@@ -19,8 +19,9 @@ namespace BitPantry.Iota.Application.Service
         public GetPassageResultCode Code { get; set; }
         public long BibleId { get; internal set; }
         public string BookName { get; internal set; }
-        public int ChapterNumber { get; internal set; }
+        public int FromChapterNumber { get; internal set; }
         public int FromVerseNumber { get; set; }
+        public int ToChapterNumber { get; set; }
         public int ToVerseNumber { get; set; }
         public List<Verse> Verses { get; set; }
 

@@ -25,14 +25,19 @@ public class GetBiblePassageQueryHandler : IRequestHandler<GetBiblePassageQuery,
         if (result.Code != GetPassageResultCode.Ok)
             return new GetBiblePassageQueryResponse();
 
+        var versesByChapter = result.Verses
+            .GroupBy(v => v.Chapter.Number)
+            .ToDictionary(g => g.Key, g => g.ToDictionary(v => v.Number, v => v.Text));
+
         return new GetBiblePassageQueryResponse(
             true,
             result.BibleId,
             result.BookName,
-            result.ChapterNumber,
+            result.FromChapterNumber,
             result.FromVerseNumber,
+            result.ToChapterNumber,
             result.ToVerseNumber,
-            result.Verses.ToDictionary(v => v.Number, v => v.Text)
+            versesByChapter
         );
 
     }
@@ -46,7 +51,8 @@ public record GetBiblePassageQueryResponse(
     bool IsValidAddress = false,
     long BibleId = 0, 
     string BookName = null,
-    int ChapterNumber = 0,
+    int FromChapterNumber = 0,
     int FromVerseNumber = 0,
+    int ToChapterNumber = 0,
     int ToVerseNumber = 0,
-    Dictionary<int, string> Verses = null);
+    Dictionary<int, Dictionary<int, string>> Verses = null);

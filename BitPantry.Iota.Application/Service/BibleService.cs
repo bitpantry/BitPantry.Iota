@@ -48,19 +48,20 @@ namespace BitPantry.Iota.Application.Service
             // read verses
 
             var verses = asNoTracking
-                    ? await _dbCtx.Verses.ToListWithCacheAsync(_cacheSvc, bible.Id, bookName.Key, parser.Chapter, parser.FromVerseNumber, parser.ToVerseNumber)
-                    : await _dbCtx.Verses.ToListAsync(bible.Id, bookName.Key, parser.Chapter, parser.FromVerseNumber, parser.ToVerseNumber);
+                    ? await _dbCtx.Verses.ToListWithCacheAsync(_cacheSvc, bible.Id, bookName.Key, parser.FromChapterNumber, parser.FromVerseNumber, parser.ToChapterNumber, parser.ToVerseNumber)
+                    : await _dbCtx.Verses.ToListAsync(bible.Id, bookName.Key, parser.FromChapterNumber, parser.FromVerseNumber, parser.ToChapterNumber, parser.ToVerseNumber);
 
             // return result
 
-            return new GetPassageResult
+             return new GetPassageResult
             {
                 Code = GetPassageResultCode.Ok,
                 BibleId = bible.Id,
                 BookName = bookName.Value.Name,
-                ChapterNumber = parser.Chapter,
+                FromChapterNumber = parser.FromChapterNumber,
                 FromVerseNumber = parser.FromVerseNumber,
-                ToVerseNumber = parser.ToVerseNumber,
+                ToChapterNumber = verses.Last().Chapter.Number,
+                ToVerseNumber = verses.Last().Number,
                 Verses = verses
             };
         }
