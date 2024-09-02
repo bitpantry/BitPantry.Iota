@@ -40,5 +40,11 @@ namespace BitPantry.Iota.Web.Controllers
             var resp = await _med.Send(new GetQueueSetQuery(_userIdentity.UserId));
             return View(resp.Select(i => new SetCardModel { CardId = i.CardId, Text = i.Address, Order = i.Order }).ToList());
         }
+
+        public async Task<IActionResult> DaysOfTheMonth()
+        {
+            var resp = await _med.Send(new GetDaysOfTheMonthSetQuery(_userIdentity.UserId));
+            return View(resp);
+        }
     }
 }

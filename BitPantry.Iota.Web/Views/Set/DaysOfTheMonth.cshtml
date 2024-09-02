@@ -1,0 +1,18 @@
+﻿@model Dictionary<int, int>
+
+<div>
+
+    <div class="container mt-4">
+
+        <div class="row mb-4">
+
+            @foreach (var day in Model)
+            {
+                <partial name="_SetCardCollectionPartial" model='new { BackgroundColor = "#f3eed6", Title = $"Day {day.Key}", Count = day.Value, Action = "Day" }' />
+            }
+
+        </div>
+
+    </div>
+
+</div>
