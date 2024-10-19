@@ -195,6 +195,10 @@ namespace BitPantry.Iota.Application
 
             return new KeyValuePair<int, BookName>(matchingBookNumber, bookNameList[matchingBookNumber]);
         }
+
+        public static KeyValuePair<int, BookName> Get(BibleClassification classification, int bookNumber)
+            => new KeyValuePair<int, BookName>(bookNumber, Get(classification)[bookNumber]);
+
     }
 }
 

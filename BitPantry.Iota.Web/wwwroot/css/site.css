@@ -1,3 +1,11 @@
+:root {
+    --io-set-color-queue: var(--bs-gray-200);
+    --io-set-color-daily: #a9d8f1;
+    --io-set-color-evenOdd: #d6f3e2;
+    --io-set-color-dow: #d8d6f3;
+    --io-set-color-dom: #f3eed6;
+}
+
 html {
   font-size: 14px;
 }

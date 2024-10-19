@@ -2,38 +2,73 @@
 
 <div>
 
-    <div class="container mt-4">
+    <div class="container">
+
+        <div class="row justify-content-center mb-2">
+            <div class="col-auto">
+                <h1>Cards</h1>
+            </div>
+        </div>
+
+        <div class="row border-top mb-4">
+        </div>
+
+        @{
+            string cardBackurl = Url.Action("Index", "Set");
+        }
 
         <!-- QUEUE -->
 
-        <div class="row mb-4">
-            <partial name="_SetCardCollectionPartial" model='new { BackgroundColor = "var(--bs-gray-200)", Title = "Queue", Count = Model.QueueCardCount, Action = "Queue" }' />
-        </div>
+        @if (Model.QueueCardCount > 0)
+        {
+            <div class="row mb-4">
+                <partial name="_SetCardCollectionPartial" model='new { BackgroundColor = "var(--io-set-color-queue)", Title = "Queue", Count = Model.QueueCardCount, Action = "Queue" }' />
+            </div>
+        }
+
+        <!-- DAILY -->
+
+        @if (Model.Daily != null)
+        { 
+            <div class="row mb-4">
+                <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "var(--io-set-color-daily)", Title = "Daily", Card = Model.Daily, CardBackUrl = cardBackurl }' /> 
+            </div>
+        }
 
         <!-- ODD AND EVEN -->
 
-        <div class="row mb-4">
-            <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "#d6f3e2", Title = "Even", Card = Model.Even }' />
-            <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "#d6f3e2", Title = "Odd", Card = Model.Odd }' />
-        </div>
+        @if (Model.ShowOddEvenSection)
+        { 
+            <div class="row mb-4">
+                @if (Model.Even != null) { <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "var(--io-set-color-evenOdd)", Title = "Even", Card = Model.Even, CardBackUrl = cardBackurl }' /> }
+                @if (Model.Odd != null) { <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "var(--io-set-color-evenOdd)", Title = "Odd", Card = Model.Odd, CardBackUrl = cardBackurl }' /> }
+            </div>
+        }
 
         <!-- DAYS OF THE WEEK -->
 
-        <div class="row mb-4">
-            <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "#d8d6f3", Title = "Sunday", Card = Model.Sunday }' />
-            <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "#d8d6f3", Title = "Monday", Card = Model.Monday }' />
-            <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "#d8d6f3", Title = "Tuesday", Card = Model.Tuesday }' />
-            <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "#d8d6f3", Title = "Wednesday", Card = Model.Wednesday }' />
-            <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "#d8d6f3", Title = "Thursday", Card = Model.Thursday }' />
-            <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "#d8d6f3", Title = "Friday", Card = Model.Friday }' />
-            <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "#d8d6f3", Title = "Saturday", Card = Model.Saturday }' />
-        </div>
+        @if(Model.ShowDaysOfTheWeekSection)
+        {
+            <div class="row mb-4">
+                @if (Model.Sunday != null) { <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "var(--io-set-color-dow)", Title = "Sunday", Card = Model.Sunday, CardBackUrl = cardBackurl }' /> }
+                @if (Model.Monday != null) { <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "var(--io-set-color-dow)", Title = "Monday", Card = Model.Monday, CardBackUrl = cardBackurl }' /> }
+                @if (Model.Tuesday != null) { <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "var(--io-set-color-dow)", Title = "Tuesday", Card = Model.Tuesday, CardBackUrl = cardBackurl }' /> }
+                @if (Model.Wednesday != null) { <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "var(--io-set-color-dow)", Title = "Wednesday", Card = Model.Wednesday, CardBackUrl = cardBackurl }' /> }
+                @if (Model.Thursday != null) { <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "var(--io-set-color-dow)", Title = "Thursday", Card = Model.Thursday, CardBackUrl = cardBackurl }' /> }
+                @if (Model.Friday != null) { <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "var(--io-set-color-dow)", Title = "Friday", Card = Model.Friday, CardBackUrl = cardBackurl }' /> }
+                @if (Model.Saturday != null) { <partial name="_SetCardSinglePartial" model='new { BackgroundColor = "var(--io-set-color-dow)", Title = "Saturday", Card = Model.Saturday, CardBackUrl = cardBackurl }' /> }
+            </div>
+        }
+
 
         <!-- DAYS OF THE MONTH -->
 
-        <div class="row">
-            <partial name="_SetCardCollectionPartial" model='new { BackgroundColor = "#f3eed6", Title = "Days of the Month", Count = Model.DaysOfTheMonthCardCount, Action = "DaysOfTheMonth" }' />
-        </div>
+        @if (Model.DaysOfTheMonthCardCount > 0)
+        {
+            <div class="row">
+                <partial name="_SetCardCollectionPartial" model='new { BackgroundColor = "var(--io-set-color-dom)", Title = "Month", Count = Model.DaysOfTheMonthCardCount, Action = "Month" }' />
+            </div>
+        }
 
     </div>
 

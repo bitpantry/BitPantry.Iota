@@ -8,6 +8,7 @@ using System.Reflection;
 using BitPantry.CommandLine.Processing.Activation;
 using Microsoft.EntityFrameworkCore.Query;
 using BitPantry.Iota.Console.Commands.Bible;
+using Azure.Core.GeoJson;
 
 namespace BitPantry.Iota.Console
 {
@@ -38,7 +39,10 @@ namespace BitPantry.Iota.Console
                     System.Console.Write("$ ");
                     var input = System.Console.ReadLine();
 
-                    await app.Run(input);
+                    if(System.IO.File.Exists(input))
+                        await ExecuteScript(input, app);
+                    else
+                        await app.Run(input);
                 }
                 catch (Exception ex)
                 {
@@ -48,6 +52,25 @@ namespace BitPantry.Iota.Console
                 }
             } while (true);
 
+        }
+
+        private static async Task ExecuteScript(string input, CommandLineApplication app)
+        {
+            var lines = File.ReadAllLines(input);
+            foreach (var line in lines)
+            {
+                System.Console.WriteLine(line);
+                var resp = await app.Run(line);
+
+                if (resp.ResultCode != RunResultCode.Success)
+                {
+                    System.Console.WriteLine();
+                    System.Console.WriteLine();
+                    System.Console.ForegroundColor = ConsoleColor.Red;
+                    System.Console.WriteLine("Script execution cannot continue.");
+                    System.Console.ResetColor();
+                }
+            }
         }
     }
 }

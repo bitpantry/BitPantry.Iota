@@ -32,7 +32,7 @@ namespace BitPantry.Iota.Application.CRQS.Card.Command
                 {
                     // Get the current order and divider of the card to be deleted
                     var cardInfo = dbConnection.QuerySingleOrDefault<dynamic>(
-                        "SELECT [Order], Divider FROM Cards WHERE Id = @CardId",
+                        "SELECT [Order], UserId, Divider FROM Cards WHERE Id = @CardId",
                         new { request.CardId },
                         transaction: transaction);
 
@@ -41,6 +41,7 @@ namespace BitPantry.Iota.Application.CRQS.Card.Command
 
                     int currentOrder = cardInfo.Order;
                     int divider = cardInfo.Divider;
+                    long userId = cardInfo.UserId;
 
                     // Delete the card
                     dbConnection.Execute(
@@ -50,8 +51,8 @@ namespace BitPantry.Iota.Application.CRQS.Card.Command
 
                     // Update the order of the remaining cards within the same divider
                     dbConnection.Execute(
-                        "UPDATE Cards SET [Order] = [Order] - 1 WHERE Divider = @Divider AND [Order] > @CurrentOrder",
-                        new { Divider = divider, CurrentOrder = currentOrder },
+                        "UPDATE Cards SET [Order] = [Order] - 1 WHERE Divider = @Divider AND UserId = @UserId AND [Order] > @CurrentOrder",
+                        new { Divider = divider, UserId = userId, CurrentOrder = currentOrder },
                         transaction: transaction);
 
                     // Commit the transaction

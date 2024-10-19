@@ -1,14 +1,21 @@
 ﻿
+using BitPantry.Iota.Common;
 using BitPantry.Iota.Data.Entity;
+using Humanizer;
 
 namespace BitPantry.Iota.Web.Models
 {
-    public class CardModel
+    public record CardModel(
+        long Id,
+        DateTime AddedOn,
+        DateTime LastMovedOn,
+        DateTime LastReviewedOn,
+        Divider Divider,
+        int Order = 0,
+        PassageModel Passage = null)
     {
-        public long Id { get; internal set; }
-        public DateTime AddedOn { get; internal set; }
-        public DateTime LastMovedOn { get; internal set; }
-        public Divider Divider { get; internal set; }
-        public Dictionary<int, string> Verses { get; internal set; }
+
+        public string DividerDescription => Divider.Humanize();
+
     }
 }

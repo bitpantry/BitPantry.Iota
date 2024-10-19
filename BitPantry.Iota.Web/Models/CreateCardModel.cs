@@ -10,17 +10,17 @@ public class CreateCardModel
 
     public bool IsValidAddress { get; set; }
 
-    public long BibleId { get; set; }
-    public string BookName { get; set; }
-    public int FromChapterNumber { get; set; }
-    public int FromVerseNumber { get; set; }
-    public int ToChapterNumber { get; set; }
-    public int ToVerseNumber { get; set; }
+    public bool IsCardAlreadyCreated { get; set; }
 
-    public Dictionary<int, Dictionary<int, string>> Verses { get; set; }
+    public PassageModel Passage { get; set; }
 
     public List<SelectListItem> Bibles { get; set; }
 
     public string Address
-        => PassageAddress.GetString(BookName, FromChapterNumber, FromVerseNumber, ToChapterNumber, ToVerseNumber);
+        => PassageAddress.GetString(
+            Passage.BookName, 
+            Passage.FromChapterNumber, 
+            Passage.FromVerseNumber, 
+            Passage.ToChapterNumber, 
+            Passage.ToVerseNumber);
 }

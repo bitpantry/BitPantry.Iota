@@ -45,18 +45,24 @@ else if (Model.LastAction == "search" || Model.LastAction == "changeBible")
             <div class="row align-items-center">
                 <div class="col-12 d-flex justify-content-between">
                     <span id="address" class="lead">@Model.Address</span>
-                    @Html.DropDownListFor(m => m.BibleId, Model.Bibles, new { @class = "form-control form-select form-select-sm", id = "bibleId", style = "max-width: 275px" })
+                     @Html.DropDownListFor(m => m.Passage.BibleId, Model.Bibles, new { @class = "form-control form-select form-select-sm", id = "bibleId", style = "max-width: 275px" })
                 </div>
             </div>
 
             <div class="row mt-4">
                 <div class="col-12">
-                    @foreach (var chapter in Model.Verses)
+                    @foreach (var chapter in Model.Passage.Verses)
                     {
-                        foreach(var verse in chapter.Value)
-                        {
-                            <span><sup><strong>@verse.Key</strong></sup> @verse.Value </span>
-                        }
+                        <p>
+
+                            <strong>@chapter.Key</strong>
+
+                            @foreach(var verse in chapter.Value)
+                            {
+                                <span><sup><strong>@verse.Key</strong></sup> @verse.Value </span>
+                            }
+
+                        </p>
                     }
                 </div>
             </div>
@@ -76,8 +82,14 @@ else if (Model.LastAction == "search" || Model.LastAction == "changeBible")
                     actionInput.name = 'action';
                     actionInput.value = 'changeBible';
 
+                    const bibleIdInput = document.createElement('input');
+                    bibleIdInput.type = 'hidden';
+                    bibleIdInput.name = 'bibleId';
+                    bibleIdInput.value = bibleIdElement.value;
+
                     const form = document.getElementById('lookup-form');
                     form.appendChild(actionInput);
+                    form.appendChild(bibleIdInput);
 
                     form.submit();
                 });
@@ -89,10 +101,23 @@ else if (Model.LastAction == "search" || Model.LastAction == "changeBible")
         <div class="container mt-5">
             <div class="form-group row justify-content-center">
                 <div class="col-auto">
-                    <button type="submit" class="btn btn-primary" name="action" value="create">Create Card</button>
+                    <button type="submit" class="btn btn-primary" name="action" value="create" @if(Model.IsCardAlreadyCreated) { <text>disabled</text> }>Create Card</button>
                 </div>
             </div>
         </div>
+
+        @if(Model.IsCardAlreadyCreated)
+        {
+            <div class="container mt-2">
+                <div class="align-content-center">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <p class="fw-light">You've already created this card</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
 
     }
     else

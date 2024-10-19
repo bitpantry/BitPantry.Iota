@@ -1,4 +1,6 @@
-﻿using BitPantry.Iota.Data.Entity;
+﻿using BitPantry.Iota.Application.Service;
+using BitPantry.Iota.Common;
+using BitPantry.Iota.Data.Entity;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -12,30 +14,45 @@ namespace BitPantry.Iota.Application.CRQS.Card.Query
     public class GetCardQueryHandler : IRequestHandler<GetCardQuery, GetCardQueryResponse>
     {
         private EntityDataContext _dbCtx;
+        private CardService _cardSvc;
 
-        public GetCardQueryHandler(EntityDataContext dbCtx)
+        public GetCardQueryHandler(EntityDataContext dbCtx, CardService cardSvc)
         {
             _dbCtx = dbCtx;
+            _cardSvc = cardSvc;
         }
 
         public async Task<GetCardQueryResponse> Handle(GetCardQuery request, CancellationToken cancellationToken)
         {
-            var card = await _dbCtx.Cards
-                .AsNoTracking()
-                .Include(c => c.Verses)
-                .ThenInclude(v => v.Chapter)
-                .ThenInclude(c => c.Book)
-                .ThenInclude(b => b.Testament)
-                .ThenInclude(t => t.Bible)
-                .Where(c => c.Id == request.Id).FirstOrDefaultAsync();
+            var resp = await _cardSvc.GetCard(request.Id);
+
+            // get bible
+
+            var bible = resp.Verses.First().Chapter.Book.Testament.Bible;
+
+            // resolve book name
+
+            var bookName = BookNameDictionary.Get(
+                bible.Classification,
+                resp.Verses.First().Chapter.Book.Number);
 
             return new GetCardQueryResponse
             (
-                card.Id,
-                card.AddedOn,
-                card.LastMovedOn,
-                card.Divider,
-                card.Verses.ToDictionary(v => v.Number, v => v.Text)
+                resp.Id,
+                resp.AddedOn,
+                resp.LastMovedOn,
+                resp.LastReviewedOn,
+                resp.Divider,
+                resp.Order,
+                new Passage(
+                    resp.Verses.First().Chapter.Book.Testament.Bible.Id,
+                    bookName.Value.Name,
+                    resp.Verses.First().Chapter.Number,
+                    resp.Verses.First().Number,
+                    resp.Verses.Last().Chapter.Number,
+                    resp.Verses.Last().Number,
+                    resp.Verses.ToVerseDictionary()
+                    )
             );
         }
     }
@@ -46,7 +63,9 @@ namespace BitPantry.Iota.Application.CRQS.Card.Query
         long Id, 
         DateTime AddedOn,
         DateTime LastMovedOn,
+        DateTime LastReviewedOn,
         Divider Divider,
-        Dictionary<int, string> Verses);
+        int Order,
+        Passage Passage);
 
 }

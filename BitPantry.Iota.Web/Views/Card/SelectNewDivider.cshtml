@@ -1,0 +1,84 @@
+﻿@using BitPantry.Iota.Common
+@using Humanizer
+
+@model CardModel
+
+
+<div class="container">
+
+    <div class="row justify-content-center mb-2">
+        <div class="col-6 d-flex align-items-center">
+            <a asp-controller="Card" asp-action="Index" asp-route-id="@Model.Id" class="btn btn-primary px-3">
+                Cancel
+            </a>
+        </div>
+        <div class="col-6 d-flex justify-content-end">
+            <h1 class="font-weight-bold text-end text-md-end mb-0 me-3">@Model.Passage.Address</h1>
+        </div>
+    </div>
+
+    <div class="row mb-2 border-top"></div>
+
+    <div class="mt-3">
+        <partial name="_CardInfoTablePartial" model='@Model' />
+    </div>
+
+    <h4 class="mb-5">Select the divider to move this card to ...</h4>
+
+    <!-- QUEUE -->
+
+    @if(Model.Divider != Divider.Queue)
+    {
+        <div class="row mb-4">
+            <partial name="_SelectNewCardDividerPartial" model='new { CardId = Model.Id, Divider = Divider.Queue, BackgroundColor = "var(--io-set-color-queue)" }' />
+        </div>
+    }
+
+    <!-- DAILY -->
+    @if (Model.Divider != Divider.Daily)
+    {
+        <div class="row mb-4">
+            <partial name="_SelectNewCardDividerPartial" model='new { CardId = Model.Id, Divider = Divider.Daily, BackgroundColor = "var(--io-set-color-daily)" }' />
+        </div>
+    }
+
+    <!-- ODD / EVEN -->
+    
+    <div class="row mb-4">
+
+        @foreach (var divider in new Divider[] { Divider.Odd, Divider.Even }.Where(d => d != Model.Divider))
+        {
+            <partial name="_SelectNewCardDividerPartial" model='new { CardId = Model.Id, Divider = divider, BackgroundColor = "var(--io-set-color-evenOdd)" }' />
+        }
+
+    </div>
+
+    <!-- DAYS OF THE WEEK -->
+
+    <div class="row mb-4">
+
+        @foreach (var divider in new Divider[] { Divider.Sunday, Divider.Monday, Divider.Tuesday, Divider.Wednesday, Divider.Thursday, Divider.Friday, Divider.Saturday }.Where(d => d != Model.Divider))
+        {
+            <partial name="_SelectNewCardDividerPartial" model='new { CardId = Model.Id, Divider = divider, BackgroundColor = "var(--io-set-color-dow)" }' />
+        }
+
+    </div>
+
+    <!-- DAYS OF THE MONTH -->
+
+    <div class="row mb-4">
+
+        @{
+            var days = new List<Divider>();
+            for (var i = Divider.Day1; i <= Divider.Day31; i++)
+                days.Add(i);
+        }
+
+        @foreach (var divider in days.Where(d => d != Model.Divider))
+        {
+            <partial name="_SelectNewCardDividerPartial" model='new { CardId = Model.Id, Divider = divider, BackgroundColor = "var(--io-set-color-dom)" }' />
+        }
+
+    </div>
+
+</div>

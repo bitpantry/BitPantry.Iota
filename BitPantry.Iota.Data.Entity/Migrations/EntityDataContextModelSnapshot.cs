@@ -92,8 +92,15 @@ namespace BitPantry.Iota.Data.Entity.Migrations
                     b.Property<DateTime>("LastMovedOn")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime>("LastReviewedOn")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("Order")
                         .HasColumnType("int");
+
+                    b.Property<string>("Thumbprint")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("UserId")
                         .HasColumnType("bigint");

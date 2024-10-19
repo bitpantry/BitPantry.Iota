@@ -1,4 +1,5 @@
 ﻿using BitPantry.Iota.Application;
+using BitPantry.Iota.Common;
 using BitPantry.Iota.Data.Entity;
 using BitPantry.Iota.Infrastructure.Caching;
 using MediatR;
@@ -45,7 +46,7 @@ namespace BitPantry.Iota.Application.CRQS.Set.Query
                     GetCardSummaryCardInfo(cards.FirstOrDefault(c => c.Key == Divider.Thursday)),
                     GetCardSummaryCardInfo(cards.FirstOrDefault(c => c.Key == Divider.Friday)),
                     GetCardSummaryCardInfo(cards.FirstOrDefault(c => c.Key == Divider.Saturday)),
-                    cards.SingleOrDefault(c => c.Key >= Divider.Day1 && c.Key <= Divider.Day31)?.Count() ?? 0
+                    cards.Where(c => c.Key >= Divider.Day1 && c.Key <= Divider.Day31).Sum(c => c.Count())
                 );
 
         }

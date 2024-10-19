@@ -1,0 +1,41 @@
+﻿@model CardModel
+
+@{
+    string lastReviewedDesc = Model.LastReviewedOn == DateTime.MinValue
+        ? "Never"
+        : Model.LastReviewedOn.ToString();
+}
+
+<div class="row">
+    <div class="col-4">
+        Divider
+    </div>
+</div>
+<div class="row mt-1 mb-3 fw-light">
+    <div class="col-4">
+        @Model.DividerDescription
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-4">
+        Added On
+    </div>
+    <div class="col-4">
+        Last Reviewed On
+    </div>
+    <div class="col-4">
+        Last Moved On
+    </div>
+</div>
+<div class="row mt-1 mb-5 fw-light">
+    <div class="col-4">
+        @Model.AddedOn
+    </div>
+    <div class="col-4">
+        @lastReviewedDesc
+    </div>
+    <div class="col-4">
+        @Model.LastMovedOn
+    </div>
+</div>

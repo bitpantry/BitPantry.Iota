@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace BitPantry.Iota.Data.Entity.Mapping
 {
@@ -47,6 +48,12 @@ namespace BitPantry.Iota.Data.Entity.Mapping
             modelBuilder.Entity<Card>()
                 .Property(c => c.Order)
                 .IsRequired();
+
+            modelBuilder.Entity<Card>()
+                .Property(c => c.Thumbprint)
+                .IsRequired()
+                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Ignore); // Ignore Thumbprint when reading from the database
+
         }
     }
 }

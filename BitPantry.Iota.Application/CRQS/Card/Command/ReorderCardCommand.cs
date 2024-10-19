@@ -8,67 +8,25 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Dapper;
+using BitPantry.Iota.Common;
+using BitPantry.Iota.Application.Service;
 
 namespace BitPantry.Iota.Application.CRQS.Card.Command
 {
     public class ReorderCardCommandHandler : IRequestHandler<ReorderCardCommand>
     {
-        private EntityDataContext _dbCtx;
+        private CardService _cardSvc;
 
-        public ReorderCardCommandHandler(EntityDataContext dbCtx)
+        public ReorderCardCommandHandler(CardService cardSvc)
         {
-            _dbCtx = dbCtx;
+            _cardSvc = cardSvc;
         }
 
         public async Task Handle(ReorderCardCommand request, CancellationToken cancellationToken)
         {
-            string sql = @"
-            DECLARE @CurrentOrder INT;
-            SELECT @CurrentOrder = [Order] FROM Cards WHERE Id = @CardId;
-
-            -- Case 1: Moving up
-            IF @NewOrder < @CurrentOrder
-            BEGIN
-                UPDATE Cards
-                SET [Order] = [Order] + 1
-                WHERE [Order] >= @NewOrder AND [Order] < @CurrentOrder;
-
-                UPDATE Cards
-                SET [Order] = @NewOrder
-                WHERE Id = @CardId;
-            END
-
-            -- Case 2: Moving down
-            ELSE IF @NewOrder > @CurrentOrder
-            BEGIN
-                UPDATE Cards
-                SET [Order] = [Order] - 1
-                WHERE [Order] > @CurrentOrder AND [Order] <= @NewOrder;
-
-                UPDATE Cards
-                SET [Order] = @NewOrder
-                WHERE Id = @CardId;
-            END";
-
-            var dbConnection = _dbCtx.Database.GetDbConnection();
-            if (dbConnection.State != ConnectionState.Open)
-                dbConnection.Open();
-
-            using (var transaction = dbConnection.BeginTransaction())
-            {
-                try
-                {
-                    dbConnection.Execute(sql, new { CardId = request.CardId, NewOrder = request.NewOrder }, transaction: transaction);
-                    transaction.Commit();
-                }
-                catch
-                {
-                    transaction.Rollback();
-                    throw;
-                }
-            }
+            await _cardSvc.ReorderCard(request.UserId, request.CardId, request.Divider, request.NewOrder);
         }
     }
 
-    public record ReorderCardCommand(long CardId, int NewOrder) : IRequest { }
+    public record ReorderCardCommand(Divider Divider, long UserId, long CardId, int NewOrder) : IRequest { }
 }

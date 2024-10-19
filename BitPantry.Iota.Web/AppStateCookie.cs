@@ -33,8 +33,15 @@ namespace BitPantry.Iota.Web
             _dataProtection = dataProtectionProvider.CreateProtector(Constants.DEFAULT_DATA_PROTECTOR);
             _logger = logger;
 
-            if (_httpContextAccessor.HttpContext.Request.Cookies.ContainsKey(COOKIE_NAME))
-                _dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(_dataProtection.Unprotect(_httpContextAccessor.HttpContext.Request.Cookies[COOKIE_NAME]));
+            try
+            {
+                if (_httpContextAccessor.HttpContext.Request.Cookies.ContainsKey(COOKIE_NAME))
+                    _dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(_dataProtection.Unprotect(_httpContextAccessor.HttpContext.Request.Cookies[COOKIE_NAME]));
+            }
+            catch(System.Security.Cryptography.CryptographicException ex)
+            {
+                _logger.LogError(ex, "Error decrypting application state cookie");
+            }
         }
 
         public void UpdateCookie()

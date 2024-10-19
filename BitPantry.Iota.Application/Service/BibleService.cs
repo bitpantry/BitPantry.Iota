@@ -56,13 +56,16 @@ namespace BitPantry.Iota.Application.Service
              return new GetPassageResult
             {
                 Code = GetPassageResultCode.Ok,
-                BibleId = bible.Id,
-                BookName = bookName.Value.Name,
-                FromChapterNumber = parser.FromChapterNumber,
-                FromVerseNumber = parser.FromVerseNumber,
-                ToChapterNumber = verses.Last().Chapter.Number,
-                ToVerseNumber = verses.Last().Number,
-                Verses = verses
+                Passage = new PassageDto
+                {
+                    BibleId = bible.Id,
+                    BookName = bookName.Value.Name,
+                    FromChapterNumber = parser.FromChapterNumber,
+                    FromVerseNumber = parser.FromVerseNumber,
+                    ToChapterNumber = verses.Last().Chapter.Number,
+                    ToVerseNumber = verses.Last().Number,
+                    Verses = verses
+                }
             };
         }
     }

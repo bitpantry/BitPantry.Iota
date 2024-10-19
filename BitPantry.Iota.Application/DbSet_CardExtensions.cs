@@ -1,4 +1,5 @@
-﻿using BitPantry.Iota.Data.Entity;
+﻿using BitPantry.Iota.Common;
+using BitPantry.Iota.Data.Entity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;

@@ -1,0 +1,116 @@
+﻿@model CardModel
+
+@using BitPantry.Iota.Common
+
+<style>
+    .verse-card {
+        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+        cursor: pointer; /* Added cursor property */
+    }
+</style>
+
+<script>
+    function togglePassage() {
+        var firstPanel = document.getElementsByClassName("verse-card")[0];
+        var secondPanel = document.getElementsByClassName("verse-card")[1];
+
+        if (firstPanel.style.display === "block") {
+            firstPanel.style.display = "none";
+            secondPanel.style.display = "block";
+        } else {
+            firstPanel.style.display = "block";
+            secondPanel.style.display = "none";
+        }
+    }
+
+</script>
+
+<div class="container">
+
+    <div class="d-flex flex-row mb-3">
+        <div class="col-6 fs-3">
+            @Model.Passage.Address
+        </div>
+        <div class="col-6 d-flex justify-content-end">
+            <a asp-controller="Review" asp-action="Index" asp-route-div="@Model.Divider" asp-route-ord="@Model.Order" class="btn btn-success px-3">
+                Next
+            </a>
+            @if(Model.Divider == Divider.Daily)
+            {
+                <a href="#" onclick="confirmPromote()" class="btn btn-primary ms-2">
+                    Promote
+                </a>
+
+            }
+        </div>
+    </div>
+
+    
+    <div class="verse-card" onclick="togglePassage()" style="display:block">
+        <p class=" text-center fst-italic p-3">
+            Click to Show passage
+        </p>
+    </div>
+    <div class="verse-card" onclick="togglePassage()" style="display:none">
+        <div class="p-3">
+            <p class="fst-italic fw-light text-center">
+                Click to Hide Passage
+            </p>
+            <p>
+                <div class="row mt-4">
+                    <div class="col-12">
+                        @foreach (var chapter in Model.Passage.Verses)
+                        {
+                            <p>
+                                <strong>@chapter.Key</strong>
+
+                                @foreach (var verse in chapter.Value)
+                                {
+                                    <span><sup><strong>@verse.Key</strong></sup> @verse.Value </span>
+                                }
+
+                            </p>
+                        }
+                    </div>
+                </div>
+            </p>
+            <p class="fst-italic fw-light text-center">
+                Click to Hide Passage
+            </p>
+        </div>
+    </div>
+
+    <div class="mt-5">
+        <partial name="_CardInfoTablePartial" model='@Model' />
+    </div>
+
+    <!-- Confirmation dialog markup -->
+
+    <div id="promoteConfirmationModal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Are you sure?</h5>
+                </div>
+                <div class="modal-body">
+                    <p>@Model.Passage.Address will be promoted and the next card in your queue will be moved to the Daily divider.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cancelPromote()">Cancel</button>
+                    <a asp-action="Promote" asp-controller="Review" asp-route-id="@Model.Id" class="btn btn-primary">Promote</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function confirmPromote() {
+        $('#promoteConfirmationModal').modal('show');
+    }
+
+    function cancelPromote() {
+        $('#promoteConfirmationModal').modal('hide');
+    }
+</script>

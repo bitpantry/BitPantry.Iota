@@ -1,4 +1,5 @@
-﻿using BitPantry.Iota.Data.Entity;
+﻿using BitPantry.Iota.Common;
+using BitPantry.Iota.Data.Entity;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -9,16 +10,16 @@ using System.Threading.Tasks;
 
 namespace BitPantry.Iota.Application.CRQS.Set.Query
 {
-	public class GetQueueSetQueryHandler : IRequestHandler<GetQueueSetQuery, List<CardSummaryInfo>>
+	public class GetDividerSetQueryHandler : IRequestHandler<GetDividerSetQuery, List<CardSummaryInfo>>
 	{
 		private EntityDataContext _dbCtx;
 
-		public GetQueueSetQueryHandler(EntityDataContext dbCtx)
+		public GetDividerSetQueryHandler(EntityDataContext dbCtx)
 		{
 			_dbCtx = dbCtx;
 		}
 
-		public async Task<List<CardSummaryInfo>> Handle(GetQueueSetQuery request, CancellationToken cancellationToken)
+		public async Task<List<CardSummaryInfo>> Handle(GetDividerSetQuery request, CancellationToken cancellationToken)
 		{
 			return await _dbCtx.Cards.AsNoTracking()
 				.Include(c => c.Verses)
@@ -26,13 +27,13 @@ namespace BitPantry.Iota.Application.CRQS.Set.Query
 					.ThenInclude(c => c.Book)
 					.ThenInclude(b => b.Testament)
 					.ThenInclude(t => t.Bible)
-				.Where(c => c.UserId == request.UserId && c.Divider == Divider.Queue)
+				.Where(c => c.UserId == request.UserId && c.Divider == request.divider)
 				.OrderBy(c => c.Order)
 				.Select(c => c.ToCardSummaryInfo())				
 				.ToListAsync();
 		}
 	}
 
-	public record GetQueueSetQuery(long UserId) : IRequest<List<CardSummaryInfo>>;
+	public record GetDividerSetQuery(long UserId, Divider divider) : IRequest<List<CardSummaryInfo>>;
 
 }
