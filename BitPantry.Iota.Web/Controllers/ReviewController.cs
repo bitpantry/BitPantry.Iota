@@ -23,55 +23,32 @@ namespace BitPantry.Iota.Web.Controllers
             _logger = logger;
         }
 
-        public async Task<IActionResult> Index(bool resetSession = true)
+        [Route("review")]
+        public async Task<IActionResult> Index()
         {
-            _ = await _med.Send(new GetReviewSessionCommand(_identity.UserId, resetSession));
-            var resp = await _med.Send(new GetNextCardForReviewQuery(_identity.UserId));
+            // reset the session if no div or ord specified
 
-            if (resp == null)
-                return View("NoCardsToReview");
+            var session = await _med.Send(new GetReviewSessionCommand(_identity.UserId, true));
+            if (!session.ReviewPath.Any(p => p.Value > 0))
+                return RedirectToAction(nameof(NoCards));
 
-            return View(BuildCardModel(resp));
+            // get next review step
+
+            return await GetNextReviewStepRedirect();
         }
 
-        public async Task<IActionResult> Next(Divider? div, int ord)
+        [Route("review/{div:enum}/{ord:int}")]
+        public async Task<IActionResult> Review(Divider div, int ord)
         {
-            if(div.HasValue)
-                await _med.Send(new MarkCardAsReviewedCommand(_identity.UserId, div.Value, ord));
-            
-            var session = await _med.Send(new GetReviewSessionCommand(_identity.UserId));
+            // ensure session
 
-            if(session.IsNew)
-                return RedirectToAction("Index");
+            _ = await _med.Send(new GetReviewSessionCommand(_identity.UserId));
 
-            var resp = await _med.Send(new GetNextCardForReviewQuery(_identity.UserId, div, ord));
+            // get the card
 
-            if (resp == null)
-                return View("ReviewComplete");
+            var resp = await _med.Send(new GetCardQuery(_identity.UserId, div, ord));
 
-            return View("Index", BuildCardModel(resp));
-        }
-
-        public async Task<IActionResult> Promote(long id)
-        {
-            var session = await _med.Send(new GetReviewSessionCommand(_identity.UserId));
-
-            if (session.IsNew)
-                return RedirectToAction("Index");
-
-            await _med.Send(new PromoteDailyCardCommand(_identity.UserId, id));
-
-            var resp = await _med.Send(new GetNextCardForReviewQuery(_identity.UserId, Divider.Queue));
-
-            if (resp == null)
-                return View("ReviewComplete");
-
-            return View("Index", BuildCardModel(resp));
-        }
-
-        private CardModel BuildCardModel(GetNextCardForReviewQueryResponse resp)
-        {
-            return new CardModel(
+            return View(new CardModel(
                 resp.Id,
                 resp.AddedOn,
                 resp.LastMovedOn,
@@ -87,8 +64,62 @@ namespace BitPantry.Iota.Web.Controllers
                     resp.Passage.ToVerseNumber,
                     resp.Passage.Address,
                     resp.Passage.Verses)
-                );
+                ));
         }
+
+        [Route("next/{currentDiv:enum}/{currentOrd:int}")]
+        public async Task<IActionResult> Next(Divider currentDiv, int currentOrd)
+        {
+            // ensure session
+
+            _ = await _med.Send(new GetReviewSessionCommand(_identity.UserId));
+
+            // mark the current card as reviewed
+
+            await _med.Send(new MarkCardAsReviewedCommand(_identity.UserId, currentDiv, currentOrd));
+
+            // go to next step in review
+
+            return await GetNextReviewStepRedirect(currentDiv, currentOrd);
+        }
+
+        [Route("promote/{id:long}")]
+        public async Task<IActionResult> Promote(long id)
+        {
+            // ensure session
+
+            _ = await _med.Send(new GetReviewSessionCommand(_identity.UserId));
+
+            // promote the daily card
+
+            await _med.Send(new PromoteDailyCardCommand(_identity.UserId, id));
+
+            // go to next step in review
+
+            return await GetNextReviewStepRedirect();
+        }
+
+        public IActionResult Done()
+        {
+            return View();
+        }
+
+        public IActionResult NoCards()
+        {
+            return View();
+        }
+
+        private async Task<IActionResult> GetNextReviewStepRedirect(Divider currentDiv = Divider.Queue, int currentOrder = 1)
+        {
+            var resp = await _med.Send(new GetNextCardForReviewQuery(_identity.UserId, currentDiv, currentOrder));
+
+            if (resp == null)
+                return RedirectToAction(nameof(Done));
+
+            return RedirectToAction(nameof(Review), new { div = resp.Divider, ord = resp.Order });
+        }
+
+
 
     }
 }

@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Azure;
+using BitPantry.Iota.Common;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,7 +16,8 @@ namespace BitPantry.Iota.Data.Entity
 
         public DateTime StartedOn { get; set; }
         public DateTime LastAccessed { get; set; }
-        public String CardIdsToIgnore { get; set; }
+        public string CardIdsToIgnore { get; set; }
+        public string ReviewPath { get; set; }
 
         public ReviewSession()
         {
@@ -34,6 +38,7 @@ namespace BitPantry.Iota.Data.Entity
             StartedOn = DateTime.UtcNow;
             LastAccessed = DateTime.UtcNow;
             CardIdsToIgnore = null;
+            ReviewPath = null;
         }
 
         public List<long> GetCardsToIgnoreList()
@@ -52,6 +57,17 @@ namespace BitPantry.Iota.Data.Entity
                 CardIdsToIgnore += $",{cardId}";
         }
 
+        public void SetReviewPath(Dictionary<Divider, int> reviewPath)
+        {
+            ReviewPath = reviewPath.Select(i => $"{(int)i.Key}:{i.Value}").Aggregate((a, b) => $"{a},{b}");
+        }
 
+        public Dictionary<Divider, int> GetReviewPath()
+            => ReviewPath
+                .Split(',')
+                .Select(part => part.Split(':'))
+                .ToDictionary(
+                    parts => (Divider)int.Parse(parts[0]),
+                    parts => int.Parse(parts[1]));
     }
 }

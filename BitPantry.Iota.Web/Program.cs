@@ -5,6 +5,8 @@ using BitPantry.Iota.Web.IoC;
 using BitPantry.Iota.Infrastructure.IoC;
 using BitPantry.Iota.Application.IoC;
 using BitPantry.Iota.Web.Logging;
+using Microsoft.AspNetCore.Routing.Constraints;
+using BitPantry.Iota.Common;
 
 namespace BitPantry.Iota.Web
 {
@@ -27,8 +29,14 @@ namespace BitPantry.Iota.Web
             builder.Services.ConfigureIdentityServices(settings);
             builder.Services.ConfigureInfrastructureServices(settings, CachingStrategy.InMemory);
             builder.Services.ConfigureApplicationServices();
+            builder.Services.ConfigureMiniProfiler(settings);
 
             builder.Services.AddControllersWithViews();
+
+            builder.Services.Configure<RouteOptions>(opt =>
+            {
+                opt.ConstraintMap.Add("enum", typeof(EnumRouteConstraint<Divider>));
+            });
 
             var app = builder.Build();
 
@@ -55,10 +63,14 @@ namespace BitPantry.Iota.Web
 
             app.UseAuthorization();
 
+            app.UseMiniProfiler();
+
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}")
             .RequireAuthorization();
+
+            app.UseMiddleware<AppStateCookieMiddleware>();
 
             app.Run();
         }

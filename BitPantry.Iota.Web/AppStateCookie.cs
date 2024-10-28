@@ -41,6 +41,8 @@ namespace BitPantry.Iota.Web
             catch(System.Security.Cryptography.CryptographicException ex)
             {
                 _logger.LogError(ex, "Error decrypting application state cookie");
+                _httpContextAccessor.HttpContext.Response.Cookies.Delete(COOKIE_NAME);
+
             }
         }
 

@@ -24,7 +24,11 @@ namespace BitPantry.Iota.Application.CRQS.Card.Query
 
         public async Task<GetCardQueryResponse> Handle(GetCardQuery request, CancellationToken cancellationToken)
         {
-            var resp = await _cardSvc.GetCard(_dbCtx, request.Id);
+            var resp = request.Id > 0
+                ? await _cardSvc.GetCard(_dbCtx, request.Id)
+                : await _cardSvc.GetCard(_dbCtx, request.UserId, request.Divider, request.Order);
+
+            _ = await _dbCtx.SaveChangesAsync();
 
             // get bible
 
@@ -35,8 +39,6 @@ namespace BitPantry.Iota.Application.CRQS.Card.Query
             var bookName = BookNameDictionary.Get(
                 bible.Classification,
                 resp.Verses.First().Chapter.Book.Number);
-
-            _ = await _dbCtx.SaveChangesAsync();
 
             return new GetCardQueryResponse
             (
@@ -59,7 +61,23 @@ namespace BitPantry.Iota.Application.CRQS.Card.Query
         }
     }
 
-    public record GetCardQuery(long Id) : IRequest<GetCardQueryResponse> { }
+    public class GetCardQuery : IRequest<GetCardQueryResponse> 
+    {
+        public long Id { get; }
+        public long UserId { get; }
+        public Divider Divider { get; }
+        public int Order { get; }
+
+        public GetCardQuery(long id) => Id = id;
+
+        public GetCardQuery(long userId, Divider divider, int order)
+        {
+            UserId = userId;
+            Divider = divider;
+            Order = order;
+        }
+
+    }
 
     public record GetCardQueryResponse(
         long Id, 

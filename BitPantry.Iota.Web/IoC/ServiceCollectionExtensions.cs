@@ -53,6 +53,15 @@ namespace BitPantry.Iota.Web.IoC
             return services;
         }
 
+        public static void ConfigureMiniProfiler(this IServiceCollection services, AppSettings settings)
+        {
+            services.AddMiniProfiler(options =>
+            {
+                options.RouteBasePath = "/profiler";
+                options.PopupRenderPosition = StackExchange.Profiling.RenderPosition.BottomRight;
+            }).AddEntityFramework();
+        }
+
     }
 
     

@@ -7,16 +7,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Dapper;
+using BitPantry.Iota.Common;
+using BitPantry.Iota.Application.Service;
 
 namespace BitPantry.Iota.Application.CRQS.Card.Command
 {
     public class DeleteCardCommandHandler : IRequestHandler<DeleteCardCommand>
     {
         private EntityDataContext _dbCtx;
+        private CardService _cardSvc;
 
-        public DeleteCardCommandHandler(EntityDataContext dbCtx)
+        public DeleteCardCommandHandler(EntityDataContext dbCtx, CardService cardSvc)
         {
             _dbCtx = dbCtx;
+            _cardSvc = cardSvc;
         }
 
         public async Task Handle(DeleteCardCommand request, CancellationToken cancellationToken)
@@ -54,6 +58,11 @@ namespace BitPantry.Iota.Application.CRQS.Card.Command
                         "UPDATE Cards SET [Order] = [Order] - 1 WHERE Divider = @Divider AND UserId = @UserId AND [Order] > @CurrentOrder",
                         new { Divider = divider, UserId = userId, CurrentOrder = currentOrder },
                         transaction: transaction);
+
+                    // if the card was in the daily divider, promote the next queued card
+
+                    if(divider == (int)Divider.Daily)
+                        _ = await _cardSvc.PromoteNextQueueCard(userId);
 
                     // Commit the transaction
                     transaction.Commit();

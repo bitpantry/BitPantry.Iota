@@ -24,6 +24,9 @@ namespace BitPantry.Iota.Data.Entity.Entity.Mapping
                 entity.Property(e => e.CardIdsToIgnore)
                     .IsRequired(false);
 
+                entity.Property(e => e.ReviewPath)
+                    .IsRequired(false);
+
             });
 
         }

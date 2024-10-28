@@ -1,5 +1,6 @@
 ﻿using BitPantry.Iota.Application.CRQS.Identity.Queries;
 using BitPantry.Iota.Application.Service;
+using BitPantry.Iota.Common;
 using BitPantry.Iota.Data.Entity;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -13,34 +14,36 @@ using System.Threading.Tasks;
 
 namespace BitPantry.Iota.Application.CRQS.ReviewSession.Command
 {
-    public class GetActiveReviewSessionCommandHandler : IRequestHandler<GetReviewSessionCommand, GetReviewSessionCommandHandler>
+    public class GetReviewSessionCommandHandler : IRequestHandler<GetReviewSessionCommand, GetReviewSessionCommandHandlerResponse>
     {
         private EntityDataContext _dbCtx;
-        private ReviewSessionService _reviewSessionSvc;
+        private ReviewService _reviewSvc;
 
-        public GetActiveReviewSessionCommandHandler(EntityDataContext dbCtx, ReviewSessionService reviewSessionSvc)
+        public GetReviewSessionCommandHandler(EntityDataContext dbCtx, ReviewService reviewSvc)
         {
             _dbCtx = dbCtx;
-            _reviewSessionSvc = reviewSessionSvc;
+            _reviewSvc = reviewSvc;
         }
 
-        public async Task<GetReviewSessionCommandHandler> Handle(GetReviewSessionCommand request, CancellationToken cancellationToken)
+        public async Task<GetReviewSessionCommandHandlerResponse> Handle(GetReviewSessionCommand request, CancellationToken cancellationToken)
         {
-            var sessionResp = await _reviewSessionSvc.GetReviewSession(_dbCtx, request.UserId, request.StartNew);
+            var sessionResp = await _reviewSvc.GetReviewSession(_dbCtx, request.UserId, request.StartNew);
             _dbCtx.SaveChanges();
 
-            return new GetReviewSessionCommandHandler(
+            return new GetReviewSessionCommandHandlerResponse(
                 sessionResp.Item2,
                 sessionResp.Item1.StartedOn,
-                sessionResp.Item1.GetCardsToIgnoreList());
+                sessionResp.Item1.GetCardsToIgnoreList(),
+                sessionResp.Item1.GetReviewPath());
         }
     }
 
-    public record GetReviewSessionCommandHandler(
+    public record GetReviewSessionCommandHandlerResponse(
         bool IsNew,
         DateTime StartedOn,
-        List<long> CardIdsToIgnore)
+        List<long> CardIdsToIgnore,
+        Dictionary<Divider, int> ReviewPath)
     { }
 
-    public record GetReviewSessionCommand(long UserId, bool StartNew = false) : IRequest<GetReviewSessionCommandHandler> { }
+    public record GetReviewSessionCommand(long UserId, bool StartNew = false) : IRequest<GetReviewSessionCommandHandlerResponse> { }
 }

@@ -13,13 +13,13 @@ namespace BitPantry.Iota.Application.CRQS.Card.Command
     {
         private EntityDataContext _dbCtx;
         private CardService _cardSvc;
-        private ReviewSessionService _reviewSessionSvc;
+        private ReviewService _reviewSvc;
 
-        public PromoteDailyCardCommandHandler(EntityDataContext dbCtx, CardService cardSvc, ReviewSessionService reviewSessionSvc)
+        public PromoteDailyCardCommandHandler(EntityDataContext dbCtx, CardService cardSvc, ReviewService reviewSvc)
         {
             _dbCtx = dbCtx;
             _cardSvc = cardSvc;
-            _reviewSessionSvc = reviewSessionSvc;
+            _reviewSvc = reviewSvc;
         }
 
         public async Task Handle(PromoteDailyCardCommand request, CancellationToken cancellationToken)
@@ -28,7 +28,7 @@ namespace BitPantry.Iota.Application.CRQS.Card.Command
 
             // make sure the promoted daily card is removed from the current review session
 
-            var session = await _reviewSessionSvc.GetReviewSession(_dbCtx, request.userId);
+            var session = await _reviewSvc.GetReviewSession(_dbCtx, request.userId);
             session.Item1.AddCardToIgnore(request.cardId);
 
             await _dbCtx.SaveChangesAsync();

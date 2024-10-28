@@ -14,9 +14,9 @@ namespace BitPantry.Iota.Application.CRQS.Card.Query
     public class GetNextCardForReviewQueryHandler : IRequestHandler<GetNextCardForReviewQuery, GetNextCardForReviewQueryResponse>
     {
         private EntityDataContext _dbCtx;
-        private CardReviewService _revSvc;
+        private ReviewService _revSvc;
 
-        public GetNextCardForReviewQueryHandler(EntityDataContext dbCtx, CardReviewService revSvc)
+        public GetNextCardForReviewQueryHandler(EntityDataContext dbCtx, ReviewService revSvc)
         {
             _dbCtx = dbCtx;
             _revSvc = revSvc;
@@ -24,20 +24,10 @@ namespace BitPantry.Iota.Application.CRQS.Card.Query
 
         public async Task<GetNextCardForReviewQueryResponse> Handle(GetNextCardForReviewQuery request, CancellationToken cancellationToken)
         {
-            var resp = await _revSvc.GetNextCardForReview(_dbCtx, request.UserId, request.LastDivider, request.LastCardIndex);
+            var resp = await _revSvc.GetNextCardForReview(_dbCtx, request.UserId, request.CurrentDivider, request.CurrentCardOrder);
 
             if(resp == null)
                 return null;
-
-            // get bible
-
-            var bible = resp.Verses.First().Chapter.Book.Testament.Bible;
-
-            // resolve book name
-
-            var bookName = BookNameDictionary.Get(
-                bible.Classification,
-                resp.Verses.First().Chapter.Book.Number);
 
             _ = await _dbCtx.SaveChangesAsync();
 
@@ -48,21 +38,11 @@ namespace BitPantry.Iota.Application.CRQS.Card.Query
                 resp.LastMovedOn,
                 resp.LastReviewedOn,
                 resp.Divider,
-                resp.Order,
-                new Passage(
-                    resp.Verses.First().Chapter.Book.Testament.Bible.Id,
-                    bookName.Value.Name,
-                    resp.Verses.First().Chapter.Number,
-                    resp.Verses.First().Number,
-                    resp.Verses.Last().Chapter.Number,
-                    resp.Verses.Last().Number,
-                    resp.Verses.ToVerseDictionary()
-                    )
-            );
+                resp.Order);
         }
     }
 
-    public record GetNextCardForReviewQuery(long UserId, Divider? LastDivider = null, int LastCardIndex = 0) : IRequest<GetNextCardForReviewQueryResponse> { }
+    public record GetNextCardForReviewQuery(long UserId, Divider? CurrentDivider = null, int CurrentCardOrder = 1) : IRequest<GetNextCardForReviewQueryResponse> { }
 
     public record GetNextCardForReviewQueryResponse(
         long Id,
@@ -70,7 +50,6 @@ namespace BitPantry.Iota.Application.CRQS.Card.Query
         DateTime LastMovedOn,
         DateTime LastReviewedOn,
         Divider Divider,
-        int Order,
-        Passage Passage)
+        int Order)
     { }
 }
