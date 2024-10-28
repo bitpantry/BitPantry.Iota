@@ -115,7 +115,7 @@ namespace BitPantry.Iota.Application.Service
 
                 // try to promote the queue card if one exists
 
-                if (!await PromoteNextQueueCard_INTERNAL(userId, dbConnection, transaction))
+                if (!await PromoteNextQueueCard(userId, dbConnection, transaction))
                 {
                     var promotionDivider = await GetPromotionDivider(dbConnection, transaction, userId, div);
                     await MoveCard_RECURSIVE(dbConnection, transaction, cardId, promotionDivider);
@@ -132,29 +132,30 @@ namespace BitPantry.Iota.Application.Service
 
         }
 
-        public async Task<bool> PromoteNextQueueCard(long userId)
-        {
-            var dbConnection = _db.GetDbConnection();
+        //public async Task<bool> PromoteNextQueueCard(long userId)
+        //{
+        //    var dbConnection = _db.GetDbConnection();
 
-            if (dbConnection.State != ConnectionState.Open)
-                dbConnection.Open();
+        //    if (dbConnection.State != ConnectionState.Open)
+        //        dbConnection.Open();
 
-            var transaction = dbConnection.BeginTransaction();
+        //    using (var transaction = dbConnection.BeginTransaction())
+        //    {
+        //        try
+        //        {
+        //            var result = await PromoteNextQueueCard(userId, dbConnection, transaction);
+        //            transaction.Commit();
+        //            return result;
+        //        }
+        //        catch
+        //        {
+        //            transaction.Rollback();
+        //            throw;
+        //        }
+        //    }
+        //}
 
-            try
-            {
-                var result = await PromoteNextQueueCard_INTERNAL(userId, dbConnection, transaction);
-                transaction.Commit();
-                return result;
-            }
-            catch
-            {
-                transaction.Rollback();
-                throw;
-            }
-        }
-
-        private async Task<bool> PromoteNextQueueCard_INTERNAL(long userId, DbConnection dbConnection, DbTransaction transaction)
+        public async Task<bool> PromoteNextQueueCard(long userId, DbConnection dbConnection, DbTransaction transaction)
         {
             // is there a card in the queue? If yes, move to daily and return true, otherwise return false
 

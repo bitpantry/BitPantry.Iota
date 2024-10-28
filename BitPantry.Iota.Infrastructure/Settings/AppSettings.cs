@@ -15,10 +15,12 @@ namespace BitPantry.Iota.Infrastructure.Settings
         public IConfiguration Configuration => Config;
 
         public ConnectionStrings ConnectionStrings { get; }
+        public IdentitySettings Identity { get; }
 
         public AppSettings(IConfiguration config) : base(config) 
         {
             ConnectionStrings = new ConnectionStrings(config);
+            Identity = new IdentitySettings(config);
         }
     }
 }

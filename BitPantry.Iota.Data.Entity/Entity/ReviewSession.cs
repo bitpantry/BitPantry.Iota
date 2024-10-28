@@ -42,12 +42,9 @@ namespace BitPantry.Iota.Data.Entity
         }
 
         public List<long> GetCardsToIgnoreList()
-        {
-            if (string.IsNullOrWhiteSpace(CardIdsToIgnore))
-                return new List<long>();
-
-            return CardIdsToIgnore.Split(',').Select(s => long.Parse(s)).ToList();
-        }
+            => CardIdsToIgnore == null
+                ? []
+                : CardIdsToIgnore.Split(',').Select(s => long.Parse(s)).ToList();
 
         public void AddCardToIgnore(long cardId)
         {
@@ -63,11 +60,12 @@ namespace BitPantry.Iota.Data.Entity
         }
 
         public Dictionary<Divider, int> GetReviewPath()
-            => ReviewPath
-                .Split(',')
-                .Select(part => part.Split(':'))
-                .ToDictionary(
-                    parts => (Divider)int.Parse(parts[0]),
-                    parts => int.Parse(parts[1]));
+            => ReviewPath == null 
+                ? [] 
+                : ReviewPath.Split(',')
+                    .Select(part => part.Split(':'))
+                    .ToDictionary(
+                        parts => (Divider)int.Parse(parts[0]),
+                        parts => int.Parse(parts[1]));
     }
 }

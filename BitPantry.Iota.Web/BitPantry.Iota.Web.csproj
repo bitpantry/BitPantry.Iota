@@ -27,4 +27,14 @@
     <ProjectReference Include="..\BitPantry.Iota.Common\BitPantry.Iota.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="appsettings.qa.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\PublishProfiles\" />
+  </ItemGroup>
+
 </Project>

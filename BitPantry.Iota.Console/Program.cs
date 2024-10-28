@@ -16,12 +16,18 @@ namespace BitPantry.Iota.Console
     {
         static async Task Main(string[] args)
         {
+            var environment = args.Length > 0 ? args[0] : "Development";
+
             var config = new ConfigurationBuilder()
                 .SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
                 .AddJsonFile("appsettings.json")
+                .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true)
                 .Build();
 
             var settings = new AppSettings(config);
+
+            System.Console.WriteLine($"Environment :: {environment}");
+            System.Console.WriteLine();
 
             var appBuilder = new CommandLineApplicationBuilder();
 

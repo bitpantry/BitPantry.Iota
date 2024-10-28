@@ -18,8 +18,8 @@ namespace BitPantry.Iota.Web.IoC
             })
             .AddGoogle(GoogleDefaults.AuthenticationScheme, o =>
             {
-                o.ClientId = "243088652396-lmumnpr93c3enkk0cphcq39epgc1h51g.apps.googleusercontent.com";
-                o.ClientSecret = "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";
+                o.ClientId = settings.Identity.Google.ClientId;
+                o.ClientSecret = settings.Identity.Google.ClientSecret;
             });
 
             return services;

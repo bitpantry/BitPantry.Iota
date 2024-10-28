@@ -7,6 +7,7 @@ using BitPantry.Iota.Application.IoC;
 using BitPantry.Iota.Web.Logging;
 using Microsoft.AspNetCore.Routing.Constraints;
 using BitPantry.Iota.Common;
+using Microsoft.Data.SqlClient;
 
 namespace BitPantry.Iota.Web
 {
@@ -16,10 +17,17 @@ namespace BitPantry.Iota.Web
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // configure app settings
+
+            builder.Configuration
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables();
+
             // configure logging
 
-            builder.Logging.ClearProviders();
-            builder.Logging.ConfigureIotaLogging(builder.Configuration);
+            builder.Logging.ConfigureIotaLogging(builder.Environment.EnvironmentName, builder.Configuration);
 
             // configure services
 
@@ -29,6 +37,7 @@ namespace BitPantry.Iota.Web
             builder.Services.ConfigureIdentityServices(settings);
             builder.Services.ConfigureInfrastructureServices(settings, CachingStrategy.InMemory);
             builder.Services.ConfigureApplicationServices();
+
             builder.Services.ConfigureMiniProfiler(settings);
 
             builder.Services.AddControllersWithViews();
@@ -39,6 +48,10 @@ namespace BitPantry.Iota.Web
             });
 
             var app = builder.Build();
+
+            var connStrBuilder = new SqlConnectionStringBuilder(settings.ConnectionStrings.EntityDataContext);
+
+            app.Logger.LogInformation("Starting BitPantry.Iota.Web :: {Environment}, {DataSource}", builder.Environment.EnvironmentName, connStrBuilder.DataSource);
 
             app.UseMiddleware<IotaLogEnricherMiddleware>();
 

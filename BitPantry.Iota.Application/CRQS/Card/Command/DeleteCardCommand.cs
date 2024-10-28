@@ -62,7 +62,7 @@ namespace BitPantry.Iota.Application.CRQS.Card.Command
                     // if the card was in the daily divider, promote the next queued card
 
                     if(divider == (int)Divider.Daily)
-                        _ = await _cardSvc.PromoteNextQueueCard(userId);
+                        _ = await _cardSvc.PromoteNextQueueCard(userId, dbConnection, transaction);
 
                     // Commit the transaction
                     transaction.Commit();

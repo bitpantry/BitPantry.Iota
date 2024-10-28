@@ -6,9 +6,9 @@ namespace BitPantry.Iota.Web.Logging
 {
     public static class ILoggingBuilderExtensions
     {
-        public static ILoggingBuilder ConfigureIotaLogging(this ILoggingBuilder builder, ConfigurationManager config)
+        public static ILoggingBuilder ConfigureIotaLogging(this ILoggingBuilder builder, string envName, ConfigurationManager config)
         {
-            builder = builder.ClearProviders();
+            // builder = builder.ClearProviders();
             
             //builder.AddJsonConsole(options =>
             //{
@@ -17,7 +17,8 @@ namespace BitPantry.Iota.Web.Logging
             //    options.JsonWriterOptions = options.JsonWriterOptions with { Indented = true };
             //});
 
-            builder.AddSeq(config.GetSection("Seq"));
+            if(envName == "Development")
+                builder.AddSeq(config.GetSection("Seq"));
 
             builder.EnableEnrichment();
             
