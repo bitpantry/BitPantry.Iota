@@ -32,7 +32,7 @@
             @Model.Passage.Address
         </div>
         <div class="col-6 d-flex justify-content-end">
-            <a asp-controller="Review" asp-action="Index" asp-route-div="@Model.Divider" asp-route-ord="@Model.Order" class="btn btn-success px-3">
+            <a asp-controller="Review" asp-action="Next" asp-route-div="@Model.Divider" asp-route-ord="@Model.Order" class="btn btn-success px-3">
                 Next
             </a>
             @if(Model.Divider == Divider.Daily)

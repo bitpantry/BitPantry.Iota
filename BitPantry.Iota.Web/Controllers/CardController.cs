@@ -98,8 +98,8 @@ namespace BitPantry.Iota.Web.Controllers
             }
             else if(action == "create")
             {
-                await _med.Send(new CreateCardCommand(_userIdentity.UserId, bibleId, passageAddress));
-                return View(new CreateCardModel { LastAction = action });
+                var resp = await _med.Send(new CreateCardCommand(_userIdentity.UserId, bibleId, passageAddress));
+                return View(new CreateCardModel { LastAction = action, CardCreatedInDivider = resp.Divider });
             }
 
             return View(new CreateCardModel());

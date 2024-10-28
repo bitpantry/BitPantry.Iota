@@ -32,7 +32,6 @@ namespace BitPantry.Iota.Web.IoC
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<AppStateCookie>();
             services.AddScoped<UserIdentity>();
-            services.AddScoped<SessionState>();
 
             // data protection
 

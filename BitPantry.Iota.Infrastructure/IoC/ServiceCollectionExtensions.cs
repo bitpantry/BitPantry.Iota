@@ -21,6 +21,7 @@ namespace BitPantry.Iota.Infrastructure.IoC
             // database
 
             services.AddDbContextPool<EntityDataContext>(o => o.UseSqlServer(settings.ConnectionStrings.EntityDataContext));
+            services.AddScoped<DbConnectionFactory>();
 
             // extensions
 

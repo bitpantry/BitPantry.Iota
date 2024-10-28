@@ -1,31 +1,31 @@
 ﻿using BitPantry.Iota.Application.CRQS.Card.Command;
 using BitPantry.Iota.Application.CRQS.Card.Query;
+using BitPantry.Iota.Application.CRQS.ReviewSession.Command;
 using BitPantry.Iota.Common;
+using BitPantry.Iota.Data.Entity;
 using BitPantry.Iota.Web.Models;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Cryptography;
 
 namespace BitPantry.Iota.Web.Controllers
 {
     public class ReviewController : Controller
     {
         private IMediator _med;
-        private SessionState _session;
         private UserIdentity _identity;
+        private ILogger<ReviewController> _logger;
 
-        public ReviewController(IMediator med, SessionState session, UserIdentity identity)
+        public ReviewController(IMediator med, UserIdentity identity, ILogger<ReviewController> logger)
         {
             _med = med;
-            _session = session;
             _identity = identity;
+            _logger = logger;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(bool resetSession = true)
         {
-
-            if (_session.ReviewProgress == null)
-                _session.ReviewProgress = new ReviewProgress();
-
+            _ = await _med.Send(new GetReviewSessionCommand(_identity.UserId, resetSession));
             var resp = await _med.Send(new GetNextCardForReviewQuery(_identity.UserId));
 
             if (resp == null)
@@ -36,34 +36,37 @@ namespace BitPantry.Iota.Web.Controllers
 
         public async Task<IActionResult> Next(Divider? div, int ord)
         {
-            if (_session.ReviewProgress == null)
+            if(div.HasValue)
+                await _med.Send(new MarkCardAsReviewedCommand(_identity.UserId, div.Value, ord));
+            
+            var session = await _med.Send(new GetReviewSessionCommand(_identity.UserId));
+
+            if(session.IsNew)
                 return RedirectToAction("Index");
 
-            GetNextCardForReviewQueryResponse resp = null;
-            
-            do
-            {
-
-                resp = await _med.Send(new GetNextCardForReviewQuery(_identity.UserId, div, ord));
-
-            } while (resp != null && _session.ReviewProgress.CardIdsPromoted.Contains(resp.Id));
+            var resp = await _med.Send(new GetNextCardForReviewQuery(_identity.UserId, div, ord));
 
             if (resp == null)
                 return View("ReviewComplete");
 
-            return View(BuildCardModel(resp));
+            return View("Index", BuildCardModel(resp));
         }
 
         public async Task<IActionResult> Promote(long id)
         {
-            if (_session.ReviewProgress == null)
+            var session = await _med.Send(new GetReviewSessionCommand(_identity.UserId));
+
+            if (session.IsNew)
                 return RedirectToAction("Index");
 
-            await _med.Send(new PromoteDailyCardCommand(id));
+            await _med.Send(new PromoteDailyCardCommand(_identity.UserId, id));
 
-            _session.ReviewProgress.CardIdsPromoted.Add(id);
+            var resp = await _med.Send(new GetNextCardForReviewQuery(_identity.UserId, Divider.Queue));
 
-            return RedirectToAction("Index");
+            if (resp == null)
+                return View("ReviewComplete");
+
+            return View("Index", BuildCardModel(resp));
         }
 
         private CardModel BuildCardModel(GetNextCardForReviewQueryResponse resp)
@@ -86,5 +89,6 @@ namespace BitPantry.Iota.Web.Controllers
                     resp.Passage.Verses)
                 );
         }
+
     }
 }

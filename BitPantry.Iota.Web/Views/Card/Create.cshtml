@@ -1,5 +1,7 @@
 ﻿@model CreateCardModel
 
+@using Humanizer
+
 <div class="text-center mb-4">
     <h3 class="font-weight-bold">Create new card</h3>
 </div>
@@ -28,7 +30,7 @@
         <div class="align-content-center">
             <div class="row">
                 <div class="col-12 text-center">
-                    <p>Card added to your queue</p>
+                    <p>Card added to @(Model.CardCreatedInDivider.Humanize()) divider</p>
                 </div>
             </div>
         </div>

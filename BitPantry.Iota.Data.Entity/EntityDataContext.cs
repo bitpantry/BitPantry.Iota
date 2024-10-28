@@ -1,4 +1,5 @@
-﻿using BitPantry.Iota.Data.Entity.Mapping;
+﻿using BitPantry.Iota.Data.Entity.Entity.Mapping;
+using BitPantry.Iota.Data.Entity.Mapping;
 using Microsoft.EntityFrameworkCore;
 
 namespace BitPantry.Iota.Data.Entity
@@ -12,7 +13,7 @@ namespace BitPantry.Iota.Data.Entity
             base.OnModelCreating(modelBuilder);
 
             UserMapping.OnModelCreating(modelBuilder);
-            
+
             DataProtectionKeyMapping.OnModelCreating(modelBuilder);
 
             BibleMapping.OnModelCreating(modelBuilder);
@@ -22,6 +23,8 @@ namespace BitPantry.Iota.Data.Entity
             VerseMapping.OnModelCreating(modelBuilder);
 
             CardMapping.OnModelCreating(modelBuilder);
+            ReviewSessionMapping.OnModelCreating(modelBuilder);
+
         }
 
         public DbSet<User> Users { get; set; }
@@ -34,6 +37,7 @@ namespace BitPantry.Iota.Data.Entity
         public DbSet<Verse> Verses { get; set; }
 
         public DbSet<Card> Cards { get; set; }
+        public DbSet<ReviewSession> ReviewSessions { get; set; }
 
     }
 

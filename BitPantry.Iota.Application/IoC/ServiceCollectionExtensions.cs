@@ -27,6 +27,7 @@ namespace BitPantry.Iota.Application.IoC
             services.AddScoped<BibleService>();
             services.AddScoped<CardService>();
             services.AddScoped<CardReviewService>();
+            services.AddScoped<ReviewSessionService>();
 
             // components
 

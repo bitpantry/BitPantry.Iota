@@ -41,6 +41,15 @@ namespace BitPantry.Iota.Application.CRQS.Card.Command
             if (await _dbCtx.Cards.AnyAsync(c => c.Thumbprint.Equals(thumbprint) && c.UserId == request.UserId))
                 return new CreateCardCommandResponse(true, true, 0);
 
+            // does the user have a daily card? If so, create in queue, otherwise create daily card
+
+            var div = request.ToDividier;
+
+            if(!div.HasValue)
+                div = await _dbCtx.Cards.AnyAsync(c => c.UserId == request.UserId && c.Divider == Divider.Daily)
+                    ? Divider.Queue
+                    : Divider.Daily;
+
             // create the card
 
             var card = new Data.Entity.Card
@@ -49,18 +58,18 @@ namespace BitPantry.Iota.Application.CRQS.Card.Command
                 AddedOn = DateTime.UtcNow,
                 LastMovedOn = DateTime.UtcNow,
                 Verses = result.Passage.Verses,
-                Divider = Divider.Queue,
-                Order = await _dbCtx.Cards.GetNextAvailableOrder(request.UserId, Divider.Queue)
+                Divider = div.Value,
+                Order = await _dbCtx.Cards.GetNextAvailableOrder(request.UserId, div.Value)
             };
 
             _dbCtx.Cards.Add(card);
             await _dbCtx.SaveChangesAsync(cancellationToken);
 
-            return new CreateCardCommandResponse(true, false, card.Id);
+            return new CreateCardCommandResponse(true, false, card.Id, div);
         }
     }
 
-    public record CreateCardCommand(long UserId, long BibleId, string Address) : IRequest<CreateCardCommandResponse> { }
+    public record CreateCardCommand(long UserId, long BibleId, string Address, Divider? ToDividier = null) : IRequest<CreateCardCommandResponse> { }
 
-    public record CreateCardCommandResponse(bool IsValidAddress, bool isAlreadyCreated, long CardId) { }
+    public record CreateCardCommandResponse(bool IsValidAddress, bool isAlreadyCreated, long CardId, Divider? Divider = null) { }
 }

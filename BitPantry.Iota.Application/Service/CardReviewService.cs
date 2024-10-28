@@ -1,5 +1,7 @@
 ﻿using BitPantry.Iota.Common;
 using BitPantry.Iota.Data.Entity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -12,14 +14,18 @@ namespace BitPantry.Iota.Application.Service
 {
     public class CardReviewService
     {
+        private ILogger<CardReviewService> _logger;
         private CardService _cardSvc;
+        private ReviewSessionService _reviewSessionSvc;
 
-        public CardReviewService(CardService cardSvc)
+        public CardReviewService(ILogger<CardReviewService> logger, CardService cardSvc, ReviewSessionService reviewSessionSvc)
         {
+            _logger = logger;
             _cardSvc = cardSvc;
+            _reviewSessionSvc = reviewSessionSvc;
         }
 
-        public async Task<GetCardResult> GetNextCardForReview(long userId, Divider? lastDivider, int lastCardOrder)
+        public async Task<GetCardResult> GetNextCardForReview(EntityDataContext dbCtx, long userId, Divider? lastDivider, int lastCardOrder)
         {
             // initialize the last divider to the queue if it is null
 
@@ -27,12 +33,23 @@ namespace BitPantry.Iota.Application.Service
 
             Divider nextDivider = lastDivider.Value;
 
+            // load review session
+
+            var session = await _reviewSessionSvc.GetReviewSession(dbCtx, userId);
+
+            return await GetNextCardForReview_RECURSIVE(dbCtx, userId, session.Item1, lastDivider.Value, lastCardOrder);
+        }
+
+        private async Task<GetCardResult> GetNextCardForReview_RECURSIVE(EntityDataContext dbCtx, long userId, ReviewSession session, Divider lastDivider, int lastCardOrder)
+        {
+            Divider nextDivider = lastDivider;
+
             // if not a multi-card review divider, get the next review divider
 
             if (lastDivider <= Divider.Day1)
                 nextDivider = GetNextReviewDivider(lastDivider);
 
-            // if advanced divider, reset order, otherwise increment order for same divider
+            // if advancing divider, reset order, otherwise increment order for same divider
 
             if (nextDivider != lastDivider)
                 lastCardOrder = 1;
@@ -41,15 +58,20 @@ namespace BitPantry.Iota.Application.Service
 
             // try to get the card and return if card found
 
-            var card = await _cardSvc.TryGetCard(userId, nextDivider, lastCardOrder);
+            var card = await _cardSvc.TryGetCard(dbCtx, userId, nextDivider, lastCardOrder);
 
             if (card != null)
-                return card;
+            {
+                if (!session.GetCardsToIgnoreList().Contains(card.Id))
+                    return card;
+                else
+                    _logger.LogDebug("Card id {Id} found in review session ignore list and will be skipped", card.Id);
+            }
 
             // if no card found, recursively call this function to increment to the next divider, or return null if at the end of the review path
 
             if (nextDivider < Divider.Day1)
-                return await GetNextCardForReview(userId, nextDivider, lastCardOrder);
+                return await GetNextCardForReview(dbCtx, userId, nextDivider, lastCardOrder);
             else
                 return null;
         }

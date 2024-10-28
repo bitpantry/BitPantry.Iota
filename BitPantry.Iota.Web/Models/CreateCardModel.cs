@@ -1,4 +1,5 @@
 using BitPantry.Iota.Application;
+using BitPantry.Iota.Common;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 
@@ -16,11 +17,13 @@ public class CreateCardModel
 
     public List<SelectListItem> Bibles { get; set; }
 
+    public Divider? CardCreatedInDivider { get; set; }
+
     public string Address
         => PassageAddress.GetString(
-            Passage.BookName, 
-            Passage.FromChapterNumber, 
-            Passage.FromVerseNumber, 
-            Passage.ToChapterNumber, 
+            Passage.BookName,
+            Passage.FromChapterNumber,
+            Passage.FromVerseNumber,
+            Passage.ToChapterNumber,
             Passage.ToVerseNumber);
 }

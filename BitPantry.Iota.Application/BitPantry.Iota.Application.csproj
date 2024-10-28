@@ -23,4 +23,8 @@
     <ProjectReference Include="..\BitPantry.Iota.Common\BitPantry.Iota.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="CRQS\ReviewSession\Query\" />
+  </ItemGroup>
+
 </Project>

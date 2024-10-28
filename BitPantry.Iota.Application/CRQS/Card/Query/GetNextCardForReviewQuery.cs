@@ -1,5 +1,6 @@
 ﻿using BitPantry.Iota.Application.Service;
 using BitPantry.Iota.Common;
+using BitPantry.Iota.Data.Entity;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -12,16 +13,18 @@ namespace BitPantry.Iota.Application.CRQS.Card.Query
 
     public class GetNextCardForReviewQueryHandler : IRequestHandler<GetNextCardForReviewQuery, GetNextCardForReviewQueryResponse>
     {
+        private EntityDataContext _dbCtx;
         private CardReviewService _revSvc;
 
-        public GetNextCardForReviewQueryHandler(CardReviewService revSvc)
+        public GetNextCardForReviewQueryHandler(EntityDataContext dbCtx, CardReviewService revSvc)
         {
+            _dbCtx = dbCtx;
             _revSvc = revSvc;
         }
 
         public async Task<GetNextCardForReviewQueryResponse> Handle(GetNextCardForReviewQuery request, CancellationToken cancellationToken)
         {
-            var resp = await _revSvc.GetNextCardForReview(request.UserId, request.LastDivider, request.LastCardIndex);
+            var resp = await _revSvc.GetNextCardForReview(_dbCtx, request.UserId, request.LastDivider, request.LastCardIndex);
 
             if(resp == null)
                 return null;
@@ -35,6 +38,8 @@ namespace BitPantry.Iota.Application.CRQS.Card.Query
             var bookName = BookNameDictionary.Get(
                 bible.Classification,
                 resp.Verses.First().Chapter.Book.Number);
+
+            _ = await _dbCtx.SaveChangesAsync();
 
             return new GetNextCardForReviewQueryResponse
             (

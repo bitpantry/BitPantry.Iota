@@ -1,4 +1,5 @@
 ﻿using BitPantry.CommandLine.API;
+using BitPantry.Iota.Common;
 using BitPantry.Iota.Data.Entity;
 using MediatR;
 using System;
@@ -28,6 +29,11 @@ namespace BitPantry.Iota.Console.Commands.Card
         [Alias('a')]
         [Description("The address of the passage to create a card for.")]
         public string Address { get; set; }
+
+        [Argument]
+        [Alias('d')]
+        [Description("The divider to put the new card into - Queue by default.")]
+        public Divider Divider { get; set; } = Divider.Queue;
 
         public Create(IMediator med)
         {
@@ -59,7 +65,14 @@ namespace BitPantry.Iota.Console.Commands.Card
             if (isError)
                 return;
 
-            var resp = await _med.Send(new BitPantry.Iota.Application.CRQS.Card.Command.CreateCardCommand(UserId, BibleId, Address));
+            var resp = await _med.Send(new Application.CRQS.Card.Command.CreateCardCommand(UserId, BibleId, Address, Divider));
+
+            if(!resp.IsValidAddress) {
+                Error.WriteLine("Invalid address");
+
+                if (resp.isAlreadyCreated)
+                    Error.WriteLine("Card already exists");
+            }
         }
     }
 }

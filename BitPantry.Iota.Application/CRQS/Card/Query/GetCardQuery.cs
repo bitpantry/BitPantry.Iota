@@ -24,7 +24,7 @@ namespace BitPantry.Iota.Application.CRQS.Card.Query
 
         public async Task<GetCardQueryResponse> Handle(GetCardQuery request, CancellationToken cancellationToken)
         {
-            var resp = await _cardSvc.GetCard(request.Id);
+            var resp = await _cardSvc.GetCard(_dbCtx, request.Id);
 
             // get bible
 
@@ -35,6 +35,8 @@ namespace BitPantry.Iota.Application.CRQS.Card.Query
             var bookName = BookNameDictionary.Get(
                 bible.Classification,
                 resp.Verses.First().Chapter.Book.Number);
+
+            _ = await _dbCtx.SaveChangesAsync();
 
             return new GetCardQueryResponse
             (

@@ -4,6 +4,7 @@ using BitPantry.Iota.Infrastructure.Settings;
 using BitPantry.Iota.Web.IoC;
 using BitPantry.Iota.Infrastructure.IoC;
 using BitPantry.Iota.Application.IoC;
+using BitPantry.Iota.Web.Logging;
 
 namespace BitPantry.Iota.Web
 {
@@ -16,7 +17,7 @@ namespace BitPantry.Iota.Web
             // configure logging
 
             builder.Logging.ClearProviders();
-            builder.Logging.AddConsole();
+            builder.Logging.ConfigureIotaLogging(builder.Configuration);
 
             // configure services
 
@@ -29,9 +30,9 @@ namespace BitPantry.Iota.Web
 
             builder.Services.AddControllersWithViews();
 
-            builder.Services.AddHttpContextAccessor();
-
             var app = builder.Build();
+
+            app.UseMiddleware<IotaLogEnricherMiddleware>();
 
             // Configure the HTTP request pipeline.
 
@@ -58,8 +59,6 @@ namespace BitPantry.Iota.Web
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}")
             .RequireAuthorization();
-
-            app.UseMiddleware<AppStateCookieMiddleware>();
 
             app.Run();
         }
