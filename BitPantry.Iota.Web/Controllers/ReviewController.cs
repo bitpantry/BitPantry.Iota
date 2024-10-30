@@ -30,7 +30,7 @@ namespace BitPantry.Iota.Web.Controllers
 
             var session = await _med.Send(new GetReviewSessionCommand(_identity.UserId, true));
             if (!session.ReviewPath.Any(p => p.Value > 0))
-                return RedirectToAction(nameof(NoCards));
+                return NoCards();
 
             // get next review step
 
@@ -38,7 +38,7 @@ namespace BitPantry.Iota.Web.Controllers
         }
 
         [Route("review/{div:enum}/{ord:int}")]
-        public async Task<IActionResult> Review(Divider div, int ord)
+        public async Task<IActionResult> Review(Tab div, int ord)
         {
             // ensure session
 
@@ -53,7 +53,7 @@ namespace BitPantry.Iota.Web.Controllers
                 resp.AddedOn,
                 resp.LastMovedOn,
                 resp.LastReviewedOn,
-                resp.Divider,
+                resp.Tab,
                 resp.Order,
                 new PassageModel(
                     resp.Passage.BibleId,
@@ -68,7 +68,7 @@ namespace BitPantry.Iota.Web.Controllers
         }
 
         [Route("next/{currentDiv:enum}/{currentOrd:int}")]
-        public async Task<IActionResult> Next(Divider currentDiv, int currentOrd)
+        public async Task<IActionResult> Next(Tab currentDiv, int currentOrd)
         {
             // ensure session
 
@@ -109,14 +109,14 @@ namespace BitPantry.Iota.Web.Controllers
             return View();
         }
 
-        private async Task<IActionResult> GetNextReviewStepRedirect(Divider currentDiv = Divider.Queue, int currentOrder = 1)
+        private async Task<IActionResult> GetNextReviewStepRedirect(Tab currentDiv = Tab.Queue, int currentOrder = 1)
         {
             var resp = await _med.Send(new GetNextCardForReviewQuery(_identity.UserId, currentDiv, currentOrder));
 
             if (resp == null)
-                return RedirectToAction(nameof(Done));
+                return Done();
 
-            return RedirectToAction(nameof(Review), new { div = resp.Divider, ord = resp.Order });
+            return await Review(resp.Tab, resp.Order);
         }
 
 

@@ -24,7 +24,7 @@ namespace BitPantry.Iota.Application.CRQS.Card.Query
 
         public async Task<GetNextCardForReviewQueryResponse> Handle(GetNextCardForReviewQuery request, CancellationToken cancellationToken)
         {
-            var resp = await _revSvc.GetNextCardForReview(_dbCtx, request.UserId, request.CurrentDivider, request.CurrentCardOrder);
+            var resp = await _revSvc.GetNextCardForReview(_dbCtx, request.UserId, request.CurrentTab, request.CurrentCardOrder);
 
             if(resp == null)
                 return null;
@@ -37,19 +37,19 @@ namespace BitPantry.Iota.Application.CRQS.Card.Query
                 resp.AddedOn,
                 resp.LastMovedOn,
                 resp.LastReviewedOn,
-                resp.Divider,
+                resp.Tab,
                 resp.Order);
         }
     }
 
-    public record GetNextCardForReviewQuery(long UserId, Divider? CurrentDivider = null, int CurrentCardOrder = 1) : IRequest<GetNextCardForReviewQueryResponse> { }
+    public record GetNextCardForReviewQuery(long UserId, Tab? CurrentTab = null, int CurrentCardOrder = 1) : IRequest<GetNextCardForReviewQueryResponse> { }
 
     public record GetNextCardForReviewQueryResponse(
         long Id,
         DateTime AddedOn,
         DateTime LastMovedOn,
         DateTime LastReviewedOn,
-        Divider Divider,
+        Tab Tab,
         int Order)
     { }
 }

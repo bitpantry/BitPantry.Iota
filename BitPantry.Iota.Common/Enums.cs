@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace BitPantry.Iota.Common;
 
-public enum Divider : int
+public enum Tab : int
 {
     Queue = -1,
 

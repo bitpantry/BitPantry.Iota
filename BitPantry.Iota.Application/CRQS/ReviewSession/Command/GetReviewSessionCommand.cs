@@ -42,7 +42,7 @@ namespace BitPantry.Iota.Application.CRQS.ReviewSession.Command
         bool IsNew,
         DateTime StartedOn,
         List<long> CardIdsToIgnore,
-        Dictionary<Divider, int> ReviewPath)
+        Dictionary<Tab, int> ReviewPath)
     { }
 
     public record GetReviewSessionCommand(long UserId, bool StartNew = false) : IRequest<GetReviewSessionCommandHandlerResponse> { }

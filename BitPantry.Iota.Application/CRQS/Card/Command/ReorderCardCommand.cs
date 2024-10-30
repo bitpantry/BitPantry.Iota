@@ -24,9 +24,9 @@ namespace BitPantry.Iota.Application.CRQS.Card.Command
 
         public async Task Handle(ReorderCardCommand request, CancellationToken cancellationToken)
         {
-            await _cardSvc.ReorderCard(request.UserId, request.CardId, request.Divider, request.NewOrder);
+            await _cardSvc.ReorderCard(request.UserId, request.CardId, request.Tab, request.NewOrder);
         }
     }
 
-    public record ReorderCardCommand(Divider Divider, long UserId, long CardId, int NewOrder) : IRequest { }
+    public record ReorderCardCommand(Tab Tab, long UserId, long CardId, int NewOrder) : IRequest { }
 }

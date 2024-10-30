@@ -23,7 +23,7 @@ namespace BitPantry.Iota.Application.CRQS.Card.Command
         {
             var card = await _dbCtx.Cards
                 .Where(c => c.UserId == request.UserId)
-                .Where(c => c.Divider == request.CardDivider)
+                .Where(c => c.Tab == request.CardTab)
                 .Where(c => c.Order == request.CardOrder)
                 .SingleAsync();
 
@@ -33,7 +33,7 @@ namespace BitPantry.Iota.Application.CRQS.Card.Command
         }
     }
 
-    public record MarkCardAsReviewedCommand(long UserId, Divider CardDivider, int CardOrder) : IRequest
+    public record MarkCardAsReviewedCommand(long UserId, Tab CardTab, int CardOrder) : IRequest
     {
     }
 }

@@ -34,7 +34,7 @@ namespace BitPantry.Iota.Web.Controllers
                     resp.AddedOn,
                     resp.LastMovedOn,
                     resp.LastReviewedOn,
-                    resp.Divider,
+                    resp.Tab,
                     resp.Order,
                     new PassageModel(
                         resp.Passage.BibleId,
@@ -49,7 +49,7 @@ namespace BitPantry.Iota.Web.Controllers
                 backUrl));
         }
 
-        public async Task<IActionResult> SelectNewDivider(long id)
+        public async Task<IActionResult> SelectNewTab(long id)
         {
             var resp = await _med.Send(new GetCardQuery(id));
 
@@ -58,7 +58,7 @@ namespace BitPantry.Iota.Web.Controllers
                     resp.AddedOn,
                     resp.LastMovedOn,
                     resp.LastReviewedOn,
-                    resp.Divider,
+                    resp.Tab,
                     resp.Order,
                     new PassageModel(
                         resp.Passage.BibleId,
@@ -99,25 +99,25 @@ namespace BitPantry.Iota.Web.Controllers
             else if(action == "create")
             {
                 var resp = await _med.Send(new CreateCardCommand(_userIdentity.UserId, bibleId, passageAddress));
-                return View(new CreateCardModel { LastAction = action, CardCreatedInDivider = resp.Divider });
+                return View(new CreateCardModel { LastAction = action, CardCreatedInTab = resp.Tab });
             }
 
             return View(new CreateCardModel());
         }
 
-        public async Task<IActionResult> Move(long id, Divider toDivider)
+        public async Task<IActionResult> Move(long id, Tab toTab)
         {
-            await _med.Send(new MoveCardCommand(id, toDivider));
+            await _med.Send(new MoveCardCommand(id, toTab));
 
             var backUrl = Url.Action("Index", "Set");
 
-            if(toDivider == Divider.Queue)
+            if(toTab == Tab.Queue)
                 backUrl = Url.Action("Queue", "Set");
-            else if(Divider.Day1 <= toDivider && toDivider <= Divider.Day31)
-                backUrl = Url.Action("Day", "Set", new { Id = (int)toDivider - (int)Divider.Day1 + 1 });
+            else if(Tab.Day1 <= toTab && toTab <= Tab.Day31)
+                backUrl = Url.Action("Day", "Set", new { Id = (int)toTab - (int)Tab.Day1 + 1 });
 
 
-            return RedirectToAction("Index", new { id, backUrl = backUrl });
+            return await Index(id, backUrl);
         }
 
         public async Task<IActionResult> Delete(long id, string returnUrl)
@@ -134,7 +134,7 @@ namespace BitPantry.Iota.Web.Controllers
         {
             try
             {
-                await _med.Send(new ReorderCardCommand(model.GetDividerEnum(), _userIdentity.UserId, model.CardId, model.NewOrder));
+                await _med.Send(new ReorderCardCommand(model.GetTabEnum(), _userIdentity.UserId, model.CardId, model.NewOrder));
                 return Json(new { success = true });
             }
             catch (Exception ex)

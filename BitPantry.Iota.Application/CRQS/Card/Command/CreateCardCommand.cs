@@ -46,9 +46,9 @@ namespace BitPantry.Iota.Application.CRQS.Card.Command
             var div = request.ToDividier;
 
             if(!div.HasValue)
-                div = await _dbCtx.Cards.AnyAsync(c => c.UserId == request.UserId && c.Divider == Divider.Daily)
-                    ? Divider.Queue
-                    : Divider.Daily;
+                div = await _dbCtx.Cards.AnyAsync(c => c.UserId == request.UserId && c.Tab == Tab.Daily)
+                    ? Tab.Queue
+                    : Tab.Daily;
 
             // create the card
 
@@ -58,7 +58,7 @@ namespace BitPantry.Iota.Application.CRQS.Card.Command
                 AddedOn = DateTime.UtcNow,
                 LastMovedOn = DateTime.UtcNow,
                 Verses = result.Passage.Verses,
-                Divider = div.Value,
+                Tab = div.Value,
                 Order = await _dbCtx.Cards.GetNextAvailableOrder(request.UserId, div.Value)
             };
 
@@ -69,7 +69,7 @@ namespace BitPantry.Iota.Application.CRQS.Card.Command
         }
     }
 
-    public record CreateCardCommand(long UserId, long BibleId, string Address, Divider? ToDividier = null) : IRequest<CreateCardCommandResponse> { }
+    public record CreateCardCommand(long UserId, long BibleId, string Address, Tab? ToDividier = null) : IRequest<CreateCardCommandResponse> { }
 
-    public record CreateCardCommandResponse(bool IsValidAddress, bool isAlreadyCreated, long CardId, Divider? Divider = null) { }
+    public record CreateCardCommandResponse(bool IsValidAddress, bool isAlreadyCreated, long CardId, Tab? Tab = null) { }
 }

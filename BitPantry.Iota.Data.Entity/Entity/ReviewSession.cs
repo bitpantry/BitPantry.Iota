@@ -54,18 +54,18 @@ namespace BitPantry.Iota.Data.Entity
                 CardIdsToIgnore += $",{cardId}";
         }
 
-        public void SetReviewPath(Dictionary<Divider, int> reviewPath)
+        public void SetReviewPath(Dictionary<Tab, int> reviewPath)
         {
             ReviewPath = reviewPath.Select(i => $"{(int)i.Key}:{i.Value}").Aggregate((a, b) => $"{a},{b}");
         }
 
-        public Dictionary<Divider, int> GetReviewPath()
+        public Dictionary<Tab, int> GetReviewPath()
             => ReviewPath == null 
                 ? [] 
                 : ReviewPath.Split(',')
                     .Select(part => part.Split(':'))
                     .ToDictionary(
-                        parts => (Divider)int.Parse(parts[0]),
+                        parts => (Tab)int.Parse(parts[0]),
                         parts => int.Parse(parts[1]));
     }
 }

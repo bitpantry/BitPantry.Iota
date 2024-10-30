@@ -34,9 +34,10 @@ namespace BitPantry.Iota.Application.CRQS.Card.Command
             {
                 try
                 {
-                    // Get the current order and divider of the card to be deleted
+                    // Get the current order and tab of the card to be deleted
+
                     var cardInfo = dbConnection.QuerySingleOrDefault<dynamic>(
-                        "SELECT [Order], UserId, Divider FROM Cards WHERE Id = @CardId",
+                        "SELECT [Order], UserId, Tab FROM Cards WHERE Id = @CardId",
                         new { request.CardId },
                         transaction: transaction);
 
@@ -44,7 +45,7 @@ namespace BitPantry.Iota.Application.CRQS.Card.Command
                         throw new Exception("Card not found.");
 
                     int currentOrder = cardInfo.Order;
-                    int divider = cardInfo.Divider;
+                    int tab = cardInfo.Tab;
                     long userId = cardInfo.UserId;
 
                     // Delete the card
@@ -53,15 +54,15 @@ namespace BitPantry.Iota.Application.CRQS.Card.Command
                         new { request.CardId },
                         transaction: transaction);
 
-                    // Update the order of the remaining cards within the same divider
+                    // Update the order of the remaining cards within the same tab
                     dbConnection.Execute(
-                        "UPDATE Cards SET [Order] = [Order] - 1 WHERE Divider = @Divider AND UserId = @UserId AND [Order] > @CurrentOrder",
-                        new { Divider = divider, UserId = userId, CurrentOrder = currentOrder },
+                        "UPDATE Cards SET [Order] = [Order] - 1 WHERE Tab = @Tab AND UserId = @UserId AND [Order] > @CurrentOrder",
+                        new { Tab = tab, UserId = userId, CurrentOrder = currentOrder },
                         transaction: transaction);
 
-                    // if the card was in the daily divider, promote the next queued card
+                    // if the card was in the daily tab, promote the next queued card
 
-                    if(divider == (int)Divider.Daily)
+                    if(tab == (int)Tab.Daily)
                         _ = await _cardSvc.PromoteNextQueueCard(userId, dbConnection, transaction);
 
                     // Commit the transaction

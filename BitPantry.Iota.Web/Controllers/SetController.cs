@@ -40,8 +40,8 @@ namespace BitPantry.Iota.Web.Controllers
 
         public async Task<IActionResult> Queue()
         {
-            var resp = await _med.Send(new GetDividerSetQuery(_userIdentity.UserId, Divider.Queue));
-            return View("SortableSet", new SortableSetModel("Queue", Divider.Queue, resp.Select(i => new SetCardModel(i.CardId, i.Address, i.Order)).ToList(), "Index", Url.Action("Queue", "Set")));
+            var resp = await _med.Send(new GetTabSetQuery(_userIdentity.UserId, Tab.Queue));
+            return View("SortableSet", new SortableSetModel("Queue", Tab.Queue, resp.Select(i => new SetCardModel(i.CardId, i.Address, i.Order)).ToList(), "Index", Url.Action("Queue", "Set")));
         }
 
         public async Task<IActionResult> Month()
@@ -52,10 +52,10 @@ namespace BitPantry.Iota.Web.Controllers
 
         public async Task<IActionResult> Day(int id)
         {
-            var dayDivider = Divider.Day1 + id - 1;
+            var dayTab = Tab.Day1 + id - 1;
 
-            var resp = await _med.Send(new GetDividerSetQuery(_userIdentity.UserId, dayDivider));
-            return View("SortableSet", new SortableSetModel(dayDivider.Humanize(), dayDivider, resp.Select(i => new SetCardModel(i.CardId, i.Address, i.Order)).ToList(), "Month", Url.Action("Day", "Set", new { Id = id })));
+            var resp = await _med.Send(new GetTabSetQuery(_userIdentity.UserId, dayTab));
+            return View("SortableSet", new SortableSetModel(dayTab.Humanize(), dayTab, resp.Select(i => new SetCardModel(i.CardId, i.Address, i.Order)).ToList(), "Month", Url.Action("Day", "Set", new { Id = id })));
         }
     }
 }

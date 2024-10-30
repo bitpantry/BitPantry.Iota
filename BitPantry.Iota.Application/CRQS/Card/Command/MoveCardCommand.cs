@@ -25,9 +25,9 @@ namespace BitPantry.Iota.Application.CRQS.Card.Command
 
         public async Task Handle(MoveCardCommand request, CancellationToken cancellationToken)
         {
-            await _cardSvc.MoveCard(request.CardId, request.NewDivider);
+            await _cardSvc.MoveCard(request.CardId, request.NewTab);
         }
     }
 
-    public record MoveCardCommand(long CardId, Divider NewDivider) : IRequest { } 
+    public record MoveCardCommand(long CardId, Tab NewTab) : IRequest { } 
 }

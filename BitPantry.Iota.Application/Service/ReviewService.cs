@@ -57,105 +57,105 @@ namespace BitPantry.Iota.Application.Service
 
         // ...
 
-        private async Task<Dictionary<Divider, int>> BuildReviewPath(long userId)
+        private async Task<Dictionary<Tab, int>> BuildReviewPath(long userId)
         {
-            var path = new Dictionary<Divider, int>();
-            var currentDivider = Divider.Queue;
+            var path = new Dictionary<Tab, int>();
+            var currentTab = Tab.Queue;
 
             do
             {
-                currentDivider = GetNextReviewDivider(currentDivider);
-                path.Add(currentDivider, 0);
+                currentTab = GetNextReviewTab(currentTab);
+                path.Add(currentTab, 0);
 
-            } while (currentDivider < Divider.Day1);
+            } while (currentTab < Tab.Day1);
 
-            // select the card count grouped by divider for the userId
+            // select the card count grouped by tab for the userId
 
             var dbConnection = _db.GetDbConnection();
             if (dbConnection.State == System.Data.ConnectionState.Closed)
                 dbConnection.Open();
 
             var cardCounts = await dbConnection.QueryAsync(
-                @"SELECT Divider, COUNT(*) AS CardCount
+                @"SELECT Tab, COUNT(*) AS CardCount
                     FROM Cards
                     WHERE UserId = @UserId
-                    GROUP BY Divider",
+                    GROUP BY Tab",
                 new { UserId = userId });
 
             foreach (var count in cardCounts)
-                path[(Divider)count.Divider] = count.CardCount;          
+                path[(Tab)count.Tab] = count.CardCount;          
 
             return path;
         }
 
-        public async Task<CardHeader> GetNextCardForReview(EntityDataContext dbCtx, long userId, Divider? currentDivider, int currentCardIndex)
+        public async Task<CardHeader> GetNextCardForReview(EntityDataContext dbCtx, long userId, Tab? currentTab, int currentCardIndex)
         {
-            // initialize the last divider to the queue if it is null
+            // initialize the last tab to the queue if it is null
 
-            currentDivider ??= Divider.Queue;
-            Divider nextDivider = currentDivider.Value;
+            currentTab ??= Tab.Queue;
+            Tab nextTab = currentTab.Value;
 
             // load review session
 
             var session = await GetReviewSession(dbCtx, userId);
 
-            return await GetNextCardForReview_RECURSIVE(dbCtx, userId, session.Item1, currentDivider.Value, currentCardIndex);
+            return await GetNextCardForReview_RECURSIVE(dbCtx, userId, session.Item1, currentTab.Value, currentCardIndex);
         }
 
-        private async Task<CardHeader> GetNextCardForReview_RECURSIVE(EntityDataContext dbCtx, long userId, ReviewSession session, Divider lastDivider, int lastCardOrder)
+        private async Task<CardHeader> GetNextCardForReview_RECURSIVE(EntityDataContext dbCtx, long userId, ReviewSession session, Tab lastTab, int lastCardOrder)
         {
-            Divider nextDivider = lastDivider;
+            Tab nextTab = lastTab;
 
-            // if not a multi-card review divider, get the next review divider
+            // if not a multi-card review tab, get the next review tab
 
-            if (lastDivider <= Divider.Day1)
-                nextDivider = GetNextReviewDivider(lastDivider);
+            if (lastTab <= Tab.Day1)
+                nextTab = GetNextReviewTab(lastTab);
 
-            // if advancing divider, reset order, otherwise increment order for same divider
+            // if advancing tab, reset order, otherwise increment order for same tab
 
-            var nextCardOrder = nextDivider != lastDivider ? 1 : lastCardOrder + 1;
+            var nextCardOrder = nextTab != lastTab ? 1 : lastCardOrder + 1;
 
             // see if the card id exists and is not in the ignore list for the session
 
             var nextCard = await dbCtx.Cards.AsNoTracking()
-                .Where(c => c.UserId == userId && c.Divider == nextDivider && c.Order == nextCardOrder)
+                .Where(c => c.UserId == userId && c.Tab == nextTab && c.Order == nextCardOrder)
                 .SingleOrDefaultAsync();
 
             if (nextCard != null)
             {
                 if (!session.GetCardsToIgnoreList().Contains(nextCard.Id))
-                    return new CardHeader(nextCard.Id, nextCard.AddedOn, nextCard.LastMovedOn, nextCard.LastReviewedOn, nextCard.Divider, nextCard.Order);
+                    return new CardHeader(nextCard.Id, nextCard.AddedOn, nextCard.LastMovedOn, nextCard.LastReviewedOn, nextCard.Tab, nextCard.Order);
                 else
                     _logger.LogDebug("Card id {Id} found in review session ignore list and will be skipped", nextCard.Id);
             }
 
-            // if no card found, recursively call this function to increment to the next divider, or return null if at the end of the review path
+            // if no card found, recursively call this function to increment to the next tab, or return null if at the end of the review path
 
-            if (nextDivider < Divider.Day1)
-                return await GetNextCardForReview(dbCtx, userId, nextDivider, lastCardOrder);
+            if (nextTab < Tab.Day1)
+                return await GetNextCardForReview(dbCtx, userId, nextTab, lastCardOrder);
             else
                 return null;
         }
 
-        private Divider GetNextReviewDivider(Divider? lastDivider)
+        private Tab GetNextReviewTab(Tab? lastTab)
         {
-            return lastDivider switch
+            return lastTab switch
             {
-                Divider.Queue => Divider.Daily,
-                Divider.Daily => DateTime.Today.Day % 2 == 0 ? Divider.Even : Divider.Odd,
-                Divider.Odd or Divider.Even => DateTime.Today.DayOfWeek switch
+                Tab.Queue => Tab.Daily,
+                Tab.Daily => DateTime.Today.Day % 2 == 0 ? Tab.Even : Tab.Odd,
+                Tab.Odd or Tab.Even => DateTime.Today.DayOfWeek switch
                 {
-                    DayOfWeek.Sunday => Divider.Sunday,
-                    DayOfWeek.Monday => Divider.Monday,
-                    DayOfWeek.Tuesday => Divider.Tuesday,
-                    DayOfWeek.Wednesday => Divider.Wednesday,
-                    DayOfWeek.Thursday => Divider.Thursday,
-                    DayOfWeek.Friday => Divider.Friday,
-                    DayOfWeek.Saturday => Divider.Saturday,
-                    _ => throw new ArgumentOutOfRangeException("DateTime.Today.DayOfWeek", DateTime.Today.DayOfWeek, "A divider is not defined for this day of the week")
+                    DayOfWeek.Sunday => Tab.Sunday,
+                    DayOfWeek.Monday => Tab.Monday,
+                    DayOfWeek.Tuesday => Tab.Tuesday,
+                    DayOfWeek.Wednesday => Tab.Wednesday,
+                    DayOfWeek.Thursday => Tab.Thursday,
+                    DayOfWeek.Friday => Tab.Friday,
+                    DayOfWeek.Saturday => Tab.Saturday,
+                    _ => throw new ArgumentOutOfRangeException("DateTime.Today.DayOfWeek", DateTime.Today.DayOfWeek, "A tab is not defined for this day of the week")
                 },
-                Divider.Sunday or Divider.Monday or Divider.Tuesday or Divider.Wednesday or Divider.Thursday or Divider.Friday or Divider.Saturday => DateTime.Today.Day + Divider.Saturday,
-                _ => throw new ArgumentOutOfRangeException(nameof(lastDivider), lastDivider.Value, "No review path is defined for this divider")
+                Tab.Sunday or Tab.Monday or Tab.Tuesday or Tab.Wednesday or Tab.Thursday or Tab.Friday or Tab.Saturday => DateTime.Today.Day + Tab.Saturday,
+                _ => throw new ArgumentOutOfRangeException(nameof(lastTab), lastTab.Value, "No review path is defined for this tab")
             };
         }
     }

@@ -11,10 +11,10 @@ namespace BitPantry.Iota.Application
 {
     internal static class DbSet_CardExtensions
     {
-        public static async Task<int> GetNextAvailableOrder(this DbSet<Card> dbSet, long userId, Divider divider)
+        public static async Task<int> GetNextAvailableOrder(this DbSet<Card> dbSet, long userId, Tab tab)
         {
             var maxOrder = await dbSet
-                .Where(c => c.UserId == userId && c.Divider == divider)
+                .Where(c => c.UserId == userId && c.Tab == tab)
                 .Select(c => (int?)c.Order) 
                 .MaxAsync();
 

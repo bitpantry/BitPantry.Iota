@@ -17,7 +17,7 @@ namespace BitPantry.Iota.Data.Entity
         public DateTime LastMovedOn { get; set; }
         public DateTime LastReviewedOn { get; set; }
         public List<Verse> Verses { get; set; } 
-        public Divider Divider { get; set; }
+        public Tab Tab { get; set; }
         public int Order { get; set; }
 
         public string Thumbprint {

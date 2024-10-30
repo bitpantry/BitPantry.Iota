@@ -41,15 +41,24 @@ namespace BitPantry.Iota.Application.Service
 
         }
 
-        public async Task<GetCardResult> GetCard(EntityDataContext dbCtx, long userId, Divider divider, int cardOrder)
+        public async Task<GetCardResult> GetCard(EntityDataContext dbCtx, long userId, Tab tab, int cardOrder)
         {
             // get card data, including verses
 
             var card = await GetCardQuery(dbCtx)
-                .Where(c => c.Divider == divider && c.Order == cardOrder && c.UserId == userId)
+                .Where(c => c.Tab == tab && c.Order == cardOrder && c.UserId == userId)
                 .FirstOrDefaultAsync();
 
             return BuildGetCardResult(card);
+        }
+
+        public async Task<List<GetCardResult>> GetCards(EntityDataContext dbCtx, long userId, Tab tab)
+        {
+            var cards = await GetCardQuery(dbCtx)
+                .Where(c => c.Tab == tab && c.UserId == userId)
+                .ToListAsync();
+
+            return cards.Select(BuildGetCardResult).ToList();
         }
 
         private IQueryable<Card> GetCardQuery(EntityDataContext dbCtx)
@@ -74,7 +83,7 @@ namespace BitPantry.Iota.Application.Service
                 card.AddedOn,
                 card.LastMovedOn,
                 card.LastReviewedOn,
-                card.Divider,
+                card.Tab,
                 card.Order,
                 card.Verses);
         }
@@ -88,17 +97,17 @@ namespace BitPantry.Iota.Application.Service
             if (dbConnection.State != ConnectionState.Open)
                 dbConnection.Open();
 
-            // can this card be promoted - is it in the daily divider?
+            // can this card be promoted - is it in the daily tab?
 
             var cardInfo = await _db.GetDbConnection().QuerySingleOrDefaultAsync<dynamic>(
-                "SELECT UserId, Divider FROM Cards WHERE Id = @CardId",
+                "SELECT UserId, Tab FROM Cards WHERE Id = @CardId",
                 new { cardId });
 
             long userId = cardInfo.UserId;
-            Divider div = (Divider)cardInfo.Divider;
+            Tab div = (Tab)cardInfo.Tab;
 
-            if (div != Divider.Daily)
-                throw new InvalidOperationException($"Only cards in the {Divider.Daily} divider can be promoted. This card is in the {(Divider)div} divider.");
+            if (div != Tab.Daily)
+                throw new InvalidOperationException($"Only cards in the {Tab.Daily} tab can be promoted. This card is in the {(Tab)div} tab.");
 
             // begin a transaction
 
@@ -117,8 +126,8 @@ namespace BitPantry.Iota.Application.Service
 
                 if (!await PromoteNextQueueCard(userId, dbConnection, transaction))
                 {
-                    var promotionDivider = await GetPromotionDivider(dbConnection, transaction, userId, div);
-                    await MoveCard_RECURSIVE(dbConnection, transaction, cardId, promotionDivider);
+                    var promotionTab = await GetPromotionTab(dbConnection, transaction, userId, div);
+                    await MoveCard_RECURSIVE(dbConnection, transaction, cardId, promotionTab);
                 }
 
                 transaction.Commit();
@@ -160,18 +169,18 @@ namespace BitPantry.Iota.Application.Service
             // is there a card in the queue? If yes, move to daily and return true, otherwise return false
 
             var cardId = await dbConnection.QuerySingleOrDefaultAsync<long?>(
-                "SELECT TOP 1 Id FROM Cards WHERE UserId = @UserId AND Divider = @Divider ORDER BY [Order]",
-                new { userId, Divider = Divider.Queue }, transaction: transaction);
+                "SELECT TOP 1 Id FROM Cards WHERE UserId = @UserId AND Tab = @Tab ORDER BY [Order]",
+                new { userId, Tab = Tab.Queue }, transaction: transaction);
 
             if (cardId == null)
                 return false;
 
-            await MoveCard_RECURSIVE(dbConnection, transaction, cardId.Value, Divider.Daily);
+            await MoveCard_RECURSIVE(dbConnection, transaction, cardId.Value, Tab.Daily);
 
             return true;
         }
 
-        public async Task MoveCard(long cardId, Divider toDivider)
+        public async Task MoveCard(long cardId, Tab toTab)
         {
             var dbConnection = _db.GetDbConnection();
 
@@ -182,7 +191,7 @@ namespace BitPantry.Iota.Application.Service
             {
                 try
                 {
-                    await MoveCard_RECURSIVE(dbConnection, transaction, cardId, toDivider);
+                    await MoveCard_RECURSIVE(dbConnection, transaction, cardId, toTab);
                     transaction.Commit();
                 }
                 catch
@@ -193,11 +202,11 @@ namespace BitPantry.Iota.Application.Service
             }
         }
 
-        private async Task MoveCard_RECURSIVE(DbConnection dbConnection, DbTransaction transaction, long cardId, Divider toDivider)
+        private async Task MoveCard_RECURSIVE(DbConnection dbConnection, DbTransaction transaction, long cardId, Tab toTab)
         {
-            // Get the current order and divider of the card to be moved
+            // Get the current order and tab of the card to be moved
             var cardInfo = await dbConnection.QuerySingleOrDefaultAsync<dynamic>(
-                "SELECT UserId, [Order], Divider FROM Cards WHERE Id = @CardId",
+                "SELECT UserId, [Order], Tab FROM Cards WHERE Id = @CardId",
                 new { cardId },
                 transaction: transaction);
 
@@ -205,91 +214,91 @@ namespace BitPantry.Iota.Application.Service
                 throw new Exception("Card not found.");
 
             int currentOrder = cardInfo.Order;
-            int currentDivider = cardInfo.Divider;
+            int currentTab = cardInfo.Tab;
             long userId = cardInfo.UserId;
 
-            _logger.LogDebug("Moving card {CardId} :: {CurrentDivider} => {ToDivider}", cardId, (Divider)currentDivider, toDivider);
+            _logger.LogDebug("Moving card {CardId} :: {CurrentTab} => {ToTab}", cardId, (Tab)currentTab, toTab);
 
-            // Update the divider of the card
+            // Update the tab of the card
             await dbConnection.ExecuteAsync(
-                "UPDATE Cards SET Divider = @ToDivider, LastMovedOn = @Timestamp WHERE Id = @CardId",
-            new { toDivider, cardId, Timestamp = DateTime.UtcNow },
+                "UPDATE Cards SET Tab = @ToTab, LastMovedOn = @Timestamp WHERE Id = @CardId",
+            new { toTab, cardId, Timestamp = DateTime.UtcNow },
                 transaction: transaction);
 
-            // Update the order of the remaining cards within the original divider
+            // Update the order of the remaining cards within the original tab
             await dbConnection.ExecuteAsync(
-                "UPDATE Cards SET [Order] = [Order] - 1 WHERE Divider = @CurrentDivider AND UserId = @UserId AND [Order] > @CurrentOrder",
-                new { CurrentDivider = currentDivider, UserId = userId, CurrentOrder = currentOrder },
+                "UPDATE Cards SET [Order] = [Order] - 1 WHERE Tab = @CurrentTab AND UserId = @UserId AND [Order] > @CurrentOrder",
+                new { CurrentTab = currentTab, UserId = userId, CurrentOrder = currentOrder },
                 transaction: transaction);
 
-            // Cascade promote cards in the destination divider if single card divider
-            if(toDivider < Divider.Day1 && toDivider != Divider.Queue)
+            // Cascade promote cards in the destination tab if single card tab
+            if(toTab < Tab.Day1 && toTab != Tab.Queue)
             {
                 var existingCardId = await dbConnection.QuerySingleOrDefaultAsync<long?>(
                     @"SELECT Id
                       FROM Cards
                       WHERE UserId = @UserId
-                      AND Divider = @ToDivider
+                      AND Tab = @ToTab
                       AND Id != @CardId",
-                    new { UserId = userId, ToDivider = toDivider, CardId = cardId },
+                    new { UserId = userId, ToTab = toTab, CardId = cardId },
                     transaction: transaction);
 
                 if (existingCardId != null)
                 {
-                    var promotionDivider = await GetPromotionDivider(dbConnection, transaction, userId, toDivider);
+                    var promotionTab = await GetPromotionTab(dbConnection, transaction, userId, toTab);
                     _logger.LogDebug("Bumping card {CardId}", existingCardId);
-                    await MoveCard_RECURSIVE(dbConnection, transaction, existingCardId.Value, promotionDivider);
+                    await MoveCard_RECURSIVE(dbConnection, transaction, existingCardId.Value, promotionTab);
                 }
             }
-            else // put at the top of the list in any of the multi-card dividers
+            else // put at the top of the list in any of the multi-card tab
             {
-                await ReorderCard_INTERNAL(dbConnection, transaction, userId, cardId, toDivider, 1);
+                await ReorderCard_INTERNAL(dbConnection, transaction, userId, cardId, toTab, 1);
             }
         }
 
-        private async Task<Divider> GetPromotionDivider(DbConnection dbConnection, DbTransaction transaction, long userId, Divider currentDivider)
+        private async Task<Tab> GetPromotionTab(DbConnection dbConnection, DbTransaction transaction, long userId, Tab currentTab)
         {
-            switch (currentDivider)
+            switch (currentTab)
             {
-                case Divider.Queue:
+                case Tab.Queue:
 
-                    return Divider.Daily;
+                    return Tab.Daily;
 
-                case Divider.Daily:
+                case Tab.Daily:
 
-                    return await GetSingleCardDividerOfOldestCard(dbConnection, transaction, userId, Divider.Odd, Divider.Even);
+                    return await GetSingleCardTabOfOldestCard(dbConnection, transaction, userId, Tab.Odd, Tab.Even);
 
-                case Divider.Odd:
-                case Divider.Even:
+                case Tab.Odd:
+                case Tab.Even:
 
-                    return await GetSingleCardDividerOfOldestCard(dbConnection, transaction, userId, Divider.Sunday, Divider.Saturday);
+                    return await GetSingleCardTabOfOldestCard(dbConnection, transaction, userId, Tab.Sunday, Tab.Saturday);
 
-                case Divider.Sunday:
-                case Divider.Monday:
-                case Divider.Tuesday:
-                case Divider.Wednesday:
-                case Divider.Thursday:
-                case Divider.Friday:
-                case Divider.Saturday:
+                case Tab.Sunday:
+                case Tab.Monday:
+                case Tab.Tuesday:
+                case Tab.Wednesday:
+                case Tab.Thursday:
+                case Tab.Friday:
+                case Tab.Saturday:
 
-                    return await GetMultipleCardDividerOfLeastAndOldestCards(dbConnection, transaction, userId, Divider.Day1, Divider.Day31);
+                    return await GetMultipleCardTabOfLeastAndOldestCards(dbConnection, transaction, userId, Tab.Day1, Tab.Day31);
 
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(currentDivider), currentDivider, "No promotion path is defined for this divider");
+                    throw new ArgumentOutOfRangeException(nameof(currentTab), currentTab, "No promotion path is defined for this tab");
             }
         }
 
-        private async Task<Divider> GetSingleCardDividerOfOldestCard(DbConnection dbConnection, DbTransaction transaction, long userId, Divider start, Divider end)
+        private async Task<Tab> GetSingleCardTabOfOldestCard(DbConnection dbConnection, DbTransaction transaction, long userId, Tab start, Tab end)
         {
 
-            // return the first empty divider if any
+            // return the first empty tab if any
 
-            var usedDividers = await dbConnection.QueryAsync<Divider>(
-                @"SELECT DISTINCT Divider
+            var usedTabs = await dbConnection.QueryAsync<Tab>(
+                @"SELECT DISTINCT Tab
                     FROM Cards
                     WHERE UserId = @UserId
-                    AND Divider >= @Start
-                    AND Divider <= @End",
+                    AND Tab >= @Start
+                    AND Tab <= @End",
                 new
                 {
                     UserId = userId,
@@ -297,22 +306,22 @@ namespace BitPantry.Iota.Application.Service
                     End = end
                 }, transaction);
 
-            var unusedDividers = Enumerable.Range((int)start, (int)end - (int)start + 1).Select(i => (Divider)i)
-                .Except(usedDividers)
+            var unusedTabs = Enumerable.Range((int)start, (int)end - (int)start + 1).Select(i => (Tab)i)
+                .Except(usedTabs)
                 .Order()
                 .ToList();
 
-            if (unusedDividers.Count != 0)
-                return unusedDividers.First();
+            if (unusedTabs.Count != 0)
+                return unusedTabs.First();
 
-            // return the divider with the oldest moved date
+            // return the tab with the oldest moved date
 
-            var div = await dbConnection.QuerySingleAsync<Divider>(
-                @"SELECT TOP 1 Divider
+            var div = await dbConnection.QuerySingleAsync<Tab>(
+                @"SELECT TOP 1 Tab
                     FROM Cards
                     WHERE UserId = @UserId
-                    AND Divider >= @Start
-                    AND Divider <= @End
+                    AND Tab >= @Start
+                    AND Tab <= @End
                     ORDER BY LastMovedOn ASC",
                 new
                 {
@@ -326,15 +335,15 @@ namespace BitPantry.Iota.Application.Service
 
         }
 
-        private async Task<Divider> GetMultipleCardDividerOfLeastAndOldestCards(DbConnection dbConnection, DbTransaction transaction, long userId, Divider start, Divider end)
+        private async Task<Tab> GetMultipleCardTabOfLeastAndOldestCards(DbConnection dbConnection, DbTransaction transaction, long userId, Tab start, Tab end)
         {
-            var dividerCounts = await dbConnection.QueryAsync<(Divider Divider, int CardCount)>(
-                @"SELECT Divider, COUNT(*) AS CardCount
+            var tabCounts = await dbConnection.QueryAsync<(Tab Tab, int CardCount)>(
+                @"SELECT Tab, COUNT(*) AS CardCount
                     FROM Cards
                     WHERE UserId = @UserId
-                    AND Divider >= @Start
-                    AND Divider <= @End
-                    GROUP BY Divider
+                    AND Tab >= @Start
+                    AND Tab <= @End
+                    GROUP BY Tab
                     ORDER BY CardCount ASC, MIN(LastMovedOn) ASC",
                 new
                 {
@@ -343,16 +352,16 @@ namespace BitPantry.Iota.Application.Service
                     End = end
                 }, transaction);
 
-            var emptyDividers = Enumerable.Range((int)start, (int)end - (int)start + 1).Select(i => (Divider)i)
-                .Except(dividerCounts
-                    .Select(dc => dc.Divider))
+            var emptyTabs = Enumerable.Range((int)start, (int)end - (int)start + 1).Select(i => (Tab)i)
+                .Except(tabCounts
+                    .Select(dc => dc.Tab))
                     .ToList();
 
-            return emptyDividers.Any() ? emptyDividers.First() : dividerCounts.First().Divider;
+            return emptyTabs.Any() ? emptyTabs.First() : tabCounts.First().Tab;
 
         }
 
-        public async Task ReorderCard(long userId, long cardId, Divider divider, int newOrder)
+        public async Task ReorderCard(long userId, long cardId, Tab tab, int newOrder)
         {
             var dbConnection = _db.GetDbConnection();
 
@@ -363,7 +372,7 @@ namespace BitPantry.Iota.Application.Service
             {
                 try
                 {
-                    await ReorderCard_INTERNAL(dbConnection, transaction, userId, cardId, divider, newOrder);
+                    await ReorderCard_INTERNAL(dbConnection, transaction, userId, cardId, tab, newOrder);
                     transaction.Commit();
                 }
                 catch
@@ -374,9 +383,9 @@ namespace BitPantry.Iota.Application.Service
             }
         }
 
-        private async Task ReorderCard_INTERNAL(DbConnection dbConnection, DbTransaction transaction, long userId, long cardId, Divider divider, int newOrder)
+        private async Task ReorderCard_INTERNAL(DbConnection dbConnection, DbTransaction transaction, long userId, long cardId, Tab tab, int newOrder)
         {
-            _logger.LogDebug("Reordering card {CardId} to order {NewOrder} in divider {Divider}", cardId, newOrder, divider);
+            _logger.LogDebug("Reordering card {CardId} to order {NewOrder} in tab {Tab}", cardId, newOrder, tab);
 
             string sql = @"
                 DECLARE @CurrentOrder INT;
@@ -388,7 +397,7 @@ namespace BitPantry.Iota.Application.Service
                     UPDATE Cards
                     SET [Order] = [Order] + 1
                     WHERE [Order] >= @NewOrder AND [Order] < @CurrentOrder 
-                        AND UserId = @UserId AND Divider = @Divider;
+                        AND UserId = @UserId AND Tab = @Tab;
 
                     UPDATE Cards
                     SET [Order] = @NewOrder
@@ -400,7 +409,7 @@ namespace BitPantry.Iota.Application.Service
                     UPDATE Cards
                     SET [Order] = [Order] - 1
                     WHERE [Order] > @CurrentOrder AND [Order] <= @NewOrder 
-                        AND UserId = @UserId AND Divider = @Divider;
+                        AND UserId = @UserId AND Tab = @Tab;
 
                     UPDATE Cards
                     SET [Order] = @NewOrder
@@ -411,9 +420,9 @@ namespace BitPantry.Iota.Application.Service
                 -- Set the correct order for record with Id 327 if it’s still not ordered properly
                 UPDATE Cards
                 SET [Order] = 2
-                WHERE Id = 327 AND UserId = @UserId AND Divider = @Divider AND [Order] = @NewOrder;";
+                WHERE Id = 327 AND UserId = @UserId AND Tab = @Tab AND [Order] = @NewOrder;";
 
-                await dbConnection.ExecuteAsync(sql, new { UserId = userId, CardId = cardId, NewOrder = newOrder, Divider = divider }, transaction: transaction);
+                await dbConnection.ExecuteAsync(sql, new { UserId = userId, CardId = cardId, NewOrder = newOrder, Tab = tab }, transaction: transaction);
             }
         }
 

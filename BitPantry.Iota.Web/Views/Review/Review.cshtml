@@ -32,10 +32,10 @@
             @Model.Passage.Address
         </div>
         <div class="col-6 d-flex justify-content-end">
-            <a asp-controller="Review" asp-action="Next" asp-route-currentdiv="@Model.Divider" asp-route-currentord="@Model.Order" class="btn btn-success px-3">
+            <a asp-controller="Review" asp-action="Next" asp-route-currentdiv="@Model.Tab" asp-route-currentord="@Model.Order" class="btn btn-success px-3">
                 Next
             </a>
-            @if(Model.Divider == Divider.Daily)
+            @if(Model.Tab == Tab.Daily)
             {
                 <a href="#" onclick="confirmPromote()" class="btn btn-primary ms-2">
                     Promote
@@ -93,7 +93,7 @@
                     <h5 class="modal-title">Are you sure?</h5>
                 </div>
                 <div class="modal-body">
-                    <p>@Model.Passage.Address will be promoted and the next card in your queue will be moved to the Daily divider.</p>
+                    <p>@Model.Passage.Address will be promoted and the next card in your queue will be moved to the Daily tab.</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cancelPromote()">Cancel</button>

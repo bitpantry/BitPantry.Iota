@@ -7,9 +7,9 @@ namespace BitPantry.Iota.Web.Models
     {
         public long CardId { get; set; }
         public int NewOrder { get; set; }
-        public string Divider { get; set; }
+        public string Tab { get; set; }
 
-        public Divider GetDividerEnum()
-            => Enum.Parse<Divider>(Divider);
+        public Tab GetTabEnum()
+            => Enum.Parse<Tab>(Tab);
     }
 }

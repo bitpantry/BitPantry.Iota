@@ -32,8 +32,8 @@ namespace BitPantry.Iota.Console.Commands.Card
 
         [Argument]
         [Alias('d')]
-        [Description("The divider to put the new card into - Queue by default.")]
-        public Divider Divider { get; set; } = Divider.Queue;
+        [Description("The tab to put the new card into - Queue by default.")]
+        public Tab Tab { get; set; } = Tab.Queue;
 
         public Create(IMediator med)
         {
@@ -65,7 +65,7 @@ namespace BitPantry.Iota.Console.Commands.Card
             if (isError)
                 return;
 
-            var resp = await _med.Send(new Application.CRQS.Card.Command.CreateCardCommand(UserId, BibleId, Address, Divider));
+            var resp = await _med.Send(new Application.CRQS.Card.Command.CreateCardCommand(UserId, BibleId, Address, Tab));
 
             if(!resp.IsValidAddress) {
                 Error.WriteLine("Invalid address");

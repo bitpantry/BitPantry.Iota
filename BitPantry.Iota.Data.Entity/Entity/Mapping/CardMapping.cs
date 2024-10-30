@@ -42,7 +42,7 @@ namespace BitPantry.Iota.Data.Entity.Mapping
                     });
 
             modelBuilder.Entity<Card>()
-                .Property(c => c.Divider)
+                .Property(c => c.Tab)
                 .IsRequired();
 
             modelBuilder.Entity<Card>()

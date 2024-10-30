@@ -44,7 +44,7 @@ namespace BitPantry.Iota.Web
 
             builder.Services.Configure<RouteOptions>(opt =>
             {
-                opt.ConstraintMap.Add("enum", typeof(EnumRouteConstraint<Divider>));
+                opt.ConstraintMap.Add("enum", typeof(EnumRouteConstraint<Tab>));
             });
 
             var app = builder.Build();

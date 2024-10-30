@@ -17,7 +17,7 @@ public class CreateCardModel
 
     public List<SelectListItem> Bibles { get; set; }
 
-    public Divider? CardCreatedInDivider { get; set; }
+    public Tab? CardCreatedInTab { get; set; }
 
     public string Address
         => PassageAddress.GetString(

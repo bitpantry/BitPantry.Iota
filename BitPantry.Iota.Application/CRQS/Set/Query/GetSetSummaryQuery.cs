@@ -31,27 +31,27 @@ namespace BitPantry.Iota.Application.CRQS.Set.Query
                     .ThenInclude(b => b.Testament)
                     .ThenInclude(t => t.Bible)
                 .Where(c => c.UserId == request.UserId)
-                .GroupBy(c => c.Divider)
+                .GroupBy(c => c.Tab)
                 .ToListAsync();
 
             return new GetSetSummaryResponse(
-                    cards.SingleOrDefault(c => c.Key == Divider.Queue)?.Count() ?? 0,
-                    GetCardSummaryCardInfo(cards.FirstOrDefault(c => c.Key == Divider.Daily)),
-                    GetCardSummaryCardInfo(cards.FirstOrDefault(c => c.Key == Divider.Odd)),
-                    GetCardSummaryCardInfo(cards.FirstOrDefault(c => c.Key == Divider.Even)),
-                    GetCardSummaryCardInfo(cards.FirstOrDefault(c => c.Key == Divider.Sunday)),
-                    GetCardSummaryCardInfo(cards.FirstOrDefault(c => c.Key == Divider.Monday)),
-                    GetCardSummaryCardInfo(cards.FirstOrDefault(c => c.Key == Divider.Tuesday)),
-                    GetCardSummaryCardInfo(cards.FirstOrDefault(c => c.Key == Divider.Wednesday)),
-                    GetCardSummaryCardInfo(cards.FirstOrDefault(c => c.Key == Divider.Thursday)),
-                    GetCardSummaryCardInfo(cards.FirstOrDefault(c => c.Key == Divider.Friday)),
-                    GetCardSummaryCardInfo(cards.FirstOrDefault(c => c.Key == Divider.Saturday)),
-                    cards.Where(c => c.Key >= Divider.Day1 && c.Key <= Divider.Day31).Sum(c => c.Count())
+                    cards.SingleOrDefault(c => c.Key == Tab.Queue)?.Count() ?? 0,
+                    GetCardSummaryCardInfo(cards.FirstOrDefault(c => c.Key == Tab.Daily)),
+                    GetCardSummaryCardInfo(cards.FirstOrDefault(c => c.Key == Tab.Odd)),
+                    GetCardSummaryCardInfo(cards.FirstOrDefault(c => c.Key == Tab.Even)),
+                    GetCardSummaryCardInfo(cards.FirstOrDefault(c => c.Key == Tab.Sunday)),
+                    GetCardSummaryCardInfo(cards.FirstOrDefault(c => c.Key == Tab.Monday)),
+                    GetCardSummaryCardInfo(cards.FirstOrDefault(c => c.Key == Tab.Tuesday)),
+                    GetCardSummaryCardInfo(cards.FirstOrDefault(c => c.Key == Tab.Wednesday)),
+                    GetCardSummaryCardInfo(cards.FirstOrDefault(c => c.Key == Tab.Thursday)),
+                    GetCardSummaryCardInfo(cards.FirstOrDefault(c => c.Key == Tab.Friday)),
+                    GetCardSummaryCardInfo(cards.FirstOrDefault(c => c.Key == Tab.Saturday)),
+                    cards.Where(c => c.Key >= Tab.Day1 && c.Key <= Tab.Day31).Sum(c => c.Count())
                 );
 
         }
 
-        private CardSummaryInfo GetCardSummaryCardInfo(IGrouping<Divider, Data.Entity.Card> grouping)
+        private CardSummaryInfo GetCardSummaryCardInfo(IGrouping<Tab, Data.Entity.Card> grouping)
         {
             if (grouping == null)
                 return null;

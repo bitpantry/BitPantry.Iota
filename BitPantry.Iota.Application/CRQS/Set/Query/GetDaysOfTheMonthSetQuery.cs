@@ -23,13 +23,13 @@ namespace BitPantry.Iota.Application.CRQS.Set.Query
         {
             var cards = await _dbCtx.Cards.AsNoTracking()
                 .Where(c => c.UserId == request.UserId
-                    && c.Divider >= Divider.Day1 && c.Divider <= Divider.Day31)
-                .GroupBy(c => c.Divider)
+                    && c.Tab >= Tab.Day1 && c.Tab <= Tab.Day31)
+                .GroupBy(c => c.Tab)
                 .ToListAsync();
 
             var dayIndex = 0;
             var data = new Dictionary<int, int>();
-            for (var i = Divider.Day1; i <= Divider.Day31; i++)
+            for (var i = Tab.Day1; i <= Tab.Day31; i++)
             {
                 dayIndex++;
                 var grouping = cards.SingleOrDefault(c => c.Key == i);

@@ -26,7 +26,7 @@ namespace BitPantry.Iota.Application.CRQS.Card.Query
         {
             var resp = request.Id > 0
                 ? await _cardSvc.GetCard(_dbCtx, request.Id)
-                : await _cardSvc.GetCard(_dbCtx, request.UserId, request.Divider, request.Order);
+                : await _cardSvc.GetCard(_dbCtx, request.UserId, request.Tab, request.Order);
 
             _ = await _dbCtx.SaveChangesAsync();
 
@@ -46,7 +46,7 @@ namespace BitPantry.Iota.Application.CRQS.Card.Query
                 resp.AddedOn,
                 resp.LastMovedOn,
                 resp.LastReviewedOn,
-                resp.Divider,
+                resp.Tab,
                 resp.Order,
                 new Passage(
                     resp.Verses.First().Chapter.Book.Testament.Bible.Id,
@@ -65,15 +65,15 @@ namespace BitPantry.Iota.Application.CRQS.Card.Query
     {
         public long Id { get; }
         public long UserId { get; }
-        public Divider Divider { get; }
+        public Tab Tab { get; }
         public int Order { get; }
 
         public GetCardQuery(long id) => Id = id;
 
-        public GetCardQuery(long userId, Divider divider, int order)
+        public GetCardQuery(long userId, Tab tab, int order)
         {
             UserId = userId;
-            Divider = divider;
+            Tab = tab;
             Order = order;
         }
 
@@ -84,7 +84,7 @@ namespace BitPantry.Iota.Application.CRQS.Card.Query
         DateTime AddedOn,
         DateTime LastMovedOn,
         DateTime LastReviewedOn,
-        Divider Divider,
+        Tab Tab,
         int Order,
         Passage Passage);
 

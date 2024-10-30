@@ -4,5 +4,5 @@ using System.Net;
 
 namespace BitPantry.Iota.Web.Models
 {
-    public record SortableSetModel(string SetName, Divider Divider, List<SetCardModel> Cards, string BackAction, string CardBackUrl) { }
+    public record SortableSetModel(string SetName, Tab Tab, List<SetCardModel> Cards, string BackAction, string CardBackUrl) { }
 }

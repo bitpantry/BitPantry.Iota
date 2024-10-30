@@ -10,16 +10,16 @@ using System.Threading.Tasks;
 
 namespace BitPantry.Iota.Application.CRQS.Set.Query
 {
-	public class GetDividerSetQueryHandler : IRequestHandler<GetDividerSetQuery, List<CardSummaryInfo>>
+	public class GetTabSetQueryHandler : IRequestHandler<GetTabSetQuery, List<CardSummaryInfo>>
 	{
 		private EntityDataContext _dbCtx;
 
-		public GetDividerSetQueryHandler(EntityDataContext dbCtx)
+		public GetTabSetQueryHandler(EntityDataContext dbCtx)
 		{
 			_dbCtx = dbCtx;
 		}
 
-		public async Task<List<CardSummaryInfo>> Handle(GetDividerSetQuery request, CancellationToken cancellationToken)
+		public async Task<List<CardSummaryInfo>> Handle(GetTabSetQuery request, CancellationToken cancellationToken)
 		{
 			return await _dbCtx.Cards.AsNoTracking()
 				.Include(c => c.Verses)
@@ -27,13 +27,13 @@ namespace BitPantry.Iota.Application.CRQS.Set.Query
 					.ThenInclude(c => c.Book)
 					.ThenInclude(b => b.Testament)
 					.ThenInclude(t => t.Bible)
-				.Where(c => c.UserId == request.UserId && c.Divider == request.divider)
+				.Where(c => c.UserId == request.UserId && c.Tab == request.Tab)
 				.OrderBy(c => c.Order)
 				.Select(c => c.ToCardSummaryInfo())				
 				.ToListAsync();
 		}
 	}
 
-	public record GetDividerSetQuery(long UserId, Divider divider) : IRequest<List<CardSummaryInfo>>;
+	public record GetTabSetQuery(long UserId, Tab Tab) : IRequest<List<CardSummaryInfo>>;
 
 }

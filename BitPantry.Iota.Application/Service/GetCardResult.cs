@@ -13,7 +13,7 @@ namespace BitPantry.Iota.Application.Service
         DateTime AddedOn,
         DateTime LastMovedOn,
         DateTime LastReviewedOn,
-        Divider Divider,
+        Tab Tab,
         int Order,
         List<Verse> Verses)
     { }

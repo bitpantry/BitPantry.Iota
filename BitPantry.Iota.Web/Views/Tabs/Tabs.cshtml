@@ -1,0 +1,123 @@
+﻿@model TabsModel
+
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+@using BitPantry.Iota.Common;
+@using BitPantry.Iota.Web.Controllers;
+@using Humanizer
+
+<style>
+
+    .nav-link.active {
+        background-color: #e0f2ff; /* Lighter gray */
+        color: black; /* Adjust text color if needed */
+        border-radius: 5px; /* Rounded corners */
+        /* padding: 8px 12px; /* Optional: Add some padding for spacing */ */
+    }
+
+
+</style>
+
+@* ------- SET VARIABLES ------- *@
+
+@{
+    bool doShowNoDataAvailableMessage = false;
+
+    bool isWeekTabActive = Model.ActiveTab >= Tab.Sunday && Model.ActiveTab <= Tab.Saturday;
+    bool isMonthTabActive = Model.ActiveTab >= Tab.Day1 && Model.ActiveTab <= Tab.Day31;
+}
+
+@* ------- TOP LEVEL TABS ------- *@
+
+<ul class="nav nav-tabs nav-justified mt-3 w-100">
+    <li class="nav-item">
+        <a class="nav-link@(Model.ActiveTab == Tab.Queue ? " active" : "")" asp-action="tabs" asp-route-tab="@Tab.Queue">Queue</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link@(Model.ActiveTab == Tab.Daily ? " active" : "")" asp-action="tabs" asp-route-tab="@Tab.Daily">Daily</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link@(Model.ActiveTab == Tab.Odd ? " active" : "")" asp-action="tabs" asp-route-tab="@Tab.Odd">Odd</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link@(Model.ActiveTab == Tab.Even ? " active" : "")" asp-action="tabs" asp-route-tab="@Tab.Even">Even</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link@(isWeekTabActive ? " active" : "")" asp-action="tabs" asp-route-tab="@Tab.Sunday">Week</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link@(isMonthTabActive ? " active" : "")" asp-action="tabs" asp-route-tab="@Tab.Day1">Month</a>
+    </li>
+</ul>
+
+@* ------- DAYS OF THE WEEK ------- *@
+
+@if (isWeekTabActive)
+{
+    if (Model.WeekdaysWithData.Any())
+    {
+        <nav class="nav py-3" style="border-bottom: 1px solid #DEDEDE;">
+
+            @foreach (var day in Model.WeekdaysWithData)
+            {
+                <a class="nav-link@(day == Model.ActiveTab ? " active" : "")" asp-action="tabs" asp-route-tab="@day">@day.Humanize()</a>
+            }
+
+        </nav>
+    }
+    else
+    {
+        doShowNoDataAvailableMessage = true;
+    }
+}
+
+@* ------- DAYS OF THE MONTH ------- *@
+
+@if (isMonthTabActive)
+{
+    if (Model.DaysOfMonthWithData.Any())
+    {
+        <nav class="nav py-3" style="border-bottom: 1px solid #DEDEDE;">
+
+            @foreach (var day in Model.DaysOfMonthWithData)
+            {
+                <a class="nav-link@(day == Model.ActiveTab ? " active" : "")" asp-action="tabs" asp-route-tab="@day">@(((int)day) - (int)Tab.Saturday)</a>
+            }
+
+        </nav>
+    }
+    else
+    {
+        doShowNoDataAvailableMessage = true;
+    }
+}
+
+@* ------- SORTABLE SET ------- *@
+
+@if(Model.SortableSet != null)
+{
+    <div class="container">
+
+        <div class="row justify-content-center">
+            <div class="col-lg-4 col-md-6">
+                <ul id="cards" class="list-group">
+                    @foreach (var card in Model.SortableSet.Cards)
+                    {
+                        <li class="list-group-item" id="@card.CardId">
+                            <img src="~/drag.svg" alt="Icon" class="handle me-2" width="24" height="24" />
+                            <a asp-action="Index" asp-controller="Card" asp-route-id="@card.CardId" asp-route-backurl="@Url.Action(nameof(TabsController.Tabs), Model.ActiveTab)">@card.Text</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+    </div>
+}
+
+
+
+
+

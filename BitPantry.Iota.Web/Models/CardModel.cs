@@ -9,12 +9,12 @@ namespace BitPantry.Iota.Web.Models
         DateTime AddedOn,
         DateTime LastMovedOn,
         DateTime LastReviewedOn,
-        Divider Divider,
+        Tab Tab,
         int Order = 0,
         PassageModel Passage = null)
     {
 
-        public string DividerDescription => Divider.Humanize();
+        public string TabDescription => Tab.Humanize();
 
     }
 }
