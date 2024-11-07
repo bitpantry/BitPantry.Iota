@@ -24,22 +24,30 @@ namespace BitPantry.Iota.Data.Entity.Mapping
                 .IsRequired();
 
             modelBuilder.Entity<Card>()
-                .HasMany(c => c.Verses)
+                .Property(c => c.LastReviewedOn)
+                .IsRequired(false);
+
+            modelBuilder.Entity<Card>()
+                .Property(c => c.Address)
+                .IsRequired();
+
+            modelBuilder.Entity<Card>()
+                .HasOne<Bible>()
+                .WithMany() 
+                .HasForeignKey(card => card.BibleId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Card>()
+                .HasOne<Verse>()
                 .WithMany()
-                .UsingEntity<Dictionary<string, object>>(
-                    "CardVerse",
-                    j => j.HasOne<Verse>()
-                          .WithMany()
-                          .HasForeignKey("VerseId")
-                          .OnDelete(DeleteBehavior.Cascade),  // Cascade delete on Verse
-                    j => j.HasOne<Card>()
-                          .WithMany()
-                          .HasForeignKey("CardId")
-                          .OnDelete(DeleteBehavior.Cascade),  // Cascade delete on Card
-                    j =>
-                    {
-                        j.HasKey("CardId", "VerseId");
-                    });
+                .HasForeignKey(card => card.StartVerseId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Card>()
+                .HasOne<Verse>()
+                .WithMany()
+                .HasForeignKey(card => card.EndVerseId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Card>()
                 .Property(c => c.Tab)
@@ -49,10 +57,7 @@ namespace BitPantry.Iota.Data.Entity.Mapping
                 .Property(c => c.Order)
                 .IsRequired();
 
-            modelBuilder.Entity<Card>()
-                .Property(c => c.Thumbprint)
-                .IsRequired()
-                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Ignore); // Ignore Thumbprint when reading from the database
+
 
         }
     }

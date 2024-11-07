@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace BitPantry.Iota.Application.Parsers;
 
-public class BiblePassageAddress
+public class PassageAddressParser
 {
     public bool IsValid { get; private set; } = true;
     public string Book { get; private set; }
@@ -13,7 +13,7 @@ public class BiblePassageAddress
     public int ToVerseNumber { get; private set; }
 
 
-    public BiblePassageAddress(string addressString)
+    public PassageAddressParser(string addressString)
     {
         var regex = new Regex(@"^\s*(?<Book>\d?\s?[A-Za-z\.]+)\s*(?<Chapter>\d+):(?<StartVerse>\d+)\s*(?:-\s*(?<EndChapter>\d+):(?<EndVerse>\d+)|-\s*(?<EndVerseOnly>\d+))?\s*$");
         var match = regex.Match(addressString);
@@ -45,6 +45,4 @@ public class BiblePassageAddress
             }
         }
     }
-
-    
 }

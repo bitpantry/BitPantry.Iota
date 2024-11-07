@@ -12,7 +12,7 @@ namespace BitPantry.Iota.Application.CRQS.Bible.Command
 {
     public class InstallBibleCommandHandler : IRequestHandler<InstallBibleCommand, long>
     {
-        private EntityDataContext _dbCtx;
+        private readonly EntityDataContext _dbCtx;
 
         public InstallBibleCommandHandler(EntityDataContext dbCtx) { _dbCtx = dbCtx; }
 
@@ -20,7 +20,7 @@ namespace BitPantry.Iota.Application.CRQS.Bible.Command
         {
             var newBible = new DefaultXmlBibleDataParser().Parse(request.FilePathToBibleData);
             _dbCtx.Bibles.Add(newBible);
-            await _dbCtx.SaveChangesAsync();
+            await _dbCtx.SaveChangesAsync(cancellationToken);
 
             return newBible.Id;
         }

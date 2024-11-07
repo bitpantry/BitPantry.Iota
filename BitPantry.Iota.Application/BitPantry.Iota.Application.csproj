@@ -8,8 +8,11 @@
 
   <ItemGroup>
     <Compile Remove="CRQS\Identity\Common\**" />
+    <Compile Remove="CRQS\ReviewSession\Query\**" />
     <EmbeddedResource Remove="CRQS\Identity\Common\**" />
+    <EmbeddedResource Remove="CRQS\ReviewSession\Query\**" />
     <None Remove="CRQS\Identity\Common\**" />
+    <None Remove="CRQS\ReviewSession\Query\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,10 +24,6 @@
     <ProjectReference Include="..\BitPantry.Iota.Data.Entity\BitPantry.Iota.Data.Entity.csproj" />
     <ProjectReference Include="..\BitPantry.Iota.Infrastructure\BitPantry.Iota.Infrastructure.csproj" />
     <ProjectReference Include="..\BitPantry.Iota.Common\BitPantry.Iota.Common.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="CRQS\ReviewSession\Query\" />
   </ItemGroup>
 
 </Project>

@@ -6,9 +6,10 @@ namespace BitPantry.Iota.Web.Models
 {
     public record CardModel(
         long Id,
+        string Address,
         DateTime AddedOn,
         DateTime LastMovedOn,
-        DateTime LastReviewedOn,
+        DateTime? LastReviewedOn,
         Tab Tab,
         int Order = 0,
         PassageModel Passage = null)

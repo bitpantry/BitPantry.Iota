@@ -1,11 +1,11 @@
 ﻿using BitPantry.Iota.Application.CRQS.Bible.Query;
 using BitPantry.Iota.Application.CRQS.Card.Command;
 using BitPantry.Iota.Application.CRQS.Card.Query;
-using BitPantry.Iota.Application.CRQS.Set.Query;
 using BitPantry.Iota.Common;
 using BitPantry.Iota.Web.Models;
 using Humanizer;
 using MediatR;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel;
@@ -23,53 +23,21 @@ namespace BitPantry.Iota.Web.Controllers
             _userIdentity = userIdentity;
         }
 
-
-        public async Task<IActionResult> Index(long id, string backUrl)
+        [Route("card/{id:long}")]
+        public async Task<IActionResult> Maintenance(long id)
         {
-            var resp = await _med.Send(new GetCardQuery(id));
+            var card = await _med.Send(new GetCardQuery(id));
 
-            return View(new CardIndexModel(
-                new CardModel(
-                    resp.Id,
-                    resp.AddedOn,
-                    resp.LastMovedOn,
-                    resp.LastReviewedOn,
-                    resp.Tab,
-                    resp.Order,
-                    new PassageModel(
-                        resp.Passage.BibleId,
-                        resp.Passage.BookName,
-                        resp.Passage.FromChapterNumber,
-                        resp.Passage.FromVerseNumber,
-                        resp.Passage.ToChapterNumber,
-                        resp.Passage.ToVerseNumber,
-                        resp.Passage.Address,
-                        resp.Passage.Verses)
-                    ),
-                backUrl));
+            if (card == null)
+                return NotFound();
+
+            return View(card.ToModel());
         }
 
         public async Task<IActionResult> SelectNewTab(long id)
         {
-            var resp = await _med.Send(new GetCardQuery(id));
-
-            return View(new CardModel(
-                    resp.Id,
-                    resp.AddedOn,
-                    resp.LastMovedOn,
-                    resp.LastReviewedOn,
-                    resp.Tab,
-                    resp.Order,
-                    new PassageModel(
-                        resp.Passage.BibleId,
-                        resp.Passage.BookName,
-                        resp.Passage.FromChapterNumber,
-                        resp.Passage.FromVerseNumber,
-                        resp.Passage.ToChapterNumber,
-                        resp.Passage.ToVerseNumber,
-                        resp.Passage.Address,
-                        resp.Passage.Verses)
-                    ));
+            var resp = await _med.Send(new GetCardQuery(id) { IncludePassage = false });
+            return View(resp.ToModel());
         }
 
         public async Task<IActionResult> Create(string address, string passageAddress, long bibleId, string action)
@@ -83,16 +51,7 @@ namespace BitPantry.Iota.Web.Controllers
                     LastAction = action,
                     IsValidAddress = resp.IsValidAddress,
                     IsCardAlreadyCreated = resp.IsAlreadyCreated,
-                    Passage = resp.Passage == null ? null : new PassageModel
-                    {
-                        BibleId = resp.Passage.BibleId,
-                        BookName = resp.Passage.BookName,
-                        FromChapterNumber = resp.Passage.FromChapterNumber,
-                        FromVerseNumber = resp.Passage.FromVerseNumber,
-                        ToChapterNumber = resp.Passage.ToChapterNumber,
-                        ToVerseNumber = resp.Passage.ToVerseNumber,
-                        Verses = resp.Passage.Verses
-                    },
+                    Passage = resp.Passage?.ToModel(),
                     Bibles = await GetAvailableBibleTranslations()
                 });
             }
@@ -108,25 +67,15 @@ namespace BitPantry.Iota.Web.Controllers
         public async Task<IActionResult> Move(long id, Tab toTab)
         {
             await _med.Send(new MoveCardCommand(id, toTab));
-
-            var backUrl = Url.Action("Index", "Set");
-
-            if(toTab == Tab.Queue)
-                backUrl = Url.Action("Queue", "Set");
-            else if(Tab.Day1 <= toTab && toTab <= Tab.Day31)
-                backUrl = Url.Action("Day", "Set", new { Id = (int)toTab - (int)Tab.Day1 + 1 });
-
-
-            return await Index(id, backUrl);
+            return Route.RedirectTo<TabsController>(c => c.Tabs(toTab));      
         }
 
-        public async Task<IActionResult> Delete(long id, string returnUrl)
+        public async Task<IActionResult> Delete(long id)
         {
             await _med.Send(new DeleteCardCommand(id));
-            if(string.IsNullOrWhiteSpace(returnUrl))
-                return RedirectToAction("Index", "Home");
-            else
-                return Redirect(returnUrl);
+
+            var referer = Request.Headers.Referer.ToString();
+            return !string.IsNullOrEmpty(referer) ? Redirect(referer) : Route.RedirectTo<HomeController>(c => c.Index());
         }
 
         [HttpPost]

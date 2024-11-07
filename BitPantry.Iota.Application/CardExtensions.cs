@@ -1,29 +1,29 @@
-﻿using BitPantry.Iota.Application.CRQS.Set.Query;
+﻿using BitPantry.Iota.Application.DTO;
+using BitPantry.Iota.Data.Entity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BitPantry.Iota.Application
 {
 	public static class CardExtensions
 	{
-		public static CardSummaryInfo ToCardSummaryInfo(this Data.Entity.Card card)
-		{
-			var bible = card.Verses.First().Chapter.Book.Testament.Bible;
-			var book = card.Verses.First().Chapter.Book;
+		public static CardDto ToDto(this Card card, List<Verse> verses = null)
+			=> new(
+				card.Id,
+				card.Address,
+				card.AddedOn,
+				card.LastMovedOn,
+				card.LastReviewedOn,
+				card.Tab,
+				card.Order,
+				verses);
 
-			var address = PassageAddress.GetString(
-				BookNameDictionary.Get(bible.Classification)[book.Number].Name,
-				card.Verses.First().Chapter.Number,
-				card.Verses.First().Number,
-				card.Verses.Last().Chapter.Number,
-				card.Verses.Last().Number,
-				card.Verses.First().Chapter.Book.Testament.Bible.TranslationShortName
-				);
+		public static async Task<CardDto> ToDtoLoadVerses(this Card card, EntityDataContext dbCtx, CancellationToken cancellationToken)
+			=> card.ToDto(await dbCtx.Verses.ToListAsync(card.StartVerseId, card.EndVerseId, cancellationToken));
 
-			return new CardSummaryInfo(card.Id, address, card.Order);
-		}
 	}
 }

@@ -13,16 +13,15 @@ namespace BitPantry.Iota.Data.Entity
     {
         public long UserId { get; set; }
         public User User { get; set; }
-        public DateTime AddedOn { get; set; }
-        public DateTime LastMovedOn { get; set; }
-        public DateTime LastReviewedOn { get; set; }
-        public List<Verse> Verses { get; set; } 
+        public DateTime AddedOn { get; set; } = DateTime.UtcNow;
+        public DateTime LastMovedOn { get; set; } = DateTime.UtcNow;
+        public DateTime? LastReviewedOn { get; set; } = null;
+        public string Address { get; set; }
+        public long BibleId { get; set; }
+        public long StartVerseId { get; set; }
+        public long EndVerseId { get; set; }
         public Tab Tab { get; set; }
         public int Order { get; set; }
-
-        public string Thumbprint {
-            get { return Verses == null ? null : ThumbprintUtil.Generate(Verses.Select(v => v.Id).ToList()); }
-            set { _ = value; }
-        }
+        
     }
 }

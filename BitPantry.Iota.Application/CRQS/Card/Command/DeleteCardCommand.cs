@@ -8,73 +8,57 @@ using System.Text;
 using System.Threading.Tasks;
 using Dapper;
 using BitPantry.Iota.Common;
-using BitPantry.Iota.Application.Service;
+using System.Data.Common;
+using BitPantry.Iota.Application.Logic;
 
 namespace BitPantry.Iota.Application.CRQS.Card.Command
 {
     public class DeleteCardCommandHandler : IRequestHandler<DeleteCardCommand>
     {
         private EntityDataContext _dbCtx;
-        private CardService _cardSvc;
+        private CardLogic _cardLgc;
 
-        public DeleteCardCommandHandler(EntityDataContext dbCtx, CardService cardSvc)
+        public DeleteCardCommandHandler(EntityDataContext dbCtx, CardLogic cardLgc)
         {
             _dbCtx = dbCtx;
-            _cardSvc = cardSvc;
+            _cardLgc = cardLgc;
         }
 
         public async Task Handle(DeleteCardCommand request, CancellationToken cancellationToken)
         {
-            var dbConnection = _dbCtx.Database.GetDbConnection();
-
-            if (dbConnection.State == System.Data.ConnectionState.Closed)
-                dbConnection.Open();
-
-            using (var transaction = dbConnection.BeginTransaction())
+            await _dbCtx.UseConnection(async (conn, trans) =>
             {
-                try
-                {
-                    // Get the current order and tab of the card to be deleted
+                // Get the current order and tab of the card to be deleted
 
-                    var cardInfo = dbConnection.QuerySingleOrDefault<dynamic>(
-                        "SELECT [Order], UserId, Tab FROM Cards WHERE Id = @CardId",
-                        new { request.CardId },
-                        transaction: transaction);
+                var cardInfo = conn.QuerySingleOrDefault<dynamic>(
+                    "SELECT [Order], UserId, Tab FROM Cards WHERE Id = @CardId",
+                    new { request.CardId },
+                    transaction: trans);
 
-                    if (cardInfo == null)
-                        throw new Exception("Card not found.");
+                if (cardInfo == null)
+                    throw new Exception("Card not found.");
 
-                    int currentOrder = cardInfo.Order;
-                    int tab = cardInfo.Tab;
-                    long userId = cardInfo.UserId;
+                int currentOrder = cardInfo.Order;
+                int tab = cardInfo.Tab;
+                long userId = cardInfo.UserId;
 
-                    // Delete the card
-                    dbConnection.Execute(
-                        "DELETE FROM Cards WHERE Id = @CardId",
-                        new { request.CardId },
-                        transaction: transaction);
+                // Delete the card
+                conn.Execute(
+                    "DELETE FROM Cards WHERE Id = @CardId",
+                    new { request.CardId },
+                    transaction: trans);
 
-                    // Update the order of the remaining cards within the same tab
-                    dbConnection.Execute(
-                        "UPDATE Cards SET [Order] = [Order] - 1 WHERE Tab = @Tab AND UserId = @UserId AND [Order] > @CurrentOrder",
-                        new { Tab = tab, UserId = userId, CurrentOrder = currentOrder },
-                        transaction: transaction);
+                // Update the order of the remaining cards within the same tab
+                conn.Execute(
+                    "UPDATE Cards SET [Order] = [Order] - 1 WHERE Tab = @Tab AND UserId = @UserId AND [Order] > @CurrentOrder",
+                    new { Tab = tab, UserId = userId, CurrentOrder = currentOrder },
+                    transaction: trans);
 
-                    // if the card was in the daily tab, promote the next queued card
+                // if the card was in the daily tab, promote the next queued card
 
-                    if(tab == (int)Tab.Daily)
-                        _ = await _cardSvc.PromoteNextQueueCard(userId, dbConnection, transaction);
-
-                    // Commit the transaction
-                    transaction.Commit();
-                }
-                catch
-                {
-                    // Rollback the transaction in case of an error
-                    transaction.Rollback();
-                    throw;
-                }
-            }
+                if (tab == (int)Tab.Daily)
+                    _ = await _cardLgc.TryPromoteNextQueueCardCommand(conn, trans, userId);
+            });
         }
     }
 

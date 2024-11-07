@@ -21,5 +21,8 @@ public class CachedQueryable<T>
     }
 
     public async Task<List<T>> ToListAsync()
-        => await _cacheSvc.GetOrCreateAsync<List<T>>(_key, async () => await _query.ToListAsync(), _slidingExpiration);
+        => await _cacheSvc.GetOrCreateAsync(_key, async () => await _query.ToListAsync(), _slidingExpiration);
+
+    public async Task<T> SingleAsync()
+        => await _cacheSvc.GetOrCreateAsync(_key, async() => await _query.SingleAsync(), _slidingExpiration);
 }

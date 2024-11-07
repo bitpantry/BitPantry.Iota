@@ -1,84 +1,209 @@
 ﻿@using BitPantry.Iota.Common
 @using Humanizer
+@using BitPantry.Iota.Web
 
 @model CardModel
 
+@{
+    var backUrl = Context.Request.Headers.Referer.ToString();
+}
+
+<style>
+    .nav-link.active {
+        background-color: #C7E3D4;
+        color: black;
+        border-radius: 5px;
+    }
+
+        /* Styling only for main tabs */
+    .main-tabs .nav-link {
+        color: black !important; /* Always black text for main tabs */
+    }
+
+        .main-tabs .nav-link.active {
+            background-color: #C7E3D4 !important; /* Light blue background for active main tabs */
+            color: black !important; /* Ensure text remains black when active */
+            border-radius: 5px; /* Rounded corners for active tab */
+        }
+
+    /* Styling for active nested tabs */
+    .nav .nav-link.active {
+        background-color: #C7E3D4 !important; /* Light blue background for active nested tabs */
+        color: black !important; /* Ensure text remains black when active */
+    }
+</style>
 
 <div class="container">
-
+    <!-- Navigation and Header -->
     <div class="row justify-content-center mb-2">
-        <div class="col-6 d-flex align-items-center">
-            <a asp-controller="Card" asp-action="Index" asp-route-id="@Model.Id" class="btn btn-primary px-3">
-                Cancel
-            </a>
+        <div class="col-8 d-flex align-items-center">
+            <a href="@backUrl" class="btn btn-primary px-3">Cancel</a>
         </div>
-        <div class="col-6 d-flex justify-content-end">
-            <h1 class="font-weight-bold text-end text-md-end mb-0 me-3">@Model.Passage.Address</h1>
+        <div class="col-4 d-flex justify-content-end">
+            <ul class="nav nav-tabs nav-justified w-100">
+                <li class="nav-item">
+                    <a class="nav-link" style="background-color: #e0f2ff; color: black">@Model.Tab.Humanize()</a>
+                </li>
+            </ul>
         </div>
     </div>
 
     <div class="row mb-2 border-top"></div>
 
-    <div class="mt-3">
-        <partial name="_CardInfoTablePartial" model='@Model' />
+    <!-- Main Content -->
+    <div class="col-12 mt-5">
+        <h1 class="display-6">Select a new tab for @Model.Address</h1>
     </div>
 
-    <h4 class="mb-5">Select the tab to move this card to ...</h4>
-
-    <!-- QUEUE -->
-
-    @if(Model.Tab != Tab.Queue)
-    {
-        <div class="row mb-4">
-            <partial name="_SelectNewCardTabPartial" model='new { CardId = Model.Id, Tab = Tab.Queue, BackgroundColor = "var(--io-set-color-queue)" }' />
-        </div>
-    }
-
-    <!-- DAILY -->
-    @if (Model.Tab != Tab.Daily)
-    {
-        <div class="row mb-4">
-            <partial name="_SelectNewCardTabPartial" model='new { CardId = Model.Id, Tab = Tab.Daily, BackgroundColor = "var(--io-set-color-daily)" }' />
-        </div>
-    }
-
-    <!-- ODD / EVEN -->
-    
-    <div class="row mb-4">
-
-        @foreach (var tab in new Tab[] { Tab.Odd, Tab.Even }.Where(d => d != Model.Tab))
-        {
-            <partial name="_SelectNewCardTabPartial" model='new { CardId = Model.Id, Tab = tab, BackgroundColor = "var(--io-set-color-evenOdd)" }' />
-        }
-
-    </div>
-
-    <!-- DAYS OF THE WEEK -->
-
-    <div class="row mb-4">
-
-        @foreach (var tab in new Tab[] { Tab.Sunday, Tab.Monday, Tab.Tuesday, Tab.Wednesday, Tab.Thursday, Tab.Friday, Tab.Saturday }.Where(d => d != Model.Tab))
-        {
-            <partial name="_SelectNewCardTabPartial" model='new { CardId = Model.Id, Tab = tab, BackgroundColor = "var(--io-set-color-dow)" }' />
-        }
-
-    </div>
-
-    <!-- DAYS OF THE MONTH -->
-
-    <div class="row mb-4">
-
-        @{
-            var days = new List<Tab>();
-            for (var i = Tab.Day1; i <= Tab.Day31; i++)
-                days.Add(i);
-        }
-
-        @foreach (var tab in days.Where(d => d != Model.Tab))
-        {
-            <partial name="_SelectNewCardTabPartial" model='new { CardId = Model.Id, Tab = tab, BackgroundColor = "var(--io-set-color-dom)" }' />
-        }
-
-    </div>
+@*     <div class="mt-5 lead">
+        <strong>Select a new tab</strong>
+    </div> *@
 
 </div>
+
+    <!-- Main Tabs -->
+    <ul class="nav nav-tabs nav-justified mt-5 w-100 main-tabs">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="queueTab" data-bs-toggle="tab" data-bs-target="#queueTabContent" data-tab-info="@Tab.Queue" type="button" role="tab">Queue</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="dailyTab" data-bs-toggle="tab" data-bs-target="#dailyTabContent" data-tab-info="@Tab.Daily" type="button" role="tab">Daily</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="oddTab" data-bs-toggle="tab" data-bs-target="#oddTabContent" data-tab-info="@Tab.Odd" type="button" role="tab">Odd</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="evenTab" data-bs-toggle="tab" data-bs-target="#evenTabContent" data-tab-info="@Tab.Even" type="button" role="tab">Even</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="weekTab" data-bs-toggle="tab" data-bs-target="#weekTabContent" data-tab-info="Week" type="button" role="tab" aria-controls="weeklyTabContent">Week</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="monthTab" data-bs-toggle="tab" data-bs-target="#monthTabContent" data-tab-info="Month" type="button" role="tab" aria-controls="monthTabContent">Month</a>
+        </li>
+    </ul>
+
+    <!-- Tab Contents -->
+    <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade" id="weekTabContent" role="tabpanel" aria-labelledby="weekTab">
+            <nav class="nav py-3" style="border-bottom: 1px solid #DEDEDE;">
+                @foreach (var day in new[] { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" })
+                {
+                    <a id="@day.ToLower()Tab" class="nav-link" data-tab-info="@day" href="#">@day</a>
+                }
+            </nav>
+        </div>
+        <div class="tab-pane fade" id="monthTabContent" role="tabpanel" aria-labelledby="monthTab">
+            <nav class="nav py-3" style="border-bottom: 1px solid #DEDEDE;">
+                @for (int i = 1; i <= 31; i++)
+                {
+                    <a id="@($"day{i}Tab")" class="nav-link" data-tab-info="@($"Day{i}")" href="#">@i</a>
+                }
+            </nav>
+        </div>
+    </div>
+
+
+<div class="flex mt-4 justify-content-center">
+    <a id="moveToButton" class="btn btn-success w-100" href="/card/move?id=@Model.Id&totab=Queue">Move</a>
+</div>
+
+ <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const currentTab = "@Model.Tab"; // e.g., "Queue", "Daily", etc.
+        const cardId = @Model.Id;
+        let lastSelectedWeekTab = null;
+        let lastSelectedMonthTab = null;
+
+        // Convert PascalCase to camelCase for IDs
+        function toCamelCase(str) {
+            return str.charAt(0).toLowerCase() + str.slice(1);
+        }
+
+        // Update MoveToButton based on tab
+        function updateMoveToButton(forTab) {
+            const button = document.getElementById("moveToButton");
+            //button.innerText = `Move to ${forTab.replace("Day", "Day ")} Tab`;
+            button.href = `/card/move?id=${cardId}&totab=${forTab}`;
+        }
+
+        // Remove current tab and its content
+        function removeTab(tabId, contentId) {
+            const tab = document.getElementById(tabId);
+            const content = document.getElementById(contentId);
+
+            if (tab?.parentNode.tagName === "LI") 
+            {
+                tab.parentNode.remove();
+            }
+            else
+            {
+                tab.remove();
+            }
+
+            if (content) content.remove();
+        }
+
+        // Show or hide nested tab content for Week or Month
+        function toggleNestedTabContent(showWeek, showMonth) {
+            document.getElementById('weekTabContent').style.display = showWeek ? 'block' : 'none';
+            document.getElementById('monthTabContent').style.display = showMonth ? 'block' : 'none';
+        }
+
+        // Remove the current main tab based on `currentTab`
+        const tabId = toCamelCase(currentTab) + "Tab";
+        const contentId = toCamelCase(currentTab) + "Content";
+        removeTab(tabId, contentId);
+
+        // Main Tab Event Listeners
+        document.querySelectorAll('ul.nav-tabs a[data-bs-toggle="tab"]').forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function (event) {
+                const tabInfo = event.target.getAttribute('data-tab-info');
+
+                // Show nested tabs for the Week or Month main tab, otherwise hide them
+                if (tabInfo === "Week") {
+                    toggleNestedTabContent(true, false);
+                    const activeNestedTab = lastSelectedWeekTab || document.querySelector('#weekTabContent .nav-link');
+                    if (activeNestedTab) activateNestedTab(activeNestedTab);
+                    lastSelectedWeekTab = activeNestedTab;
+                    updateMoveToButton(activeNestedTab ? activeNestedTab.getAttribute('data-tab-info') : tabInfo);
+                } else if (tabInfo === "Month") {
+                    toggleNestedTabContent(false, true);
+                    const activeNestedTab = lastSelectedMonthTab || document.querySelector('#monthTabContent .nav-link');
+                    if (activeNestedTab) activateNestedTab(activeNestedTab);
+                    lastSelectedMonthTab = activeNestedTab;
+                    updateMoveToButton(activeNestedTab ? activeNestedTab.getAttribute('data-tab-info') : tabInfo);
+                } else {
+                    toggleNestedTabContent(false, false);
+                    updateMoveToButton(tabInfo);
+                }
+            });
+        });
+
+        // Activate a nested tab within a content area
+        function activateNestedTab(nestedTab) {
+            nestedTab.closest(".nav").querySelectorAll(".nav-link").forEach(link => link.classList.remove("active"));
+            nestedTab.classList.add("active");
+        }
+
+        // Nested Tab Event Listeners for Week and Month
+        document.querySelectorAll('#weekTabContent .nav-link, #monthTabContent .nav-link').forEach(tab => {
+            tab.addEventListener('click', function (event) {
+                event.preventDefault();
+                const tabInfo = event.target.getAttribute('data-tab-info');
+
+                // Track the last selected nested tab for Week or Month
+                if (event.target.closest('#weekTabContent')) lastSelectedWeekTab = tab;
+                else if (event.target.closest('#monthTabContent')) lastSelectedMonthTab = tab;
+
+                activateNestedTab(tab);
+                updateMoveToButton(tabInfo);
+            });
+        });
+
+        // Activate the first available tab
+        const firstTab = document.getElementById("queueTab") || document.getElementById("dailyTab");
+        if (firstTab) new bootstrap.Tab(firstTab).show();
+    });
+</script>
+

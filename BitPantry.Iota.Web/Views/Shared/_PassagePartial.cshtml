@@ -1,0 +1,28 @@
+﻿@model PassageModel
+
+<div class="row">
+    <div class="col-12">
+
+        @{
+            var chapterIndex = 0; 
+        }
+
+        @foreach (var chapter in Model.Verses)
+        {
+            chapterIndex++;
+
+            <p>
+                @if(chapterIndex > 1)
+                {
+                    <strong>@chapter.Key</strong>
+                }
+
+                @foreach (var verse in chapter.Value)
+                {
+                    <span><sup><strong>@verse.Key</strong></sup> @verse.Value </span>
+                }
+
+            </p>
+        }
+    </div>
+</div>

@@ -1,4 +1,4 @@
-﻿using BitPantry.Iota.Application.Service;
+﻿using BitPantry.Iota.Application.Logic;
 using BitPantry.Iota.Common;
 using BitPantry.Iota.Infrastructure.Settings;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,9 +26,9 @@ namespace BitPantry.Iota.Application.IoC
 
             // services
 
-            services.AddScoped<BibleService>();
-            services.AddScoped<CardService>();
-            services.AddScoped<ReviewService>();
+            services.AddScoped<PassageLogic>();
+            services.AddScoped<CardLogic>();
+            services.AddScoped<ReviewLogic>();
 
             // components
 

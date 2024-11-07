@@ -21,24 +21,7 @@ namespace BitPantry.Iota.Application.CRQS.Card.Command
 
         public async Task Handle(DeleteAllCardsCommand request, CancellationToken cancellationToken)
         {
-            var dbConnection = _dbCtx.Database.GetDbConnection();
-
-            if (dbConnection.State != System.Data.ConnectionState.Open)
-                dbConnection.Open();
-
-            using (var transaction = dbConnection.BeginTransaction())
-            {
-                try 
-                {
-                    await dbConnection.ExecuteAsync("DELETE FROM Cards", transaction: transaction);
-                    transaction.Commit();
-                }
-                catch
-                {
-                    transaction.Rollback();
-                    throw;
-                }
-            }
+            await _dbCtx.UseConnection(async (conn, trans) => await conn.ExecuteAsync("DELETE FROM Cards", transaction: trans));
         }
     }
 

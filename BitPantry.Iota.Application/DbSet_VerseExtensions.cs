@@ -25,13 +25,13 @@ namespace BitPantry.Iota.Application
         }
 
         public async static Task<List<Verse>> ToListWithCacheAsync(
-            this DbSet<Verse> dbSet, 
-            CacheService cache, 
-            long bibleId, 
-            int bookNumber, 
-            int fromChapterNumber, 
-            int fromVerseNumber, 
-            int toChapterNumber, 
+            this DbSet<Verse> dbSet,
+            CacheService cache,
+            long bibleId,
+            int bookNumber,
+            int fromChapterNumber,
+            int fromVerseNumber,
+            int toChapterNumber,
             int toVerseNumber)
         {
             return await BuildGetPassageQuery(dbSet, bibleId, bookNumber, fromChapterNumber, fromVerseNumber, toChapterNumber, toVerseNumber)
@@ -41,12 +41,12 @@ namespace BitPantry.Iota.Application
         }
 
         private static IQueryable<Verse> BuildGetPassageQuery(
-            this DbSet<Verse> dbSet, 
-            long bibleId, 
-            int bookNumber, 
-            int fromChapterNumber, 
-            int fromVerseNumber, 
-            int toChapterNumber, 
+            this DbSet<Verse> dbSet,
+            long bibleId,
+            int bookNumber,
+            int fromChapterNumber,
+            int fromVerseNumber,
+            int toChapterNumber,
             int toVerseNumber)
         {
             return dbSet.Where(v =>
@@ -59,8 +59,24 @@ namespace BitPantry.Iota.Application
                     (v.Chapter.Number > fromChapterNumber && v.Chapter.Number < toChapterNumber) // Verses in chapters between fromChapterNumber and toChapterNumber
                 ))
                 .Include(v => v.Chapter)
-                .OrderBy(v => v.Chapter.Number)
-                .ThenBy(v => v.Number);
+                .ThenInclude(c => c.Book)
+                .ThenInclude(b => b.Testament)
+                .ThenInclude(t => t.Bible)
+                .OrderBy(v => v.Id);
+        }
+
+        public static async Task<List<Verse>> ToListAsync(this DbSet<Verse> verses, long startVerseId, long endVerseId, CancellationToken cancellationToken, bool asNoTracking = true)
+        {
+            var query = asNoTracking ? verses.AsNoTracking() : verses;
+
+            return await query
+                .Include(v => v.Chapter)
+                .ThenInclude(c => c.Book)
+                .ThenInclude(b => b.Testament)
+                .ThenInclude(t => t.Bible)
+                .Where(v => v.Id >= startVerseId && v.Id <= endVerseId)
+                .OrderBy(v => v.Id)
+                .ToListAsync(cancellationToken);
         }
     }
 }

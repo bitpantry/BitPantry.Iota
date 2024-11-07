@@ -29,7 +29,7 @@ namespace BitPantry.Iota.Application.CRQS.Card.Command
 
             card.LastReviewedOn = DateTime.UtcNow;
 
-            await _dbCtx.SaveChangesAsync();
+            await _dbCtx.SaveChangesAsync(cancellationToken);
         }
     }
 

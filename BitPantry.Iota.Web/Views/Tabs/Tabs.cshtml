@@ -10,12 +10,24 @@
 
 <style>
 
-    .nav-link.active {
-        background-color: #e0f2ff; /* Lighter gray */
-        color: black; /* Adjust text color if needed */
-        border-radius: 5px; /* Rounded corners */
-        /* padding: 8px 12px; /* Optional: Add some padding for spacing */ */
+    /* Styling only for main tabs */
+    .main-tabs .nav-link {
+        color: black !important; /* Always black text for main tabs */
     }
+
+        .main-tabs .nav-link.active {
+            background-color: #e0f2ff !important; /* Light blue background for active main tabs */
+            color: black !important; /* Ensure text remains black when active */
+            border-radius: 5px; /* Rounded corners for active tab */
+        }
+
+    /* Styling for active nested tabs */
+    .nav .nav-link.active {
+        background-color: #e0f2ff !important; /* Light blue background for active nested tabs */
+        color: black !important; /* Ensure text remains black when active */
+    }
+
+
 
 
 </style>
@@ -23,15 +35,13 @@
 @* ------- SET VARIABLES ------- *@
 
 @{
-    bool doShowNoDataAvailableMessage = false;
-
     bool isWeekTabActive = Model.ActiveTab >= Tab.Sunday && Model.ActiveTab <= Tab.Saturday;
     bool isMonthTabActive = Model.ActiveTab >= Tab.Day1 && Model.ActiveTab <= Tab.Day31;
 }
 
 @* ------- TOP LEVEL TABS ------- *@
 
-<ul class="nav nav-tabs nav-justified mt-3 w-100">
+<ul class="nav nav-tabs nav-justified mt-3 w-100 main-tabs">
     <li class="nav-item">
         <a class="nav-link@(Model.ActiveTab == Tab.Queue ? " active" : "")" asp-action="tabs" asp-route-tab="@Tab.Queue">Queue</a>
     </li>
@@ -52,6 +62,7 @@
     </li>
 </ul>
 
+
 @* ------- DAYS OF THE WEEK ------- *@
 
 @if (isWeekTabActive)
@@ -66,10 +77,6 @@
             }
 
         </nav>
-    }
-    else
-    {
-        doShowNoDataAvailableMessage = true;
     }
 }
 
@@ -88,26 +95,22 @@
 
         </nav>
     }
-    else
-    {
-        doShowNoDataAvailableMessage = true;
-    }
 }
 
 @* ------- SORTABLE SET ------- *@
 
-@if(Model.SortableSet != null)
+@if(Model.Cards.Count() > 1)
 {
-    <div class="container">
+    <div class="container mt-4">
 
         <div class="row justify-content-center">
-            <div class="col-lg-4 col-md-6">
-                <ul id="cards" class="list-group">
-                    @foreach (var card in Model.SortableSet.Cards)
+            <div class="col-md-10 col-lg-8 col-xl-8">
+                <ul id="cardsList" class="list-group">
+                    @foreach (var card in Model.Cards)
                     {
-                        <li class="list-group-item" id="@card.CardId">
+                        <li class="list-group-item" id="@card.Id">
                             <img src="~/drag.svg" alt="Icon" class="handle me-2" width="24" height="24" />
-                            <a asp-action="Index" asp-controller="Card" asp-route-id="@card.CardId" asp-route-backurl="@Url.Action(nameof(TabsController.Tabs), Model.ActiveTab)">@card.Text</a>
+                            <a asp-action="Maintenance" asp-controller="Card" asp-route-id="@card.Id">@card.Address</a>
                         </li>
                     }
                 </ul>
@@ -115,6 +118,53 @@
         </div>
 
     </div>
+
+    @section Scripts {
+        <script src="https://cdn.jsdelivr.net/gh/RubaXa/Sortable/Sortable.min.js"></script>
+        <script>
+            var el = document.getElementById('cardsList');
+            var sortable = Sortable.create(el, {
+                animation: 175,
+                onEnd: function(evt) {
+
+                    var itemEl = evt.item;
+
+                    var cardId = parseInt(itemEl.getAttribute('id'));
+                    var newOrder = evt.newIndex + 1;
+
+                    var body = JSON.stringify({
+                        cardId: cardId,
+                        newOrder: newOrder,
+                        tab: '@Model.ActiveTab'
+                    });
+
+                    fetch('/Card/Reorder', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: body
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log('Order updated successfully');
+                        } else {
+                            console.error('Failed to update order');
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                }
+            });
+        </script>
+    }
+
+} 
+else if(Model.Cards.Count == 1) @* ------- SINGLE CARD ------- *@
+{
+    <partial name="_CardMaintenancePartial" model='@Model.Cards.First()' />
+}
+else
+{
+    <div class="container mt-4 display-6">No cards found</div>
 }
 
 

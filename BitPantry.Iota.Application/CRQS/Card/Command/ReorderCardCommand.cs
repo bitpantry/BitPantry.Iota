@@ -9,22 +9,25 @@ using System.Text;
 using System.Threading.Tasks;
 using Dapper;
 using BitPantry.Iota.Common;
-using BitPantry.Iota.Application.Service;
+using BitPantry.Iota.Application.Logic;
 
 namespace BitPantry.Iota.Application.CRQS.Card.Command
 {
     public class ReorderCardCommandHandler : IRequestHandler<ReorderCardCommand>
     {
-        private CardService _cardSvc;
+        private EntityDataContext _dbCtx;
+        private CardLogic _cardLgc;
 
-        public ReorderCardCommandHandler(CardService cardSvc)
+        public ReorderCardCommandHandler(EntityDataContext dbCtx, CardLogic cardLgc)
         {
-            _cardSvc = cardSvc;
+            _dbCtx = dbCtx;
+            _cardLgc = cardLgc;
         }
 
         public async Task Handle(ReorderCardCommand request, CancellationToken cancellationToken)
         {
-            await _cardSvc.ReorderCard(request.UserId, request.CardId, request.Tab, request.NewOrder);
+            await _dbCtx.UseConnection(async (conn, trans) 
+                => await _cardLgc.ReorderCardCommand(conn, trans, request.UserId, request.CardId, request.Tab, request.NewOrder));
         }
     }
 

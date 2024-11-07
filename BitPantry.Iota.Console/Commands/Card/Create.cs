@@ -1,4 +1,5 @@
 ﻿using BitPantry.CommandLine.API;
+using BitPantry.Iota.Application.CRQS.Bible.Query;
 using BitPantry.Iota.Common;
 using BitPantry.Iota.Data.Entity;
 using MediatR;
@@ -52,8 +53,10 @@ namespace BitPantry.Iota.Console.Commands.Card
 
             if (BibleId == 0)
             {
-                Error.WriteLine("BibleId is required");
-                isError = true;
+                var biblesResp = await _med.Send(new GetBibleTranslationsQuery());
+                var firstTranslation = biblesResp.Translations.First();
+                Info.WriteLine($"Using translation {firstTranslation.LongName}");
+                BibleId = firstTranslation.Id;
             }
 
             if (string.IsNullOrEmpty(Address))

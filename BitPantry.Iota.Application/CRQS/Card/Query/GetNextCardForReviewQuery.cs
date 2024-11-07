@@ -1,4 +1,5 @@
-﻿using BitPantry.Iota.Application.Service;
+﻿using BitPantry.Iota.Application.DTO;
+using BitPantry.Iota.Application.Logic;
 using BitPantry.Iota.Common;
 using BitPantry.Iota.Data.Entity;
 using MediatR;
@@ -11,45 +12,25 @@ using System.Threading.Tasks;
 namespace BitPantry.Iota.Application.CRQS.Card.Query
 {
 
-    public class GetNextCardForReviewQueryHandler : IRequestHandler<GetNextCardForReviewQuery, GetNextCardForReviewQueryResponse>
+    public class GetNextCardForReviewQueryHandler : IRequestHandler<GetNextCardForReviewQuery, CardDto>
     {
         private EntityDataContext _dbCtx;
-        private ReviewService _revSvc;
+        private ReviewLogic _revLgc;
 
-        public GetNextCardForReviewQueryHandler(EntityDataContext dbCtx, ReviewService revSvc)
+        public GetNextCardForReviewQueryHandler(EntityDataContext dbCtx, ReviewLogic revLgc)
         {
             _dbCtx = dbCtx;
-            _revSvc = revSvc;
+            _revLgc = revLgc;
         }
 
-        public async Task<GetNextCardForReviewQueryResponse> Handle(GetNextCardForReviewQuery request, CancellationToken cancellationToken)
+        public async Task<CardDto> Handle(GetNextCardForReviewQuery request, CancellationToken cancellationToken)
         {
-            var resp = await _revSvc.GetNextCardForReview(_dbCtx, request.UserId, request.CurrentTab, request.CurrentCardOrder);
-
-            if(resp == null)
-                return null;
-
-            _ = await _dbCtx.SaveChangesAsync();
-
-            return new GetNextCardForReviewQueryResponse
-            (
-                resp.Id,
-                resp.AddedOn,
-                resp.LastMovedOn,
-                resp.LastReviewedOn,
-                resp.Tab,
-                resp.Order);
+            var card = await _revLgc.GetNextCardForReviewCommand(_dbCtx, request.UserId, request.CurrentTab, request.CurrentCardOrder);
+            await _dbCtx.SaveChangesAsync();
+            return card;
         }
     }
 
-    public record GetNextCardForReviewQuery(long UserId, Tab? CurrentTab = null, int CurrentCardOrder = 1) : IRequest<GetNextCardForReviewQueryResponse> { }
+    public record GetNextCardForReviewQuery(long UserId, Tab? CurrentTab = null, int CurrentCardOrder = 1) : IRequest<CardDto> { }
 
-    public record GetNextCardForReviewQueryResponse(
-        long Id,
-        DateTime AddedOn,
-        DateTime LastMovedOn,
-        DateTime LastReviewedOn,
-        Tab Tab,
-        int Order)
-    { }
 }

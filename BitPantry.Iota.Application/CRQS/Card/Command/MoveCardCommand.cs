@@ -10,22 +10,24 @@ using System.Threading.Tasks;
 using Dapper;
 using Azure.Core;
 using System.Data.Common;
-using BitPantry.Iota.Application.Service;
+using BitPantry.Iota.Application.Logic;
 
 namespace BitPantry.Iota.Application.CRQS.Card.Command
 {
     public class MoveCardCommandHandler : IRequestHandler<MoveCardCommand>
     {
-        private readonly CardService _cardSvc;
+        private readonly EntityDataContext _dbCtx;
+        private readonly CardLogic _cardLgc;
 
-        public MoveCardCommandHandler(CardService cardSvc)
+        public MoveCardCommandHandler(EntityDataContext dbCtx, CardLogic cardLgc)
         {
-            _cardSvc = cardSvc;
+            _dbCtx = dbCtx;
+            _cardLgc = cardLgc;
         }
 
         public async Task Handle(MoveCardCommand request, CancellationToken cancellationToken)
         {
-            await _cardSvc.MoveCard(request.CardId, request.NewTab);
+            await _dbCtx.UseConnection(async (conn, trans) => await _cardLgc.MoveCardCommand(conn, trans, request.CardId, request.NewTab));
         }
     }
 

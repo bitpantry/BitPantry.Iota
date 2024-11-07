@@ -1,11 +1,13 @@
-﻿using BitPantry.Iota.Data.Entity;
+﻿using BitPantry.Iota.Application.DTO;
+using BitPantry.Iota.Common;
+using BitPantry.Iota.Data.Entity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BitPantry.Iota.Application.Service
+namespace BitPantry.Iota.Application.Logic
 {
     public enum GetPassageResultCode : int
     {
@@ -18,7 +20,6 @@ namespace BitPantry.Iota.Application.Service
     {
         public GetPassageResultCode Code { get; set; }
         public PassageDto Passage { get; set; }
-
     }
 
     

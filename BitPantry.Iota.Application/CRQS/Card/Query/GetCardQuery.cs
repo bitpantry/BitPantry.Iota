@@ -1,4 +1,5 @@
-﻿using BitPantry.Iota.Application.Service;
+﻿using BitPantry.Iota.Application.DTO;
+using BitPantry.Iota.Application.Logic;
 using BitPantry.Iota.Common;
 using BitPantry.Iota.Data.Entity;
 using MediatR;
@@ -11,57 +12,45 @@ using System.Threading.Tasks;
 
 namespace BitPantry.Iota.Application.CRQS.Card.Query
 {
-    public class GetCardQueryHandler : IRequestHandler<GetCardQuery, GetCardQueryResponse>
+    public class GetCardQueryHandler : IRequestHandler<GetCardQuery, CardDto>
     {
         private EntityDataContext _dbCtx;
-        private CardService _cardSvc;
+        private CardLogic _cardLgc;
 
-        public GetCardQueryHandler(EntityDataContext dbCtx, CardService cardSvc)
+        public GetCardQueryHandler(EntityDataContext dbCtx, CardLogic cardLgc)
         {
             _dbCtx = dbCtx;
-            _cardSvc = cardSvc;
+            _cardLgc = cardLgc;
         }
 
-        public async Task<GetCardQueryResponse> Handle(GetCardQuery request, CancellationToken cancellationToken)
+        public async Task<CardDto> Handle(GetCardQuery request, CancellationToken cancellationToken)
         {
-            var resp = request.Id > 0
-                ? await _cardSvc.GetCard(_dbCtx, request.Id)
-                : await _cardSvc.GetCard(_dbCtx, request.UserId, request.Tab, request.Order);
+            // get card
 
-            _ = await _dbCtx.SaveChangesAsync();
+            var query = _dbCtx.Cards
+                .AsNoTracking();
 
-            // get bible
+            if (request.Id > 0)
+                query = query.Where(c => c.Id == request.Id);
+            else
+                query = query.Where(c => c.UserId == request.UserId && c.Tab == request.Tab && c.Order == request.Order);
 
-            var bible = resp.Verses.First().Chapter.Book.Testament.Bible;
+            var card = await query.SingleOrDefaultAsync();
 
-            // resolve book name
+            if (card == null)
+                return null;
 
-            var bookName = BookNameDictionary.Get(
-                bible.Classification,
-                resp.Verses.First().Chapter.Book.Number);
+            // get verses
 
-            return new GetCardQueryResponse
-            (
-                resp.Id,
-                resp.AddedOn,
-                resp.LastMovedOn,
-                resp.LastReviewedOn,
-                resp.Tab,
-                resp.Order,
-                new Passage(
-                    resp.Verses.First().Chapter.Book.Testament.Bible.Id,
-                    bookName.Value.Name,
-                    resp.Verses.First().Chapter.Number,
-                    resp.Verses.First().Number,
-                    resp.Verses.Last().Chapter.Number,
-                    resp.Verses.Last().Number,
-                    resp.Verses.ToVerseDictionary()
-                    )
-            );
+            var verses = request.IncludePassage ? await _dbCtx.Verses.ToListAsync(card.StartVerseId, card.EndVerseId, cancellationToken) : null;
+
+            // return card dto
+
+            return card.ToDto(verses);
         }
     }
 
-    public class GetCardQuery : IRequest<GetCardQueryResponse> 
+    public class GetCardQuery : IRequest<CardDto> 
     {
         public long Id { get; }
         public long UserId { get; }
@@ -69,6 +58,8 @@ namespace BitPantry.Iota.Application.CRQS.Card.Query
         public int Order { get; }
 
         public GetCardQuery(long id) => Id = id;
+
+        public bool IncludePassage { get; set; } = true;
 
         public GetCardQuery(long userId, Tab tab, int order)
         {
@@ -78,14 +69,4 @@ namespace BitPantry.Iota.Application.CRQS.Card.Query
         }
 
     }
-
-    public record GetCardQueryResponse(
-        long Id, 
-        DateTime AddedOn,
-        DateTime LastMovedOn,
-        DateTime LastReviewedOn,
-        Tab Tab,
-        int Order,
-        Passage Passage);
-
 }

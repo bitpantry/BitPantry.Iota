@@ -21,35 +21,53 @@ namespace BitPantry.Iota.Web.Controllers
 
         [Route("tabs")]
         public async Task<IActionResult> Index()
-            => await Tabs(Common.Tab.Queue);
+            => await Tabs(Tab.Queue);
 
-        [Route("tab/{tab:enum}")]
+        [Route("tabs/{tab:enum}")]
         public async Task<IActionResult> Tabs(Tab tab)
         {
             var counts = await _med.Send(new GetTabCardCountsQuery(_identity.UserId));
+
+            // find a tab with data to set as active
+
+            if (tab == Tab.Sunday)
+                tab = GetNextSubTabWithData([Tab.Sunday, Tab.Monday, Tab.Tuesday, Tab.Wednesday, Tab.Thursday, Tab.Friday, Tab.Saturday], counts);
+
+            if (tab == Tab.Day1)
+                tab = GetNextSubTabWithData(
+                        Enum.GetValues(typeof(Tab))
+                            .Cast<Tab>()
+                            .Where(t => t >= Tab.Day1 && t <= Tab.Day31)
+                            .ToArray(),
+                        counts);
+
+            // query cards
+
+            var cards = await _med.Send(new GetCardsForTabQuery(_identity.UserId, tab));
+
+            // build model
 
             var model = new TabsModel
             {
                 ActiveTab = tab,
                 WeekdaysWithData = counts.Keys.Where(d => d >= Common.Tab.Sunday && d <= Common.Tab.Saturday).ToArray(),
-                DaysOfMonthWithData = counts.Keys.Where(d => d > Common.Tab.Saturday).ToArray()
+                DaysOfMonthWithData = counts.Keys.Where(d => d > Common.Tab.Saturday).ToArray(),
+                Cards = cards.Select(c => c.ToModel()).ToList()
             };
 
-            //if(tab > Common.Tab.Saturday)
-            //{
-            //    var cards = await _med.Send(new GetCardsForTabQuery(_identity.UserId, tab));
-
-            //    // todo - in this new model, all I need is the id and the passage address (card.text in view)
-            //    // so, need to rewrite the get query to not be so complex and the model can be signficantly simplified
-
-            //    // todo - move the GetDividerCardCountsQuery to Cards as rename to GetCardCountByDividerQuery
-                
-            //    if(cards.Any())
-            //        model.SortableSet = cards
-            //    new SortableSetModel(dayDivider.Humanize(), dayDivider, resp.Select(i => new SetCardModel(i.CardId, i.Address, i.Order)).ToList(), "Month", Url.Action("Day", "Set", new { Id = id })));
-            //}
 
             return View(nameof(Tabs), model);
+        }
+
+        private Tab GetNextSubTabWithData(Tab[] subTabs, Dictionary<Tab, int> tabsWithData)
+        {
+            foreach (var tab in subTabs)
+            {
+                if (tabsWithData.ContainsKey(tab))
+                    return tab;
+            }
+
+            return subTabs.First();
         }
     }
 }

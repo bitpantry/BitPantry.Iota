@@ -1,6 +1,6 @@
 ﻿using BitPantry.Iota.Application.CRQS.Bible.Query;
+using BitPantry.Iota.Application.Logic;
 using BitPantry.Iota.Application.Parsers;
-using BitPantry.Iota.Application.Service;
 using BitPantry.Iota.Common;
 using BitPantry.Iota.Data.Entity;
 using BitPantry.Iota.Infrastructure.Caching;
@@ -18,58 +18,58 @@ namespace BitPantry.Iota.Application.CRQS.Card.Command
     public class CreateCardCommandHandler : IRequestHandler<CreateCardCommand, CreateCardCommandResponse>
     {
         private EntityDataContext _dbCtx;
-        private BibleService _bibleSvc;
+        private PassageLogic _bibleLgc;
 
-        public CreateCardCommandHandler(EntityDataContext dbCtx, BibleService bibleSvc)
+        public CreateCardCommandHandler(EntityDataContext dbCtx, PassageLogic bibleLgc)
         {
             _dbCtx = dbCtx;
-            _bibleSvc = bibleSvc;
+            _bibleLgc = bibleLgc;
         }
 
         public async Task<CreateCardCommandResponse> Handle(CreateCardCommand request, CancellationToken cancellationToken)
         {
             // read the passage data
 
-            var result = await _bibleSvc.GetPassage(request.BibleId, request.Address);
+            var result = await _bibleLgc.GetPassageQuery(_dbCtx, request.BibleId, request.Address);
 
             if (result.Code != GetPassageResultCode.Ok)
-                return new CreateCardCommandResponse(false, false, 0);
+                return new CreateCardCommandResponse();
 
             // see if the user already has this card created
 
-            var thumbprint = ThumbprintUtil.Generate(result.Passage.Verses.Select(v => v.Id).ToList());
-            if (await _dbCtx.Cards.AnyAsync(c => c.Thumbprint.Equals(thumbprint) && c.UserId == request.UserId))
-                return new CreateCardCommandResponse(true, true, 0);
+            if (await _dbCtx.Cards.AnyAsync(c => c.Address.Equals(result.Passage.GetAddressString(false)) && c.UserId == request.UserId, cancellationToken: cancellationToken))
+                return new CreateCardCommandResponse(true, true);
 
             // does the user have a daily card? If so, create in queue, otherwise create daily card
 
-            var div = request.ToDividier;
+            var tab = request.ToTab;
 
-            if(!div.HasValue)
-                div = await _dbCtx.Cards.AnyAsync(c => c.UserId == request.UserId && c.Tab == Tab.Daily)
+            if(!tab.HasValue)
+                tab = await _dbCtx.Cards.AnyAsync(c => c.UserId == request.UserId && c.Tab == Tab.Daily)
                     ? Tab.Queue
                     : Tab.Daily;
 
             // create the card
 
-            var card = new Data.Entity.Card
-            {
-                UserId = request.UserId,
-                AddedOn = DateTime.UtcNow,
-                LastMovedOn = DateTime.UtcNow,
-                Verses = result.Passage.Verses,
-                Tab = div.Value,
-                Order = await _dbCtx.Cards.GetNextAvailableOrder(request.UserId, div.Value)
-            };
+            var card = result.Passage.ToCard(
+                request.UserId, 
+                tab.Value, 
+                await _dbCtx.Cards.GetNextAvailableOrder(request.UserId, tab.Value));
 
             _dbCtx.Cards.Add(card);
             await _dbCtx.SaveChangesAsync(cancellationToken);
 
-            return new CreateCardCommandResponse(true, false, card.Id, div);
+            // return the response
+
+            return new CreateCardCommandResponse(true, false, card.Id, tab);
         }
     }
 
-    public record CreateCardCommand(long UserId, long BibleId, string Address, Tab? ToDividier = null) : IRequest<CreateCardCommandResponse> { }
+    public record CreateCardCommand(long UserId, long BibleId, string Address, Tab? ToTab = null) : IRequest<CreateCardCommandResponse> { }
 
-    public record CreateCardCommandResponse(bool IsValidAddress, bool isAlreadyCreated, long CardId, Tab? Tab = null) { }
+    public record CreateCardCommandResponse(
+        bool IsValidAddress = false, 
+        bool isAlreadyCreated = false, 
+        long CardId = 0, 
+        Tab? Tab = null) { }
 }

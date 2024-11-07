@@ -1,5 +1,5 @@
 ﻿using BitPantry.Iota.Application.CRQS.Identity.Queries;
-using BitPantry.Iota.Application.Service;
+using BitPantry.Iota.Application.Logic;
 using BitPantry.Iota.Common;
 using BitPantry.Iota.Data.Entity;
 using MediatR;
@@ -17,18 +17,18 @@ namespace BitPantry.Iota.Application.CRQS.ReviewSession.Command
     public class GetReviewSessionCommandHandler : IRequestHandler<GetReviewSessionCommand, GetReviewSessionCommandHandlerResponse>
     {
         private EntityDataContext _dbCtx;
-        private ReviewService _reviewSvc;
+        private ReviewLogic _reviewLgc;
 
-        public GetReviewSessionCommandHandler(EntityDataContext dbCtx, ReviewService reviewSvc)
+        public GetReviewSessionCommandHandler(EntityDataContext dbCtx, ReviewLogic reviewLgc)
         {
             _dbCtx = dbCtx;
-            _reviewSvc = reviewSvc;
+            _reviewLgc = reviewLgc;
         }
 
         public async Task<GetReviewSessionCommandHandlerResponse> Handle(GetReviewSessionCommand request, CancellationToken cancellationToken)
         {
-            var sessionResp = await _reviewSvc.GetReviewSession(_dbCtx, request.UserId, request.StartNew);
-            _dbCtx.SaveChanges();
+            var sessionResp = await _reviewLgc.GetReviewSessionCommand(_dbCtx, request.UserId, request.StartNew);
+            await _dbCtx.SaveChangesAsync(cancellationToken);
 
             return new GetReviewSessionCommandHandlerResponse(
                 sessionResp.Item2,

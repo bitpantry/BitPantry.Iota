@@ -1,4 +1,5 @@
-﻿using BitPantry.Iota.Common;
+﻿using BitPantry.Iota.Application.DTO;
+using BitPantry.Iota.Common;
 using BitPantry.Iota.Data.Entity;
 using Dapper;
 using Microsoft.EntityFrameworkCore;
@@ -11,20 +12,18 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BitPantry.Iota.Application.Service
+namespace BitPantry.Iota.Application.Logic
 {
-    public class ReviewService
+    public class ReviewLogic
     {
-        private DbConnectionFactory _db;
-        private ILogger<ReviewService> _logger;
+        private ILogger<ReviewLogic> _logger;
 
-        public ReviewService(ILogger<ReviewService> logger, DbConnectionFactory db)
+        public ReviewLogic(ILogger<ReviewLogic> logger)
         {
             _logger = logger;
-            _db = db;
         }
 
-        public async Task<Tuple<ReviewSession, bool>> GetReviewSession(EntityDataContext dbCtx, long userId, bool startNewSession = false)
+        public async Task<Tuple<ReviewSession, bool>> GetReviewSessionCommand(EntityDataContext dbCtx, long userId, bool startNewSession = false)
         {
             // see if active session is available
             var currentSession = await dbCtx.ReviewSessions.SingleOrDefaultAsync(r => r.UserId == userId);
@@ -37,7 +36,7 @@ namespace BitPantry.Iota.Application.Service
                 {
                     _logger.LogDebug("Resetting review session");
                     currentSession.Reset();
-                    currentSession.SetReviewPath(await BuildReviewPath(userId));
+                    currentSession.SetReviewPath(await BuildReviewPathQuery(dbCtx, userId));
                 }
                 else
                 {
@@ -57,7 +56,7 @@ namespace BitPantry.Iota.Application.Service
 
         // ...
 
-        private async Task<Dictionary<Tab, int>> BuildReviewPath(long userId)
+        private async Task<Dictionary<Tab, int>> BuildReviewPathQuery(EntityDataContext dbCtx, long userId)
         {
             var path = new Dictionary<Tab, int>();
             var currentTab = Tab.Queue;
@@ -71,16 +70,15 @@ namespace BitPantry.Iota.Application.Service
 
             // select the card count grouped by tab for the userId
 
-            var dbConnection = _db.GetDbConnection();
-            if (dbConnection.State == System.Data.ConnectionState.Closed)
-                dbConnection.Open();
-
-            var cardCounts = await dbConnection.QueryAsync(
-                @"SELECT Tab, COUNT(*) AS CardCount
-                    FROM Cards
-                    WHERE UserId = @UserId
-                    GROUP BY Tab",
-                new { UserId = userId });
+            var cardCounts = await dbCtx.Cards
+                .Where(card => card.UserId == userId)
+                .GroupBy(card => card.Tab)
+                .Select(group => new
+                {
+                    Tab = group.Key,
+                    CardCount = group.Count()
+                })
+                .ToListAsync();
 
             foreach (var count in cardCounts)
                 path[(Tab)count.Tab] = count.CardCount;          
@@ -88,7 +86,7 @@ namespace BitPantry.Iota.Application.Service
             return path;
         }
 
-        public async Task<CardHeader> GetNextCardForReview(EntityDataContext dbCtx, long userId, Tab? currentTab, int currentCardIndex)
+        public async Task<CardDto> GetNextCardForReviewCommand(EntityDataContext dbCtx, long userId, Tab? currentTab, int currentCardIndex)
         {
             // initialize the last tab to the queue if it is null
 
@@ -97,18 +95,18 @@ namespace BitPantry.Iota.Application.Service
 
             // load review session
 
-            var session = await GetReviewSession(dbCtx, userId);
+            var session = await GetReviewSessionCommand(dbCtx, userId);
 
-            return await GetNextCardForReview_RECURSIVE(dbCtx, userId, session.Item1, currentTab.Value, currentCardIndex);
+            return await GetNextCardForReviewCommand_RECURSIVE(dbCtx, userId, session.Item1, currentTab.Value, currentCardIndex);
         }
 
-        private async Task<CardHeader> GetNextCardForReview_RECURSIVE(EntityDataContext dbCtx, long userId, ReviewSession session, Tab lastTab, int lastCardOrder)
+        private async Task<CardDto> GetNextCardForReviewCommand_RECURSIVE(EntityDataContext dbCtx, long userId, ReviewSession session, Tab lastTab, int lastCardOrder)
         {
             Tab nextTab = lastTab;
 
             // if not a multi-card review tab, get the next review tab
 
-            if (lastTab <= Tab.Day1)
+            if (lastTab < Tab.Day1)
                 nextTab = GetNextReviewTab(lastTab);
 
             // if advancing tab, reset order, otherwise increment order for same tab
@@ -124,7 +122,7 @@ namespace BitPantry.Iota.Application.Service
             if (nextCard != null)
             {
                 if (!session.GetCardsToIgnoreList().Contains(nextCard.Id))
-                    return new CardHeader(nextCard.Id, nextCard.AddedOn, nextCard.LastMovedOn, nextCard.LastReviewedOn, nextCard.Tab, nextCard.Order);
+                    return nextCard.ToDto();
                 else
                     _logger.LogDebug("Card id {Id} found in review session ignore list and will be skipped", nextCard.Id);
             }
@@ -132,7 +130,7 @@ namespace BitPantry.Iota.Application.Service
             // if no card found, recursively call this function to increment to the next tab, or return null if at the end of the review path
 
             if (nextTab < Tab.Day1)
-                return await GetNextCardForReview(dbCtx, userId, nextTab, lastCardOrder);
+                return await GetNextCardForReviewCommand(dbCtx, userId, nextTab, lastCardOrder);
             else
                 return null;
         }

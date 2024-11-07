@@ -1,0 +1,36 @@
+﻿@using Humanizer
+
+@model CardModel
+
+@{
+    var backUrl = Url.Action<BitPantry.Iota.Web.Controllers.TabsController>(t => t.Tabs(Model.Tab));
+}
+
+<div class="container">
+
+
+    <div class="row justify-content-center mb-2">
+
+        <div class="col-8 d-flex align-items-center">
+            <a href="@backUrl" class="btn btn-primary px-3">
+                Back
+            </a>
+        </div>
+
+        <div class="col-4 d-flex justify-content-end">
+            
+            <ul class="nav nav-tabs nav-justified w-100">
+                <li class="nav-item">
+                    <a class="nav-link active" style="background-color: #e0f2ff">@Model.Tab.Humanize()</a>
+                </li>
+            </ul>
+
+        </div>
+
+    </div>
+
+    <div class="row mb-2 border-top"></div>
+
+    <partial name="_CardMaintenancePartial" model="@Model" />
+
+</div>

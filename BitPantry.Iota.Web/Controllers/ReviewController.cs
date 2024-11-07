@@ -26,7 +26,7 @@ namespace BitPantry.Iota.Web.Controllers
         [Route("review")]
         public async Task<IActionResult> Index()
         {
-            // reset the session if no div or ord specified
+            // reset the session if no tab or ord specified
 
             var session = await _med.Send(new GetReviewSessionCommand(_identity.UserId, true));
             if (!session.ReviewPath.Any(p => p.Value > 0))
@@ -37,8 +37,8 @@ namespace BitPantry.Iota.Web.Controllers
             return await GetNextReviewStepRedirect();
         }
 
-        [Route("review/{div:enum}/{ord:int}")]
-        public async Task<IActionResult> Review(Tab div, int ord)
+        [Route("review/{tab:enum}/{ord:int}")]
+        public async Task<IActionResult> Review(Tab tab, int ord)
         {
             // ensure session
 
@@ -46,29 +46,13 @@ namespace BitPantry.Iota.Web.Controllers
 
             // get the card
 
-            var resp = await _med.Send(new GetCardQuery(_identity.UserId, div, ord));
+            var resp = await _med.Send(new GetCardQuery(_identity.UserId, tab, ord));
 
-            return View(new CardModel(
-                resp.Id,
-                resp.AddedOn,
-                resp.LastMovedOn,
-                resp.LastReviewedOn,
-                resp.Tab,
-                resp.Order,
-                new PassageModel(
-                    resp.Passage.BibleId,
-                    resp.Passage.BookName,
-                    resp.Passage.FromChapterNumber,
-                    resp.Passage.FromVerseNumber,
-                    resp.Passage.ToChapterNumber,
-                    resp.Passage.ToVerseNumber,
-                    resp.Passage.Address,
-                    resp.Passage.Verses)
-                ));
+            return View(nameof(Review), resp.ToModel());
         }
 
-        [Route("next/{currentDiv:enum}/{currentOrd:int}")]
-        public async Task<IActionResult> Next(Tab currentDiv, int currentOrd)
+        [Route("next/{currentTab:enum}/{currentOrd:int}")]
+        public async Task<IActionResult> Next(Tab currentTab, int currentOrd)
         {
             // ensure session
 
@@ -76,11 +60,11 @@ namespace BitPantry.Iota.Web.Controllers
 
             // mark the current card as reviewed
 
-            await _med.Send(new MarkCardAsReviewedCommand(_identity.UserId, currentDiv, currentOrd));
+            await _med.Send(new MarkCardAsReviewedCommand(_identity.UserId, currentTab, currentOrd));
 
             // go to next step in review
 
-            return await GetNextReviewStepRedirect(currentDiv, currentOrd);
+            return await GetNextReviewStepRedirect(currentTab, currentOrd);
         }
 
         [Route("promote/{id:long}")]
@@ -101,7 +85,7 @@ namespace BitPantry.Iota.Web.Controllers
 
         public IActionResult Done()
         {
-            return View();
+            return View(nameof(Done));
         }
 
         public IActionResult NoCards()
@@ -109,9 +93,9 @@ namespace BitPantry.Iota.Web.Controllers
             return View();
         }
 
-        private async Task<IActionResult> GetNextReviewStepRedirect(Tab currentDiv = Tab.Queue, int currentOrder = 1)
+        private async Task<IActionResult> GetNextReviewStepRedirect(Tab currentTab = Tab.Queue, int currentOrder = 1)
         {
-            var resp = await _med.Send(new GetNextCardForReviewQuery(_identity.UserId, currentDiv, currentOrder));
+            var resp = await _med.Send(new GetNextCardForReviewQuery(_identity.UserId, currentTab, currentOrder));
 
             if (resp == null)
                 return Done();
