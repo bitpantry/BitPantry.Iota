@@ -13,6 +13,7 @@ namespace BitPantry.Iota.Web
                     dto.ToChapterNumber,
                     dto.ToVerseNumber,
                     dto.GetAddressString(),
+                    dto.TranslationShortName,
                     dto.Verses);
     }
 }

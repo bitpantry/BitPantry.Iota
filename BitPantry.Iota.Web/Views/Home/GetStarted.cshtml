@@ -1,0 +1,100 @@
+﻿
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-center">
+
+        <div class="col-xl-8 col-lg-10 col-md-12">
+
+            <p class="display-6">Coming Soon</p>
+
+
+            @* <p class="display-6">
+                The System
+            </p>
+
+            <p class="mt-3">
+                This system uses concepts like cards (as in note cards) and tabs (think divider tabs) to help you memorize scripture. Imagine you have a box of note cards organized into 41 different dividers.
+            </p>
+
+            <div class="row">
+                <div class="col">
+                    <ul>
+                        <li>Queue</li>
+                        <li>Daily</li>
+                        <li>Odd</li>
+                        <li>Even</li>
+                        <li>Days of the week (7 tabs)</li>
+                        <li>Days of the month (31 tabs)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <p>
+                You find a passage of scripture you want to memorize and you write it on a note card and organize it into this box. New cards are added to the Queue.
+            </p>
+
+            @{
+                var dow = DateTime.Today.DayOfWeek.ToString();
+                var dom = DateTime.Today.Day;
+            }
+
+            <p>
+
+                Each day, you review the cards in the tab represented by that day. So, for example, since today is @dow, day @dom of the month, you would review the cards in the following tabs.
+
+                <ul>
+                    <li>Daily - because you review this card every day</li>
+                    <li>
+                        @if(dom % 2 == 0)
+                        {
+                            <span>Even - because day @dom is even</span>
+                        }
+                        else
+                        {
+                            <span>Odd - because day @dom is odd</span>
+                        }
+                    </li>
+                    <li>@dow - because today is @dow</li>
+                    <li>Day @dom - because today day @dom</li>
+
+                </ul>
+
+                When you feel like you've got the card in the Daily tab down, you "promote" it to the Odd or Even tab. 
+
+            </p>
+
+            <p>
+                Promoting the Daily card causes the card in the
+                Odd / Even tab to move up to a Day of the Week tab, which pushes that Day of the Week card to a Day of the Month tab.
+                New cards are pulled from the top of the Queue and put in the Daily tab.
+            </p>
+
+            <p>
+                This way, you focus on a new verse every day, while verses you've memorized you review less and less the longer you've been reviewing them. But you always get a chance to review every card 
+                at least once each month. Of course, not all months have 31 days, so you may want to move cards you would like to review more often to a day earlier in the month.
+            </p>
+
+            <p>
+                Even if you add hundreds of cards, this system should allow you to learn and regularly review every card in less than 10 to 15 minutes a day!
+            </p>
+
+            <p class="display-6">
+                Iota Scripture Memory App
+            </p>
+
+            <p class="mt-3">
+                The Iota Scripture Memory App automates this system for you.
+            </p>
+
+            <p>
+                You don't have to write notecards. You don't have to decide how to move cards when promoting the daily card - although, you can organize your cards manually too. 
+                Each day, the cards you need to review are organized and easily accessible. Best of all, you don't have to carry a notecard box around with you. 
+            </p> 
+            *@
+
+
+        </div>
+    </div>
+
+</div>
+

@@ -22,7 +22,7 @@ namespace BitPantry.Iota.Application.Logic
             _cacheSvc = cacheSvc;
         }
 
-        public async Task<GetPassageResult> GetPassageQuery(EntityDataContext dbCtx, long bibleId, string address, bool asNoTracking = false)
+        public async Task<GetPassageResult> GetPassageQuery(EntityDataContext dbCtx, long bibleId, string address, bool asNoTracking = true)
         {
             if (string.IsNullOrEmpty(address))
                 return new GetPassageResult { Code = GetPassageResultCode.CannotParseAddress };

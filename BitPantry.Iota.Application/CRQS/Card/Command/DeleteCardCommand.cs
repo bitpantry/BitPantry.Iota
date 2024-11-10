@@ -10,22 +10,27 @@ using Dapper;
 using BitPantry.Iota.Common;
 using System.Data.Common;
 using BitPantry.Iota.Application.Logic;
+using Microsoft.Extensions.Logging;
 
 namespace BitPantry.Iota.Application.CRQS.Card.Command
 {
     public class DeleteCardCommandHandler : IRequestHandler<DeleteCardCommand>
     {
+        private ILogger<DeleteCardCommandHandler> _logger;
         private EntityDataContext _dbCtx;
         private CardLogic _cardLgc;
 
-        public DeleteCardCommandHandler(EntityDataContext dbCtx, CardLogic cardLgc)
+        public DeleteCardCommandHandler(ILogger<DeleteCardCommandHandler> logger, EntityDataContext dbCtx, CardLogic cardLgc)
         {
+            _logger = logger;
             _dbCtx = dbCtx;
             _cardLgc = cardLgc;
         }
 
         public async Task Handle(DeleteCardCommand request, CancellationToken cancellationToken)
         {
+            _logger.LogDebug("Deleting card {CardId}", request.CardId);
+
             await _dbCtx.UseConnection(async (conn, trans) =>
             {
                 // Get the current order and tab of the card to be deleted

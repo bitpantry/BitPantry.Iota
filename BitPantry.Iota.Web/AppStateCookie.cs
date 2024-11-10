@@ -9,6 +9,8 @@ namespace BitPantry.Iota.Web
 {
     public class AppStateCookie
     {
+        public string _uid = Guid.NewGuid().ToString();
+
         private const string COOKIE_NAME = "bitpantry.iota.web.state";
 
         private const string KEY_CURRENT_USER_ID = "cuid";

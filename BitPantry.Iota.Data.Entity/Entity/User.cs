@@ -7,6 +7,5 @@ namespace BitPantry.Iota.Data.Entity
         public string EmailAddress { get; set; }
         public DateTime LastLogin { get; set; }
         public List<Card> Cards { get; set; }
-        public ReviewSession ReviewSession { get; set; }
     }
 }

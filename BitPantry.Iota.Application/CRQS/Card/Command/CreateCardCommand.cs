@@ -7,6 +7,7 @@ using BitPantry.Iota.Infrastructure.Caching;
 using BitPantry.Parsing.Strings.Parsers;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,17 +18,21 @@ namespace BitPantry.Iota.Application.CRQS.Card.Command
 {
     public class CreateCardCommandHandler : IRequestHandler<CreateCardCommand, CreateCardCommandResponse>
     {
+        private ILogger<CreateCardCommandHandler> _logger;
         private EntityDataContext _dbCtx;
         private PassageLogic _bibleLgc;
 
-        public CreateCardCommandHandler(EntityDataContext dbCtx, PassageLogic bibleLgc)
+        public CreateCardCommandHandler(ILogger<CreateCardCommandHandler> logger, EntityDataContext dbCtx, PassageLogic bibleLgc)
         {
+            _logger = logger;
             _dbCtx = dbCtx;
             _bibleLgc = bibleLgc;
         }
 
         public async Task<CreateCardCommandResponse> Handle(CreateCardCommand request, CancellationToken cancellationToken)
         {
+            _logger.LogDebug("Creating new card :: {@Request}", request);
+
             // read the passage data
 
             var result = await _bibleLgc.GetPassageQuery(_dbCtx, request.BibleId, request.Address);
@@ -61,7 +66,7 @@ namespace BitPantry.Iota.Application.CRQS.Card.Command
 
             // return the response
 
-            return new CreateCardCommandResponse(true, false, card.Id, tab);
+            return new CreateCardCommandResponse(true, false, result.Passage.GetAddressString(true), card.Id, tab);
         }
     }
 
@@ -70,6 +75,7 @@ namespace BitPantry.Iota.Application.CRQS.Card.Command
     public record CreateCardCommandResponse(
         bool IsValidAddress = false, 
         bool isAlreadyCreated = false, 
+        string Address = null,
         long CardId = 0, 
         Tab? Tab = null) { }
 }

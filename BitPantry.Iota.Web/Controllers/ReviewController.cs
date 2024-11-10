@@ -1,11 +1,13 @@
-﻿using BitPantry.Iota.Application.CRQS.Card.Command;
+﻿using BitPantry.Iota.Application;
+using BitPantry.Iota.Application.CRQS.Card.Command;
 using BitPantry.Iota.Application.CRQS.Card.Query;
-using BitPantry.Iota.Application.CRQS.ReviewSession.Command;
+using BitPantry.Iota.Application.CRQS.Review.Query;
 using BitPantry.Iota.Common;
 using BitPantry.Iota.Data.Entity;
 using BitPantry.Iota.Web.Models;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Diagnostics.Latency;
 using System.Security.Cryptography;
 
 namespace BitPantry.Iota.Web.Controllers
@@ -26,53 +28,49 @@ namespace BitPantry.Iota.Web.Controllers
         [Route("review")]
         public async Task<IActionResult> Index()
         {
-            // reset the session if no tab or ord specified
+            var path = await _med.Send(new GetReviewPathQuery(_identity.UserId));
 
-            var session = await _med.Send(new GetReviewSessionCommand(_identity.UserId, true));
-            if (!session.ReviewPath.Any(p => p.Value > 0))
+            if (!path.Any(p => p.Value > 0))
                 return NoCards();
 
             // get next review step
 
-            return await GetNextReviewStepRedirect();
+            return await Review(Tab.Daily, 1);
         }
 
-        [Route("review/{tab:enum}/{ord:int}")]
-        public async Task<IActionResult> Review(Tab tab, int ord)
+        [Route("review/{tab:enum}/{ord:int?}")]
+        public async Task<IActionResult> Review(Tab tab, int ord = 1)
         {
-            // ensure session
+            var path = await _med.Send(new GetReviewPathQuery(_identity.UserId));
+            var card = await _med.Send(new GetCardQuery(_identity.UserId, tab, ord));
 
-            _ = await _med.Send(new GetReviewSessionCommand(_identity.UserId));
-
-            // get the card
-
-            var resp = await _med.Send(new GetCardQuery(_identity.UserId, tab, ord));
-
-            return View(nameof(Review), resp.ToModel());
+            return View(nameof(Review), new ReviewModel(path, tab, ord, card.ToModel()));
         }
 
-        [Route("next/{currentTab:enum}/{currentOrd:int}")]
+        [Route("review/next/{currentTab:enum}/{currentOrd:int}")]
         public async Task<IActionResult> Next(Tab currentTab, int currentOrd)
         {
-            // ensure session
-
-            _ = await _med.Send(new GetReviewSessionCommand(_identity.UserId));
-
-            // mark the current card as reviewed
-
             await _med.Send(new MarkCardAsReviewedCommand(_identity.UserId, currentTab, currentOrd));
 
-            // go to next step in review
+            var path = await _med.Send(new GetReviewPathQuery(_identity.UserId));
+            var helper = new ReviewPathHelper(path);
 
-            return await GetNextReviewStepRedirect(currentTab, currentOrd);
+            var nextStep = helper.GetNextStep(currentTab, currentOrd);
+
+            if (nextStep == null)
+                return Done();
+
+            var nextTab = nextStep.Value.Key;
+            var nextOrd = nextStep.Value.Value;
+
+            var card = await _med.Send(new GetCardQuery(_identity.UserId, nextTab, nextOrd));
+
+            return View(nameof(Review), new ReviewModel(path, nextTab, nextOrd, card.ToModel()));
         }
 
-        [Route("promote/{id:long}")]
+        [Route("review/promote/{id:long}")]
         public async Task<IActionResult> Promote(long id)
         {
-            // ensure session
-
-            _ = await _med.Send(new GetReviewSessionCommand(_identity.UserId));
 
             // promote the daily card
 
@@ -80,7 +78,7 @@ namespace BitPantry.Iota.Web.Controllers
 
             // go to next step in review
 
-            return await GetNextReviewStepRedirect();
+            return await Review(Tab.Daily, 1);
         }
 
         public IActionResult Done()
@@ -93,15 +91,7 @@ namespace BitPantry.Iota.Web.Controllers
             return View();
         }
 
-        private async Task<IActionResult> GetNextReviewStepRedirect(Tab currentTab = Tab.Queue, int currentOrder = 1)
-        {
-            var resp = await _med.Send(new GetNextCardForReviewQuery(_identity.UserId, currentTab, currentOrder));
 
-            if (resp == null)
-                return Done();
-
-            return await Review(resp.Tab, resp.Order);
-        }
 
 
 

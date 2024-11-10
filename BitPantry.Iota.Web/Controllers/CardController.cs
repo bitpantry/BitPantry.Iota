@@ -8,6 +8,7 @@ using MediatR;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
 using System.ComponentModel;
 
 namespace BitPantry.Iota.Web.Controllers
@@ -40,28 +41,54 @@ namespace BitPantry.Iota.Web.Controllers
             return View(resp.ToModel());
         }
 
-        public async Task<IActionResult> Create(string address, string passageAddress, long bibleId, string action)
+        public async Task<IActionResult> Create(string address, long bibleId)
         {
-            if (action == "search" || action == "changeBible")
-            {
-                var resp = await _med.Send(new GetBiblePassageQuery(_userIdentity.UserId, action == "search" ? address : passageAddress, bibleId));
+            var biblesResp = await _med.Send(new GetBibleTranslationsQuery());
 
-                return View(new CreateCardModel
+            if(!string.IsNullOrEmpty(address))
+            {
+                var passageResp = await _med.Send(new GetBiblePassageQuery(_userIdentity.UserId, address, bibleId));
+
+                return View(nameof(Create), new CreateCardModel
                 {
-                    LastAction = action,
-                    IsValidAddress = resp.IsValidAddress,
-                    IsCardAlreadyCreated = resp.IsAlreadyCreated,
-                    Passage = resp.Passage?.ToModel(),
-                    Bibles = await GetAvailableBibleTranslations()
+                    Bibles = biblesResp.Select(b => b.ToModel()).ToList(),
+                    BibleId = bibleId,
+                    IsValidAddress = passageResp.IsValidAddress,
+                    IsCardAlreadyCreated = passageResp.IsAlreadyCreated,
+                    AddressQuery = address,
+                    Passage = passageResp.Passage?.ToModel()
+                });
+
+            }
+
+            return View(nameof(Create), new CreateCardModel
+            {
+                Bibles = biblesResp.Select(b => b.ToModel()).ToList(),
+                BibleId = biblesResp.First().Id
+            });
+        }
+
+        public async Task<IActionResult> New(string address, long bibleId)
+        {
+            var resp = await _med.Send(new CreateCardCommand(_userIdentity.UserId, bibleId, address));
+
+            if (!resp.IsValidAddress || resp.isAlreadyCreated)
+            {
+                return await Create(address, bibleId);
+            }
+            else
+            {
+                var biblesResp = await _med.Send(new GetBibleTranslationsQuery());
+
+                return View(nameof(Create), new CreateCardModel
+                {
+                    Bibles = biblesResp.Select(_ => _.ToModel()).ToList(),
+                    BibleId = biblesResp.First().Id,
+                    CreatedAddress = resp.Address,
+                    CreatedCardId = resp.CardId,
+                    CreatedToTab = resp.Tab,
                 });
             }
-            else if(action == "create")
-            {
-                var resp = await _med.Send(new CreateCardCommand(_userIdentity.UserId, bibleId, passageAddress));
-                return View(new CreateCardModel { LastAction = action, CardCreatedInTab = resp.Tab });
-            }
-
-            return View(new CreateCardModel());
         }
 
         public async Task<IActionResult> Move(long id, Tab toTab)
@@ -92,7 +119,5 @@ namespace BitPantry.Iota.Web.Controllers
             }
         }
 
-        private async Task<List<SelectListItem>> GetAvailableBibleTranslations()
-            => (await _med.Send(new GetBibleTranslationsQuery())).Translations.Select(t => new SelectListItem($"{t.LongName} ({t.ShortName})", t.Id.ToString())).ToList();
     }
 }

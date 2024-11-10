@@ -8,11 +8,8 @@
 
   <ItemGroup>
     <Compile Remove="CRQS\Identity\Common\**" />
-    <Compile Remove="CRQS\ReviewSession\Query\**" />
     <EmbeddedResource Remove="CRQS\Identity\Common\**" />
-    <EmbeddedResource Remove="CRQS\ReviewSession\Query\**" />
     <None Remove="CRQS\Identity\Common\**" />
-    <None Remove="CRQS\ReviewSession\Query\**" />
   </ItemGroup>
 
   <ItemGroup>

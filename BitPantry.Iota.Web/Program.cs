@@ -38,7 +38,8 @@ namespace BitPantry.Iota.Web
             builder.Services.ConfigureInfrastructureServices(settings, CachingStrategy.InMemory);
             builder.Services.ConfigureApplicationServices();
 
-            builder.Services.ConfigureMiniProfiler(settings);
+            if(builder.Environment.EnvironmentName == "Development")
+                builder.Services.ConfigureMiniProfiler(settings);
 
             builder.Services.AddControllersWithViews();
 
@@ -69,7 +70,10 @@ namespace BitPantry.Iota.Web
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHttpsRedirection();
+            if(app.Environment.IsDevelopment()) 
+                app.UseHttpsRedirection();
+
+
             app.UseStaticFiles();
 
             app.UseRouting();

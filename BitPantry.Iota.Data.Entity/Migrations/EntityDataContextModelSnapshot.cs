@@ -170,38 +170,6 @@ namespace BitPantry.Iota.Data.Entity.Migrations
                     b.ToTable("DataProtectionKeys");
                 });
 
-            modelBuilder.Entity("BitPantry.Iota.Data.Entity.ReviewSession", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnOrder(1);
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("CardIdsToIgnore")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("LastAccessed")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ReviewPath")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("StartedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("ReviewSessions");
-                });
-
             modelBuilder.Entity("BitPantry.Iota.Data.Entity.Testament", b =>
                 {
                     b.Property<long>("Id")
@@ -322,17 +290,6 @@ namespace BitPantry.Iota.Data.Entity.Migrations
                     b.Navigation("Book");
                 });
 
-            modelBuilder.Entity("BitPantry.Iota.Data.Entity.ReviewSession", b =>
-                {
-                    b.HasOne("BitPantry.Iota.Data.Entity.User", "User")
-                        .WithOne("ReviewSession")
-                        .HasForeignKey("BitPantry.Iota.Data.Entity.ReviewSession", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("BitPantry.Iota.Data.Entity.Testament", b =>
                 {
                     b.HasOne("BitPantry.Iota.Data.Entity.Bible", "Bible")
@@ -378,8 +335,6 @@ namespace BitPantry.Iota.Data.Entity.Migrations
             modelBuilder.Entity("BitPantry.Iota.Data.Entity.User", b =>
                 {
                     b.Navigation("Cards");
-
-                    b.Navigation("ReviewSession");
                 });
 #pragma warning restore 612, 618
         }

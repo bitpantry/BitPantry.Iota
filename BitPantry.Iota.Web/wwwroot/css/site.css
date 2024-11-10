@@ -31,12 +31,12 @@ body {
 
 @media (max-width: 400px) {
     body {
-        zoom: 0.85;  Adjust this value as needed for the best fit 
+        zoom: 0.80;  
     }
 }
 
 @media (max-width:340px) {
     body {
-        zoom: 0.80;  Adjust this value as needed for the best fit
+        zoom: 0.75;  
     }
 }

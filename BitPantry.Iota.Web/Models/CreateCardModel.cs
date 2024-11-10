@@ -7,7 +7,6 @@ namespace BitPantry.Iota.Web.Models;
 
 public class CreateCardModel
 {
-    public string LastAction { get; set; }
 
     public bool IsValidAddress { get; set; }
 
@@ -15,7 +14,11 @@ public class CreateCardModel
 
     public PassageModel Passage { get; set; }
 
-    public List<SelectListItem> Bibles { get; set; }
+    public List<BibleModel> Bibles { get; set; }
 
-    public Tab? CardCreatedInTab { get; set; }
+    public long BibleId { get; set; }
+    public long CreatedCardId { get; internal set; }
+    public Tab? CreatedToTab { get; internal set; }
+    public string AddressQuery { get; internal set; }
+    public string CreatedAddress { get; internal set; }
 }

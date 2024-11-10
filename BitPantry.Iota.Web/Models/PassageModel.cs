@@ -10,6 +10,7 @@ namespace BitPantry.Iota.Web.Models
         int ToChapterNumber = 0,
         int ToVerseNumber = 0,
         string Address = null,
+        string TranslationShortName = null,
         Dictionary<int, Dictionary<int, string>> Verses = null)
     {
     }

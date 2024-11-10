@@ -2,216 +2,108 @@
 
 @using Humanizer
 
-<div class="text-center mt-4">
-    <h3 class="font-weight-bold">Create new card</h3>
-</div>
+<div class="container">
 
-<form id="lookup-form" asp-controller="Card" asp-action="Create" method="post" class="form-horizontal">
+    <div class="col-12 mt-4 lead">
+        <strong>
+            Create a new card
+        </strong>
+    </div>
 
-    @* Search Bar *@
-
-    <div class="container mt-4">
-        <div class="form-group row justify-content-center">
-            <div class="col-auto" style="max-width: 350px; width: 100%;">
+    <form asp-action="Create" id="lookupForm">
+        <div class="row mt-4">
+            <div class="col-8 col-md-8 col-lg-6 col-xl-5">
                 <div class="input-group">
-                    <input name="address" class="form-control" placeholder="e.g., romans 12:1-2" style="outline: none; box-shadow: none;" />
+                    <input id="address" name="address" class="form-control" placeholder="e.g., romans 12:1-2" style="outline: none; box-shadow: none;" />
                     <div class="input-group-append">
-                        <button type="submit" class="btn btn-primary" name="action" value="search">Go</button>
+                        <button type="submit" class="btn btn-primary">Go</button>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-
-
-@if (Model.LastAction == "create") @* Successful Create Message *@
-{
-    <div class="container mt-4">
-        <div class="align-content-center">
-            <div class="row">
-                <div class="col-12 text-center">
-                    <p>Card added to @(Model.CardCreatedInTab.Humanize()) tab</p>
-                </div>
+            <div class="col-4 col-md-3 col-lg-2 col-xl-1">
+                    @Html.DropDownListFor( 
+                        m => m.BibleId,   
+                        new SelectList(Model.Bibles, nameof(BibleModel.Id), nameof(BibleModel.ShortName)),  
+                        new { @class = "form-control" } 
+                    )
             </div>
         </div>
-    </div>
-}
-else if (Model.LastAction == "search" || Model.LastAction == "changeBible")
-{
-    @if(Model.IsValidAddress)
+    </form>
+
+
+
+    @if(Model.CreatedCardId > 0)
     {
-        @* Passage Form *@
+        <div class="fs-6 mt-4">
+            Added @Model.CreatedAddress to tab @Model.CreatedToTab.Humanize()
+        </div>
 
-        <div class="container mt-5">
+        <div class="pt-3">
+            <a class="btn btn-secondary" asp-action="Maintenance" asp-controller="Card" asp-route-id="@Model.CreatedCardId">Go to card</a>
+        </div>
 
+    }
+    else if(!string.IsNullOrEmpty(Model.AddressQuery) && !Model.IsValidAddress) 
+    {
+        <div class="mt-4 fs-6">
+            No passage found for "@(Model.AddressQuery)"
+        </div>
+    }
+    else if(Model.Passage != null)
+    {
+        <div class="mt-5">
+            <span class="display-6">@Model.Passage.Address</span>
+        </div>
 
-            <div class="col-12 mt-5">
-                <h1 class="display-6">@Model.Passage.Address</h1>
-            </div>
+        <div class="mt-4">
+            <partial name="_PassagePartial" model="@Model.Passage" />
+        </div>
 
-@*                 <div class="mt-2">
-                    @Html.DropDownListFor(m => m.Passage.BibleId, Model.Bibles, new { @class = "form-control form-select form-select-sm", id = "bibleId", style = "max-width: 225px" })
-                </div> *@
+        <div class="mt-5">
+            @if(Model.IsCardAlreadyCreated)
+            {
+                <button class="btn btn-primary" disabled>Create Card</button>
+                <div class="mt-2 fw-light">Card already exists</div>
+            }
+            else
+            {
+                <a class="btn btn-primary" asp-action="New" asp-route-address="@Model.Passage.Address" asp-route-bibleid="@Model.BibleId">Create Card</a>
+            }           
+        </div>
+    }
 
-@* ------------------------------ *@
-
-<div class="dropdown-container">
-    <span id="dropdownTextWidth" class="dropdown-text"></span>
-    @Html.DropDownListFor(
-        m => m.Passage.BibleId, 
-        Model.Bibles, 
-        new { 
-            @class = "form-control form-select form-select-sm text-dropdown", 
-            id = "bibleId", 
-            onchange = "resizeDropdown()" // Trigger resize on selection change
-        })
-    <span class="caret">&#9660;</span> <!-- Unicode down caret -->
 </div>
 
-<style>
-    /* Container for the dropdown and caret */
-    .dropdown-container {
-        position: relative;
-        display: inline-block;
-    }
-
-    /* Hidden text element for measuring width */
-    .dropdown-text {
-        visibility: hidden;
-        white-space: nowrap;
-        font-size: inherit;
-        font-family: inherit;
-    }
-
-    /* Custom style for the dropdown to look like text */
-    .text-dropdown {
-        background: none;
-        border: none;
-        color: inherit;
-        padding-right: 20px; /* Extra padding for caret */
-        appearance: none;
-        -moz-appearance: none;
-        -webkit-appearance: none;
-        cursor: pointer;
-        width: auto; /* Start with auto width */
-    }
-
-    .text-dropdown:focus {
-        outline: none;
-    }
-
-    /* Style for the caret icon */
-    .caret {
-        position: absolute;
-        right: 5px; /* Adjust as needed for closer positioning */
-        top: 50%;
-        transform: translateY(-0%);
-        color: inherit;
-        pointer-events: none; /* Prevent caret from blocking clicks */
-    }
-</style>
-
 <script>
-    function resizeDropdown() {
-        const selectElement = document.getElementById("bibleId");
-        const textWidthElement = document.getElementById("dropdownTextWidth");
 
-        // Set the text of the hidden span to match the selected option
-        textWidthElement.innerText = selectElement.options[selectElement.selectedIndex].text;
-
-        // Get the width of the hidden span and apply it to the select element
-        selectElement.style.width = `${textWidthElement.offsetWidth + 5}px`; // Extra padding for caret
-    }
-
-    // Initial resize on page load
-    document.addEventListener('DOMContentLoaded', resizeDropdown);
-</script>
-
-@* ------------------------------------------------- *@
-
-
-
-                <div class="mt-4">
-                    <partial name="_PassagePartial" model='@Model.Passage' />
-                </div>
-
-
-        </div>
-
-        <input type="hidden" name="passageAddress" value="@Model.Passage.Address" />
-
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-
-                const bibleIdElement = document.getElementById('bibleId');
-
-                bibleIdElement.addEventListener('change', () => {
-
-                    const actionInput = document.createElement('input');
-                    actionInput.type = 'hidden';
-                    actionInput.name = 'action';
-                    actionInput.value = 'changeBible';
-
-                    const bibleIdInput = document.createElement('input');
-                    bibleIdInput.type = 'hidden';
-                    bibleIdInput.name = 'bibleId';
-                    bibleIdInput.value = bibleIdElement.value;
-
-                    const form = document.getElementById('lookup-form');
-                    form.appendChild(actionInput);
-                    form.appendChild(bibleIdInput);
-
-                    form.submit();
-                });
-            });
-        </script>
-
-        @* Create Button *@
-
-        <div class="container mt-5">
-            <div class="form-group row justify-content-center">
-                <div class="col-auto">
-                    <button type="submit" class="btn btn-primary" name="action" value="create" @if(Model.IsCardAlreadyCreated) { <text>disabled</text> }>Create Card</button>
-                </div>
-            </div>
-        </div>
-
-        @if(Model.IsCardAlreadyCreated)
-        {
-            <div class="container mt-2">
-                <div class="align-content-center">
-                    <div class="row">
-                        <div class="col-12 text-center">
-                            <p class="fw-light">You've already created this card</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        }
-
-    }
-    else
-    {
-        <div class="container mt-4">
-            <div class="align-content-center">
-                <div class="row">
-                    <div class="col-12 text-center">
-                        <p>No passage found</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
-}
-
-</form>
-
-
-<script>
     document.addEventListener('DOMContentLoaded', () => {
+
         document.querySelector('input[name="address"]').focus();
+        const bibleIdElement = document.getElementById('BibleId');
+
+        bibleIdElement.addEventListener('change', () => {
+
+            const form = document.getElementById('lookupForm');
+
+            // const addressInput = document.getElementById('address');
+            // addressInput.value = '@Model.AddressQuery';
+
+            const addressHid = document.createElement('input');
+            addressHid.type = 'hidden';
+            addressHid.name = 'address';
+            addressHid.value = '@Model.AddressQuery';
+
+            const visibleAddressInput = document.getElementById('address');
+            visibleAddressInput.name = 'address_temp';
+
+            // console.log("addressHid before appending:", addressHid);
+            form.appendChild(addressHid);
+
+            form.submit();
+
+        });
     });
+
 </script>
 
 

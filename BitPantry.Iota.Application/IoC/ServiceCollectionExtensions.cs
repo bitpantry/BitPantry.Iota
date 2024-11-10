@@ -24,11 +24,10 @@ namespace BitPantry.Iota.Application.IoC
 
 
 
-            // services
+            // logic
 
             services.AddScoped<PassageLogic>();
             services.AddScoped<CardLogic>();
-            services.AddScoped<ReviewLogic>();
 
             // components
 

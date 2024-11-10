@@ -9,6 +9,8 @@ using BitPantry.CommandLine.Processing.Activation;
 using Microsoft.EntityFrameworkCore.Query;
 using BitPantry.Iota.Console.Commands.Bible;
 using Azure.Core.GeoJson;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace BitPantry.Iota.Console
 {
@@ -33,6 +35,8 @@ namespace BitPantry.Iota.Console
 
             appBuilder.Services.ConfigureInfrastructureServices(settings, CachingStrategy.InMemory);
             appBuilder.Services.ConfigureApplicationServices();
+
+            appBuilder.Services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
 
             appBuilder.RegisterCommands(typeof(Program));
 

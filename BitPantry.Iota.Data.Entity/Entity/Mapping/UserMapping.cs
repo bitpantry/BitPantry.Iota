@@ -21,10 +21,5 @@ internal static class UserMapping
             .HasForeignKey(c => c.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<User>()
-            .HasOne(u => u.ReviewSession)
-            .WithOne(rs => rs.User)
-            .HasForeignKey<ReviewSession>(rs => rs.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
     }
 }

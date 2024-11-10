@@ -54,7 +54,7 @@ namespace BitPantry.Iota.Console.Commands.Card
             if (BibleId == 0)
             {
                 var biblesResp = await _med.Send(new GetBibleTranslationsQuery());
-                var firstTranslation = biblesResp.Translations.First();
+                var firstTranslation = biblesResp.First();
                 Info.WriteLine($"Using translation {firstTranslation.LongName}");
                 BibleId = firstTranslation.Id;
             }

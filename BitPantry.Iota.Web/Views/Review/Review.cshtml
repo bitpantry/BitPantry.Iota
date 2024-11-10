@@ -1,6 +1,7 @@
-﻿@model CardModel
+﻿@model ReviewModel
 
 @using BitPantry.Iota.Common
+@using Humanizer;
 
 <style>
     .verse-card {
@@ -10,6 +11,7 @@
 </style>
 
 <script>
+
     function togglePassage() {
         var firstPanel = document.getElementsByClassName("verse-card")[0];
         var secondPanel = document.getElementsByClassName("verse-card")[1];
@@ -25,64 +27,98 @@
 
 </script>
 
+<style>
+        /* Styling only for main tabs */
+    .main-tabs .nav-link {
+        color: black !important; /* Always black text for main tabs */
+    }
+
+        .main-tabs .nav-link.active {
+            background-color: #e0f2ff !important; /* Light blue background for active main tabs */
+            color: black !important; /* Ensure text remains black when active */
+            border-radius: 5px; /* Rounded corners for active tab */
+        }
+
+    /* Styling for active nested tabs */
+    .nav .nav-link.active {
+        background-color: #e0f2ff !important; /* Light blue background for active nested tabs */
+        color: black !important; /* Ensure text remains black when active */
+    }
+</style>
+
 <div class="container">
 
-    <div class="d-flex flex-row mb-3">
-        <div class="col-6 fs-3">
-            @Model.Passage.Address
-        </div>
-        <div class="col-6 d-flex justify-content-end">
-            <a asp-controller="Review" asp-action="Next" asp-route-currenttab="@Model.Tab" asp-route-currentord="@Model.Order" class="btn btn-success px-3">
-                Next
-            </a>
-            @if(Model.Tab == Tab.Daily)
-            {
-                <a href="#" onclick="confirmPromote()" class="btn btn-primary ms-2">
-                    Promote
-                </a>
-
-            }
-        </div>
+    <div class="col-12 mt-4 lead">
+        <strong>
+            Reviewing @Model.Path.Sum(p => p.Value) card@(Model.Path.Sum(p => p.Value) > 1 ? "s" : "") today
+        </strong>
     </div>
 
+    @* ------- TABS ------- *@
+
+    <ul class="nav nav-tabs nav-justified mt-4 w-100 main-tabs">
+
+        @foreach (var tab in Model.Path.Keys)
+        {
+            <li class="nav-item">
+                <a class="nav-link@(Model.CurrentTab == tab ? " active" : "")" asp-action="Review" asp-route-tab="@tab">@tab.Humanize()</a>
+            </li> 
+        }
+
+    </ul>
     
-    <div class="verse-card" onclick="togglePassage()" style="display:block">
-        <p class=" text-center fst-italic p-3">
-            Click to Show passage
-        </p>
-    </div>
-    <div class="verse-card" onclick="togglePassage()" style="display:none">
-        <div class="p-3">
-            <p class="fst-italic fw-light text-center">
-                Click to Hide Passage
-            </p>
-            <p>
-                <div class="row mt-4">
-                    <div class="col-12">
-                        @foreach (var chapter in Model.Passage.Verses)
-                        {
-                            <p>
-                                <strong>@chapter.Key</strong>
+    @if(Model.Path[Model.CurrentTab] > 1)
+    {
+        <nav class="nav py-3" style="border-bottom: 1px solid #DEDEDE;">
 
-                                @foreach (var verse in chapter.Value)
-                                {
-                                    <span><sup><strong>@verse.Key</strong></sup> @verse.Value </span>
-                                }
+            @for (int i = 1; i <= Model.Path[Model.CurrentTab]; i++)
+            {
+                <a class="nav-link@(i == Model.CurrentOrder ? " active" : "")" asp-action="Review" asp-route-tab="@Model.CurrentTab" asp-route-ord="@i">@i</a>
+            }
 
-                            </p>
-                        }
-                    </div>
-                </div>
-            </p>
-            <p class="fst-italic fw-light text-center">
-                Click to Hide Passage
-            </p>
+        </nav>
+    }
+
+    @if(Model.Card != null)
+    {
+
+        <div class="row mt-4">
+            <div class="col d-flex justify-content-end">
+                @if(Model.CurrentTab == Tab.Daily)
+                {
+                    <a class="btn btn-secondary me-2" asp-action="Promote" asp-route-id="@Model.Card.Id">Promote</a>  
+                }
+                <a class="btn btn-success" asp-action="Next" asp-route-currenttab="@Model.CurrentTab" asp-route-currentord="@Model.CurrentOrder">Next</a>    
+            </div>
         </div>
-    </div>
 
-    <div class="mt-5">
-        <partial name="_CardInfoTablePartial" model='@Model' />
-    </div>
+       <div class="mt-4">
+            <div class="col d-flex pb-4">
+                <span class="display-6">@Model.Card.Address (@Model.Card.Passage.TranslationShortName)</span>
+            </div>
+            <div class="verse-card" onclick="togglePassage()" style="display:block">
+                <p class=" text-center fst-italic p-3">
+                    Click to Show passage
+                </p>
+            </div>
+            <div class="verse-card" onclick="togglePassage()" style="display:none">
+                <div class="p-3">
+                    <p>
+                        <div class="row mt-4">
+                            <partial name="_PassagePartial" model='@Model.Card.Passage' />
+                        </div>
+                    </p>
+                    <p class="fst-italic fw-light text-center">
+                        Click to Hide Passage
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5">
+            <partial name="_CardInfoTablePartial" model='@Model' />
+        </div>
+    }
 
     <!-- Confirmation dialog markup -->
 
@@ -93,11 +129,11 @@
                     <h5 class="modal-title">Are you sure?</h5>
                 </div>
                 <div class="modal-body">
-                    <p>@Model.Passage.Address will be promoted and the next card in your queue will be moved to the Daily tab.</p>
+                    <p>@Model.Card.Address will be promoted and the next card in your queue will be moved to the Daily tab.</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cancelPromote()">Cancel</button>
-                    <a asp-action="Promote" asp-controller="Review" asp-route-id="@Model.Id" class="btn btn-primary">Promote</a>
+                    <a asp-action="Promote" asp-controller="Review" asp-route-id="@Model.Card.Id" class="btn btn-primary">Promote</a>
                 </div>
             </div>
         </div>
