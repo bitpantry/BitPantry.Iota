@@ -8,29 +8,6 @@
 @using BitPantry.Iota.Web.Controllers;
 @using Humanizer
 
-<style>
-
-    /* Styling only for main tabs */
-    .main-tabs .nav-link {
-        color: black !important; /* Always black text for main tabs */
-    }
-
-        .main-tabs .nav-link.active {
-            background-color: #e0f2ff !important; /* Light blue background for active main tabs */
-            color: black !important; /* Ensure text remains black when active */
-            border-radius: 5px; /* Rounded corners for active tab */
-        }
-
-    /* Styling for active nested tabs */
-    .nav .nav-link.active {
-        background-color: #e0f2ff !important; /* Light blue background for active nested tabs */
-        color: black !important; /* Ensure text remains black when active */
-    }
-
-
-
-
-</style>
 
 @* ------- SET VARIABLES ------- *@
 
@@ -102,6 +79,18 @@
 
 @if(Model.Cards.Count() > 1)
 {
+    <style>
+
+        .handle {
+            cursor: grab;
+        }
+
+        .handle:active {
+            cursor: grabbing;
+        }
+
+    </style>
+
     <div class="container mt-4">
 
         <div class="row justify-content-center">
@@ -126,10 +115,9 @@
             var el = document.getElementById('cardsList');
             var sortable = Sortable.create(el, {
                 animation: 175,
-                onEnd: function(evt) {
-
+                handle: '.handle', // Specify the handle class here
+                onEnd: function (evt) {
                     var itemEl = evt.item;
-
                     var cardId = parseInt(itemEl.getAttribute('id'));
                     var newOrder = evt.newIndex + 1;
 
@@ -144,17 +132,18 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: body
                     })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            console.log('Order updated successfully');
-                        } else {
-                            console.error('Failed to update order');
-                        }
-                    })
-                    .catch(error => console.error('Error:', error));
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                console.log('Order updated successfully');
+                            } else {
+                                console.error('Failed to update order');
+                            }
+                        })
+                        .catch(error => console.error('Error:', error));
                 }
             });
+
         </script>
     }
 

@@ -22,7 +22,7 @@ namespace BitPantry.Iota.Application.CRQS.Card.Query
         }
         public async Task<GetHomeCardInfoQueryResponse> Handle(GetHomeCardInfoQuery request, CancellationToken cancellationToken)
         {
-            var reviewPath = await _med.Send(new GetReviewPathQuery(request.UserId));
+            var reviewPath = await _med.Send(new GetReviewPathQuery(request.UserId, request.UserLocalTime));
 
             return new GetHomeCardInfoQueryResponse(
                     await _dbCtx.Cards.CountAsync(c => c.UserId == request.UserId, cancellationToken),
@@ -31,7 +31,7 @@ namespace BitPantry.Iota.Application.CRQS.Card.Query
         }
     }
 
-    public record GetHomeCardInfoQuery(long UserId) : IRequest<GetHomeCardInfoQueryResponse> { }
+    public record GetHomeCardInfoQuery(long UserId, DateTime UserLocalTime) : IRequest<GetHomeCardInfoQueryResponse> { }
 
     public record GetHomeCardInfoQueryResponse(int TotalCardCount, int CardsToReviewTodayCount) { }
  

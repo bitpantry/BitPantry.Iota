@@ -29,14 +29,55 @@ body {
   margin-bottom: 60px;
 }
 
-@media (max-width: 400px) {
+@media (max-width: 410px) {
     body {
         zoom: 0.80;  
     }
 }
 
-@media (max-width:340px) {
+@media (max-width:350px) {
     body {
         zoom: 0.75;  
     }
+}
+
+/* ADJUSTMENTS TO BOOTSTRAP TABS */
+
+.nav-link.active {
+    background-color: #C7E3D4;
+    color: black;
+    border-radius: 5px;
+}
+
+/* Styling only for main tabs */
+.main-tabs .nav-link {
+    color: black !important; /* Always black text for main tabs */
+    padding-left: 0.7rem; /* Adjust as needed */
+    padding-right: 0.7rem; /* Adjust as needed */
+}
+
+.main-tabs .nav-link.active {
+    background-color: #e0f2ff !important; /* Light blue background for active main tabs */
+    color: black !important; /* Ensure text remains black when active */
+    border-radius: 5px; /* Rounded corners for active tab */
+}
+
+/* Styling for active nested tabs */
+.nav .nav-link.active {
+    background-color: #e0f2ff !important; /* Light blue background for active nested tabs */
+    color: black !important; /* Ensure text remains black when active */
+}
+
+/* OTHER STYLES */
+
+.bd-example {
+    position: relative;
+    margin: 1rem -.75rem 0;
+    border: solid #dee2e6;
+    padding: 1.5rem;
+    margin-right: 0;
+    margin-left: 0;
+    border-width: 1px;
+    border-top-left-radius: .25rem;
+    border-top-right-radius: .25rem;
 }

@@ -44,7 +44,7 @@
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="nestedDropdown">
                                 <li><a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="GetStarted">Getting Started</a></li>
-                                <li><a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="About">About</a></li>
+                                <li><a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="About">Feedback</a></li>
                             </ul>
                         </li>
                     </ul>
@@ -63,6 +63,15 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            document.cookie = `@(Constants.TIMEZONE_KEY_NAME)=${timeZone}; path=/; secure; samesite=strict`;
+        });
+    </script>
+
     <mini-profiler  />
 @* 	<div class="d-none d-xl-block" style="background: #007bff; color: #fff; padding: 5px; text-align: center;">XL</div>
     <div class="d-none d-lg-block d-xl-none" style="background: #27a745; color: #fff; padding: 5px; text-align: center;">LG</div>

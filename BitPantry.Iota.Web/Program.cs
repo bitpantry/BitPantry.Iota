@@ -54,6 +54,7 @@ namespace BitPantry.Iota.Web
 
             app.Logger.LogInformation("Starting BitPantry.Iota.Web :: {Environment}, {DataSource}", builder.Environment.EnvironmentName, connStrBuilder.DataSource);
 
+            app.UseMiddleware<TimeZoneMiddleware>();
             app.UseMiddleware<IotaLogEnricherMiddleware>();
 
             // Configure the HTTP request pipeline.
@@ -68,11 +69,8 @@ namespace BitPantry.Iota.Web
             else
             {
                 app.UseDeveloperExceptionPage();
-            }
-
-            if(app.Environment.IsDevelopment()) 
                 app.UseHttpsRedirection();
-
+            }
 
             app.UseStaticFiles();
 

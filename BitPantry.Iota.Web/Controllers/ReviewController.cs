@@ -16,19 +16,21 @@ namespace BitPantry.Iota.Web.Controllers
     {
         private IMediator _med;
         private UserIdentity _identity;
+        private UserTimeService _userTime;
         private ILogger<ReviewController> _logger;
 
-        public ReviewController(IMediator med, UserIdentity identity, ILogger<ReviewController> logger)
+        public ReviewController(IMediator med, UserIdentity identity, UserTimeService userTime, ILogger<ReviewController> logger)
         {
             _med = med;
             _identity = identity;
+            _userTime = userTime;
             _logger = logger;
         }
 
         [Route("review")]
         public async Task<IActionResult> Index()
         {
-            var path = await _med.Send(new GetReviewPathQuery(_identity.UserId));
+            var path = await _med.Send(new GetReviewPathQuery(_identity.UserId, _userTime.GetCurrentUserLocalTime()));
 
             if (!path.Any(p => p.Value > 0))
                 return NoCards();
@@ -41,7 +43,7 @@ namespace BitPantry.Iota.Web.Controllers
         [Route("review/{tab:enum}/{ord:int?}")]
         public async Task<IActionResult> Review(Tab tab, int ord = 1)
         {
-            var path = await _med.Send(new GetReviewPathQuery(_identity.UserId));
+            var path = await _med.Send(new GetReviewPathQuery(_identity.UserId, _userTime.GetCurrentUserLocalTime()));
             var card = await _med.Send(new GetCardQuery(_identity.UserId, tab, ord));
 
             return View(nameof(Review), new ReviewModel(path, tab, ord, card.ToModel()));
@@ -52,7 +54,7 @@ namespace BitPantry.Iota.Web.Controllers
         {
             await _med.Send(new MarkCardAsReviewedCommand(_identity.UserId, currentTab, currentOrd));
 
-            var path = await _med.Send(new GetReviewPathQuery(_identity.UserId));
+            var path = await _med.Send(new GetReviewPathQuery(_identity.UserId, _userTime.GetCurrentUserLocalTime()));
             var helper = new ReviewPathHelper(path);
 
             var nextStep = helper.GetNextStep(currentTab, currentOrd);
@@ -88,7 +90,7 @@ namespace BitPantry.Iota.Web.Controllers
 
         public IActionResult NoCards()
         {
-            return View();
+            return View(nameof(NoCards));
         }
 
 

@@ -50,6 +50,10 @@ namespace BitPantry.Iota.Web.IoC
                 options.Cookie.SameSite = SameSiteMode.Strict; // Helps prevent cross-site request forgery
             });
 
+            // services
+
+            services.AddScoped<UserTimeService>();
+
             return services;
         }
 

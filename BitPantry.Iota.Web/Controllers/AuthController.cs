@@ -44,7 +44,7 @@ namespace BitPantry.Iota.Web.Controllers
             var id = await _med.Send(new SignInUserCommand(emailClaim.Value));
             _userIdentity.UserId = id;
 
-            return Route.RedirectTo<HomeController>(c => c.Delay(1000, Url.Action<HomeController>(c => c.Index())));
+            return Route.RedirectTo<HomeController>(c => c.Delay(200, Url.Action<HomeController>(c => c.Index())));
         }
 
         public async Task<IActionResult> Logout()

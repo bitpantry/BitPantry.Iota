@@ -48,10 +48,19 @@
 
 <div class="container">
 
-    <div class="col-12 mt-4 lead">
-        <strong>
-            Reviewing @Model.Path.Sum(p => p.Value) card@(Model.Path.Sum(p => p.Value) > 1 ? "s" : "") today
-        </strong>
+    <div class="d-flex mt-4">
+        <div class="col lead">
+            <strong>
+                Reviewing @Model.Path.Sum(p => p.Value) card@(Model.Path.Sum(p => p.Value) > 1 ? "s" : "") today
+            </strong>
+        </div>
+        <div class="col d-flex justify-content-end align-content-center">
+            @if (Model.CurrentTab == Tab.Daily)
+            {
+                <a class="btn btn-secondary me-2" asp-action="Promote" asp-route-id="@Model.Card.Id">Promote</a>
+            }
+            <a class="btn btn-success" asp-action="Next" asp-route-currenttab="@Model.CurrentTab" asp-route-currentord="@Model.CurrentOrder">Next</a>
+        </div>
     </div>
 
     @* ------- TABS ------- *@
@@ -81,16 +90,6 @@
 
     @if(Model.Card != null)
     {
-
-        <div class="row mt-4">
-            <div class="col d-flex justify-content-end">
-                @if(Model.CurrentTab == Tab.Daily)
-                {
-                    <a class="btn btn-secondary me-2" asp-action="Promote" asp-route-id="@Model.Card.Id">Promote</a>  
-                }
-                <a class="btn btn-success" asp-action="Next" asp-route-currenttab="@Model.CurrentTab" asp-route-currentord="@Model.CurrentOrder">Next</a>    
-            </div>
-        </div>
 
        <div class="mt-4">
             <div class="col d-flex pb-4">

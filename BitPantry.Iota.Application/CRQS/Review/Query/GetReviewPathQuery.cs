@@ -27,7 +27,7 @@ namespace BitPantry.Iota.Application.CRQS.Review.Query
 
             do
             {
-                currentTab = GetNextReviewTab(currentTab);
+                currentTab = GetNextReviewTab(currentTab, request.UserLocalTime);
                 path.Add(currentTab, 0);
 
             } while (currentTab < Tab.Day1);
@@ -55,13 +55,13 @@ namespace BitPantry.Iota.Application.CRQS.Review.Query
             return path;
         }
 
-        private Tab GetNextReviewTab(Tab? lastTab)
+        private Tab GetNextReviewTab(Tab? lastTab, DateTime userLocalTime)
         {
             return lastTab switch
             {
                 Tab.Queue => Tab.Daily,
-                Tab.Daily => DateTime.Today.Day % 2 == 0 ? Tab.Even : Tab.Odd,
-                Tab.Odd or Tab.Even => DateTime.Today.DayOfWeek switch
+                Tab.Daily => userLocalTime.Day % 2 == 0 ? Tab.Even : Tab.Odd,
+                Tab.Odd or Tab.Even => userLocalTime.DayOfWeek switch
                 {
                     DayOfWeek.Sunday => Tab.Sunday,
                     DayOfWeek.Monday => Tab.Monday,
@@ -70,13 +70,13 @@ namespace BitPantry.Iota.Application.CRQS.Review.Query
                     DayOfWeek.Thursday => Tab.Thursday,
                     DayOfWeek.Friday => Tab.Friday,
                     DayOfWeek.Saturday => Tab.Saturday,
-                    _ => throw new ArgumentOutOfRangeException("DateTime.Today.DayOfWeek", DateTime.Today.DayOfWeek, "A tab is not defined for this day of the week")
+                    _ => throw new ArgumentOutOfRangeException("DateTime.Today.DayOfWeek", userLocalTime.DayOfWeek, "A tab is not defined for this day of the week")
                 },
-                Tab.Sunday or Tab.Monday or Tab.Tuesday or Tab.Wednesday or Tab.Thursday or Tab.Friday or Tab.Saturday => DateTime.Today.Day + Tab.Saturday,
+                Tab.Sunday or Tab.Monday or Tab.Tuesday or Tab.Wednesday or Tab.Thursday or Tab.Friday or Tab.Saturday => userLocalTime.Day + Tab.Saturday,
                 _ => throw new ArgumentOutOfRangeException(nameof(lastTab), lastTab.Value, "No review path is defined for this tab")
             };
         }
     }
 
-    public record GetReviewPathQuery(long UserId) : IRequest<Dictionary<Tab, int>> { }
+    public record GetReviewPathQuery(long UserId, DateTime UserLocalTime) : IRequest<Dictionary<Tab, int>> { }
 }

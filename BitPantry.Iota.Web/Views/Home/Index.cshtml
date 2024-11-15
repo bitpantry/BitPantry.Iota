@@ -4,7 +4,6 @@
 
     @if (Model.CardCountToReviewToday > 0)
     {
-
         <div class="display-6 mt-5">
             @Model.CardCountToReviewToday cards to review today
         </div>
@@ -12,7 +11,6 @@
             <a class="btn btn-success" asp-controller="Review" asp-action="Index" role="button">Review Today's Cards</a>
             <a class="btn btn-primary ms-3" asp-controller="Card" asp-action="Create" role="button">Add Cards</a>
         </div>
-
     }
     else if(!Model.HasCards)
     {
