@@ -20,9 +20,9 @@ public class CachedQueryable<T>
         _key = $"{IQUERYABLE_KEY_PREFIX}_{query.ToQueryString().ComputeHash()}";
     }
 
-    public async Task<List<T>> ToListAsync()
-        => await _cacheSvc.GetOrCreateAsync(_key, async () => await _query.ToListAsync(), _slidingExpiration);
+    public async Task<List<T>> ToListAsync(CancellationToken cancellationToken)
+        => await _cacheSvc.GetOrCreateAsync(_key, async () => await _query.ToListAsync(cancellationToken), _slidingExpiration);
 
-    public async Task<T> SingleAsync()
-        => await _cacheSvc.GetOrCreateAsync(_key, async() => await _query.SingleAsync(), _slidingExpiration);
+    public async Task<T> SingleAsync(CancellationToken cancellationToken)
+        => await _cacheSvc.GetOrCreateAsync(_key, async() => await _query.SingleAsync(cancellationToken), _slidingExpiration);
 }

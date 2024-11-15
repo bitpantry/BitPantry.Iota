@@ -1,8 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Diagnostics.Internal;
-using Microsoft.Extensions.Logging.Console;
-using Microsoft.Extensions.Logging;
-
-namespace BitPantry.Iota.Web.Logging
+﻿namespace BitPantry.Iota.Web.Logging
 {
     public static class ILoggingBuilderExtensions
     {

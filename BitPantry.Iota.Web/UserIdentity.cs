@@ -1,7 +1,4 @@
 ﻿using BitPantry.Parsing.Strings;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.Extensions.Logging.Abstractions;
-using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
 
 namespace BitPantry.Iota.Web

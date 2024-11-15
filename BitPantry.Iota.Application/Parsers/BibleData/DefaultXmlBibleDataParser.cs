@@ -1,10 +1,4 @@
-﻿using Azure.Core;
-using BitPantry.Iota.Data.Entity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using BitPantry.Iota.Data.Entity;
 using System.Xml.Linq;
 
 /***

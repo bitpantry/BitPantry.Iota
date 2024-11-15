@@ -1,6 +1,4 @@
-﻿using BitPantry.Iota.Application;
-
-namespace BitPantry.Iota.Web.Models
+﻿namespace BitPantry.Iota.Web.Models
 {
     public record PassageModel(
         long BibleId = 0,

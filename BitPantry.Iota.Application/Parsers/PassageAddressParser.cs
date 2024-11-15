@@ -1,30 +1,45 @@
-using System;
+using BitPantry.Iota.Data.Entity;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace BitPantry.Iota.Application.Parsers;
 
-public class PassageAddressParser
+internal class PassageAddressParser
 {
-    public bool IsValid { get; private set; } = true;
-    public string Book { get; private set; }
-    public int FromChapterNumber { get; private set; }
-    public int FromVerseNumber { get; private set; }
-    public int ToChapterNumber { get; set; }
-    public int ToVerseNumber { get; private set; }
+    public string RawValue { get; }
+    public int BookNumber { get; }
+    public string BookName { get; }
+    public int FromChapterNumber { get; }
+    public int FromVerseNumber { get; }
+    public int ToChapterNumber { get; }
+    public int ToVerseNumber { get; }
+    public long BibleId { get; }
+    public string TranslationShortName { get; }
 
 
-    public PassageAddressParser(string addressString)
+    public PassageAddressParser(Bible bible, string addressString)
     {
+        RawValue = addressString;
+        BibleId = bible.Id;
+        TranslationShortName = bible.TranslationShortName;
+
+        // check for null address
+
+        if (string.IsNullOrEmpty(addressString))
+            throw new ArgumentNullException(nameof(addressString));
+
+        // parse the raw address text
+
         var regex = new Regex(@"^\s*(?<Book>\d?\s?[A-Za-z\.]+)\s*(?<Chapter>\d+):(?<StartVerse>\d+)\s*(?:-\s*(?<EndChapter>\d+):(?<EndVerse>\d+)|-\s*(?<EndVerseOnly>\d+))?\s*$");
         var match = regex.Match(addressString);
 
         if (!match.Success)
         {
-            IsValid = false;
+            throw new PassageAddressParsingException(bible.Id, addressString, PassageAddressParsingExceptionCode.InvalidAddress, "The address is invalid");
         }
         else
         {
-            Book = match.Groups["Book"].Value.Trim();
+            BookName = match.Groups["Book"].Value.Trim();
             FromChapterNumber = int.Parse(match.Groups["Chapter"].Value);
             FromVerseNumber = int.Parse(match.Groups["StartVerse"].Value);
 
@@ -44,5 +59,53 @@ public class PassageAddressParser
                 ToVerseNumber = FromVerseNumber;
             }
         }
+
+        // resolve book name
+
+        var bookNameInfo = BookNameDictionary.Get(bible.Classification, BookName);
+
+        if (bookNameInfo.Key == 0)
+            throw new PassageAddressParsingException(bible.Id, addressString, PassageAddressParsingExceptionCode.BookNameUnresolved, "The book name could not be found");
+
+        BookNumber = bookNameInfo.Key;
+        BookName = bookNameInfo.Value.Name;
+    }
+
+    public string GetAddressString(bool includeTranslation = false)
+    {
+        var addy = new StringBuilder($"{BookName} {FromChapterNumber}:{FromVerseNumber}");
+
+        if (ToVerseNumber != FromVerseNumber & ToChapterNumber == FromChapterNumber)
+            addy.Append($"-{ToVerseNumber}");
+        else if (ToChapterNumber != FromChapterNumber)
+            addy.Append($"-{ToChapterNumber}:{ToVerseNumber}");
+
+        if (includeTranslation && !string.IsNullOrWhiteSpace(TranslationShortName))
+            addy.Append($" ({TranslationShortName})");
+
+        return addy.ToString();
+    }
+
+    public override string ToString()
+        => GetAddressString();
+}
+
+public enum PassageAddressParsingExceptionCode
+{
+    InvalidAddress,
+    BookNameUnresolved
+}
+
+public class PassageAddressParsingException : Exception
+{
+    public long BibleId { get; }
+    public string Address { get; }
+    public PassageAddressParsingExceptionCode Code { get; set; }
+
+    public PassageAddressParsingException(long bibleId, string address, PassageAddressParsingExceptionCode code, string message) : base(message)
+    {
+        BibleId = bibleId;
+        Address = address;
+        Code = code;
     }
 }

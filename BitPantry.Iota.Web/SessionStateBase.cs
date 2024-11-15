@@ -1,6 +1,4 @@
-﻿using BitPantry.Iota.Infrastructure.Settings;
-using BitPantry.Parsing.Strings;
-using System.Runtime.Serialization.Formatters.Binary;
+﻿using BitPantry.Parsing.Strings;
 using System.Text.Json;
 
 namespace BitPantry.Iota.Web

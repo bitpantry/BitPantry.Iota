@@ -1,15 +1,9 @@
 ﻿using BitPantry.Iota.Application.DTO;
 using BitPantry.Iota.Data.Entity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace BitPantry.Iota.Application
 {
-	public static class CardExtensions
+    public static class CardExtensions
 	{
 		public static CardDto ToDto(this Card card, List<Verse> verses = null)
 			=> new(

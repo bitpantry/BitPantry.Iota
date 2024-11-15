@@ -1,22 +1,15 @@
 ﻿using BitPantry.CommandLine.API;
-using BitPantry.Iota.Application.CRQS.Bible.Query;
-using BitPantry.Iota.Application.CRQS.Card.Command;
+using BitPantry.Iota.Application.Parsers;
+using BitPantry.Iota.Application.Service;
 using BitPantry.Iota.Data.Entity;
-using MediatR;
-using Microsoft.Identity.Client;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BitPantry.Iota.Console.Commands.Card
 {
     [Command(Namespace = "card")]
     public class CreateFromFile : CommandBase
     {
-        private EntityDataContext _dbCtx;
-        private IMediator _med;
+        private readonly BibleService _bibleSvc;
+        private readonly CardService _cardSvc;
 
         [Argument]
         [Alias('u')]
@@ -33,10 +26,10 @@ namespace BitPantry.Iota.Console.Commands.Card
         [Description("The path of the file to load. Each line should contain a single verse address (blank lines are ignored).")]
         public string FilePath { get; set; }
 
-        public CreateFromFile(EntityDataContext dbCtx, IMediator med) 
+        public CreateFromFile(BibleService bibleSvc, CardService cardSvc) 
         {
-            _dbCtx = dbCtx;
-            _med = med;
+            _bibleSvc = bibleSvc;
+            _cardSvc = cardSvc;
         }
 
         public async Task Execute(CommandExecutionContext ctx)
@@ -51,7 +44,7 @@ namespace BitPantry.Iota.Console.Commands.Card
 
             if (BibleId == 0)
             {
-                var biblesResp = await _med.Send(new GetBibleTranslationsQuery());
+                var biblesResp = await _bibleSvc.GetBibleTranslations(ctx.CancellationToken);
                 var firstTranslation = biblesResp.First();
                 Info.WriteLine($"Using translation {firstTranslation.LongName}");
                 BibleId = firstTranslation.Id;
@@ -70,15 +63,17 @@ namespace BitPantry.Iota.Console.Commands.Card
             {
                 if(!string.IsNullOrEmpty(address))
                 {
-                    var resp = await _med.Send(new CreateCardCommand(UserId, BibleId, address));
-
-                    if (!resp.IsValidAddress)
+                    try
                     {
-                        Warning.WriteLine($"No passage found for address, '{address}'", address);
+                        var resp = await _cardSvc.CreateCard(UserId, BibleId, address, ctx.CancellationToken);
                     }
-                    else if (resp.isAlreadyCreated)
+                    catch (CreateCardException createCardEx)
                     {
-                        Warning.WriteLine($"Card for passage, '{resp.Address}', already exists");
+                        Error.WriteLine(createCardEx.Message);
+                    }
+                    catch (PassageAddressParsingException parsingEx)
+                    {
+                        Error.WriteLine(parsingEx.Message);
                     }
                 }
             }

@@ -1,23 +1,9 @@
-﻿using Azure.Core;
-using BitPantry.Iota.Application.CRQS.Card.Command;
-using BitPantry.Iota.Application.Parsers;
-using BitPantry.Iota.Common;
-using BitPantry.Iota.Data.Entity;
-using BitPantry.Iota.Infrastructure.Caching;
+﻿using BitPantry.Iota.Common;
 using Dapper;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.Extensions.Logging;
-using Microsoft.Identity.Client;
-using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace BitPantry.Iota.Application.Logic
 {
@@ -284,9 +270,10 @@ namespace BitPantry.Iota.Application.Logic
                     WHERE Id = @CardId;
                 END";
 
-                await dbConnection.ExecuteAsync(sql, new { UserId = userId, CardId = cardId, NewOrder = newOrder, Tab = tab }, transaction: transaction);
-            }
+            await dbConnection.ExecuteAsync(sql, new { UserId = userId, CardId = cardId, NewOrder = newOrder, Tab = tab }, transaction: transaction);
         }
-
     }
+}
+
+
 

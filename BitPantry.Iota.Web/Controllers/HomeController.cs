@@ -1,9 +1,6 @@
-using BitPantry.Iota.Application.CRQS.Card.Command;
-using BitPantry.Iota.Application.CRQS.Card.Query;
+using BitPantry.Iota.Application.Service;
 using BitPantry.Iota.Web.Models;
-using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Diagnostics;
 
 namespace BitPantry.Iota.Web.Controllers
@@ -11,25 +8,28 @@ namespace BitPantry.Iota.Web.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly IMediator _med;
+        private readonly CardService _cardSvc;
+        private readonly ReviewService _reviewSvc;
         private readonly UserIdentity _identity;
         private readonly UserTimeService _userTimeSvc;
 
-        public HomeController(ILogger<HomeController> logger, IMediator med, UserIdentity identity, UserTimeService userTimeSvc)
+        public HomeController(ILogger<HomeController> logger, CardService cardSvc, ReviewService reviewSvc, UserIdentity identity, UserTimeService userTimeSvc)
         {
             _logger = logger;
-            _med = med;
+            _cardSvc = cardSvc;
+            _reviewSvc = reviewSvc;
             _identity = identity;
             _userTimeSvc = userTimeSvc;
         }
 
         public async Task<IActionResult> Index()
         {
-            var homeCardInfo = await _med.Send(new GetHomeCardInfoQuery(_identity.UserId, _userTimeSvc.GetCurrentUserLocalTime()));
+            var totalCardCount = await _cardSvc.GetUserCardCount(_identity.UserId, HttpContext.RequestAborted);
+            var path = await _reviewSvc.GetReviewPath(_identity.UserId, _userTimeSvc.GetCurrentUserLocalTime(), HttpContext.RequestAborted);
 
             return View(new HomeModel(
-                homeCardInfo.TotalCardCount > 0,
-                homeCardInfo.CardsToReviewTodayCount
+                totalCardCount > 0,
+                path.CardsToReviewCount
             ));
         }
 

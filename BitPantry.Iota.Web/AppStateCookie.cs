@@ -1,9 +1,6 @@
 ﻿using BitPantry.Parsing.Strings;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Microsoft.EntityFrameworkCore.Query.Internal;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace BitPantry.Iota.Web
 {

@@ -1,20 +1,13 @@
 ﻿using BitPantry.CommandLine.API;
-using BitPantry.Iota.Application.CRQS.Bible.Command;
+using BitPantry.Iota.Application.Service;
 using BitPantry.Iota.Data.Entity;
-using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BitPantry.Iota.Console.Commands.Bible
 {
     [Command(Namespace = "bible")]
     public class Install : CommandBase
     {
-        private IMediator _med;
-        private EntityDataContext _dbCtx;
+        private readonly BibleService _bibleSvc;
 
         [Argument]
         [Alias('f')]
@@ -26,10 +19,9 @@ namespace BitPantry.Iota.Console.Commands.Bible
         [Description("A directory containing Bible data files - all files matching the pattern \"*.xml\" in the directory will be installed")]
         public string DataDirectoryPath { get; set; }
 
-        public Install(IMediator med, EntityDataContext dbCtx)
+        public Install(BibleService bibleSvc)
         {
-            _med = med;
-            _dbCtx = dbCtx;
+            _bibleSvc = bibleSvc;
         }
 
         public async Task Execute(CommandExecutionContext context)
@@ -82,7 +74,7 @@ namespace BitPantry.Iota.Console.Commands.Bible
                     if (dataFiles.Count() > 1)
                         Info.WriteLine($"Installing '{item}' ...");
 
-                    await _med.Send(new InstallBibleCommand(item), cancellationToken);
+                    _ = await _bibleSvc.Install(item, cancellationToken);
                 }
             }
         }

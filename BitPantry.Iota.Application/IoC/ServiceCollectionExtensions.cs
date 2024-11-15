@@ -1,6 +1,5 @@
 ﻿using BitPantry.Iota.Application.Logic;
-using BitPantry.Iota.Common;
-using BitPantry.Iota.Infrastructure.Settings;
+using BitPantry.Iota.Application.Service;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BitPantry.Iota.Application.IoC
@@ -11,27 +10,19 @@ namespace BitPantry.Iota.Application.IoC
         public static void ConfigureApplicationServices(
             this IServiceCollection services)
         {
+            // services
 
-            // CRQS
-
-            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(System.Reflection.Assembly.GetExecutingAssembly()));
-
-            // extensions
-
-
-
-            // repositories
-
-
+            services.AddScoped<BibleService>();
+            services.AddScoped<CardService>();
+            services.AddScoped<DataProtectionService>();
+            services.AddScoped<IdentityService>();
+            services.AddScoped<ReviewService>();
+            services.AddScoped<TabsService>();
 
             // logic
 
             services.AddScoped<PassageLogic>();
             services.AddScoped<CardLogic>();
-
-            // components
-
-
 
         }
 

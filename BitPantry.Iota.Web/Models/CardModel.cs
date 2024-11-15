@@ -1,5 +1,4 @@
 ﻿using BitPantry.Iota.Common;
-using BitPantry.Iota.Data.Entity;
 using Humanizer;
 
 namespace BitPantry.Iota.Web.Models

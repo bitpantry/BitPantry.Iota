@@ -1,22 +1,19 @@
-﻿using BitPantry.Iota.Application.CRQS.Card.Query;
-using BitPantry.Iota.Application.CRQS.Tabs.Query;
+﻿using BitPantry.Iota.Application.Service;
 using BitPantry.Iota.Common;
 using BitPantry.Iota.Web.Models;
-using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using System;
 
 namespace BitPantry.Iota.Web.Controllers
 {
     public class TabsController : Controller
     {
-        private IMediator _med;
         private UserIdentity _identity;
+        private TabsService _tabSvc;
 
-        public TabsController(IMediator med, UserIdentity identity) 
+        public TabsController(UserIdentity identity, TabsService tabSvc) 
         {
-            _med = med;
             _identity = identity;
+            _tabSvc = tabSvc;
         }
 
         [Route("tabs")]
@@ -26,7 +23,7 @@ namespace BitPantry.Iota.Web.Controllers
         [Route("tabs/{tab:enum}")]
         public async Task<IActionResult> Tabs(Tab tab)
         {
-            var counts = await _med.Send(new GetTabCardCountsQuery(_identity.UserId));
+            var counts = await _tabSvc.GetCardCountByTab(_identity.UserId, HttpContext.RequestAborted);
 
             // find a tab with data to set as active
 
@@ -43,7 +40,7 @@ namespace BitPantry.Iota.Web.Controllers
 
             // query cards
 
-            var cards = await _med.Send(new GetCardsForTabQuery(_identity.UserId, tab));
+            var cards = await _tabSvc.GetCardsForTab(_identity.UserId, tab, HttpContext.RequestAborted);
 
             // build model
 

@@ -1,9 +1,6 @@
-﻿using BitPantry.Iota.Application.CRQS.DataProtection.Commands;
-using BitPantry.Iota.Application.CRQS.DataProtection.Queries;
-using MediatR;
+﻿using BitPantry.Iota.Application.Service;
 using Microsoft.AspNetCore.DataProtection.Repositories;
 using System.Xml.Linq;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace BitPantry.Iota.Web
 {
@@ -20,8 +17,8 @@ namespace BitPantry.Iota.Web
         {
             using (var scope = factory.CreateScope())
             {
-                return scope.ServiceProvider.GetRequiredService<IMediator>()
-                    .Send(new ReadDataProtectionKeysQuery())
+                return scope.ServiceProvider.GetRequiredService<DataProtectionService>()
+                    .ReadDataProtectionKeys()
                     .GetAwaiter().GetResult();
             }
         }
@@ -30,8 +27,8 @@ namespace BitPantry.Iota.Web
         {
             using (var scope = factory.CreateScope())
             {
-                scope.ServiceProvider.GetRequiredService<IMediator>()
-                    .Send(new StoreDataProtectionKeyCommand(element.ToString(SaveOptions.DisableFormatting), DateTime.UtcNow))
+                scope.ServiceProvider.GetRequiredService<DataProtectionService>()
+                    .StoreDataProtectionKeys(element.ToString(SaveOptions.DisableFormatting), DateTime.UtcNow)
                     .GetAwaiter().GetResult();
             }
             

@@ -1,22 +1,17 @@
 ﻿using BitPantry.Iota.Data.Entity;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 using System.Data.Common;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BitPantry.Iota.Application
 {
     public static class EntityDataContextExtensions
     {
-        public static async Task UseConnection(this EntityDataContext dbCtx, Func<DbConnection, DbTransaction, Task> func)
+        public static async Task UseConnection(this EntityDataContext dbCtx, CancellationToken cancellationToken, Func<DbConnection, DbTransaction, Task> func)
         {
             var conn = dbCtx.Database.GetDbConnection();
 
             if (conn.State != System.Data.ConnectionState.Open)
-                conn.Open();
+                await conn.OpenAsync(cancellationToken);
 
             using (var trans = conn.BeginTransaction())
             {
@@ -31,15 +26,17 @@ namespace BitPantry.Iota.Application
                     throw;
                 }
             }
+
+            await conn.CloseAsync();
             
         }
 
-        public static async Task<T> UseConnection<T>(this EntityDataContext dbCtx, Func<DbConnection, Task<T>> func)
+        public static async Task<T> UseConnection<T>(this EntityDataContext dbCtx, CancellationToken cancellationToken, Func<DbConnection, Task<T>> func)
         {
             var conn = dbCtx.Database.GetDbConnection();
             
             if (conn.State != System.Data.ConnectionState.Open)
-                conn.Open();
+                await conn.OpenAsync(cancellationToken);
 
             return await func(conn);
         }

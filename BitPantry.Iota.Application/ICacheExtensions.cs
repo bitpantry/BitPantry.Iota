@@ -1,4 +1,3 @@
-using System;
 using BitPantry.Iota.Data.Entity;
 using BitPantry.Iota.Infrastructure.Caching;
 

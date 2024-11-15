@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.Diagnostics.Enrichment;
+﻿using Microsoft.Extensions.Diagnostics.Enrichment;
 
 namespace BitPantry.Iota.Web.Logging
 {

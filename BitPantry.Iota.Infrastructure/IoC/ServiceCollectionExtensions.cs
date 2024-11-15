@@ -18,20 +18,9 @@ namespace BitPantry.Iota.Infrastructure.IoC
             AppSettings settings,
             CachingStrategy cachingStrategy)
         {
-            // database
+            // entity framework
 
             services.AddDbContextPool<EntityDataContext>(o => o.UseSqlServer(settings.ConnectionStrings.EntityDataContext));
-
-            // extensions
-
-
-
-            // repositories
-
-
-
-            // services
-
 
             // components
 

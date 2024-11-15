@@ -1,5 +1,4 @@
 ﻿using BitPantry.Iota.Common;
-using Microsoft.Build.Framework.Profiler;
 
 namespace BitPantry.Iota.Web.Models
 {

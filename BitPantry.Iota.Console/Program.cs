@@ -5,10 +5,6 @@ using BitPantry.Iota.Application.IoC;
 using Microsoft.Extensions.Configuration;
 using BitPantry.Iota.Infrastructure.Settings;
 using System.Reflection;
-using BitPantry.CommandLine.Processing.Activation;
-using Microsoft.EntityFrameworkCore.Query;
-using BitPantry.Iota.Console.Commands.Bible;
-using Azure.Core.GeoJson;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 

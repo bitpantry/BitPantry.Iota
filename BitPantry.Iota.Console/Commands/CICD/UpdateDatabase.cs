@@ -3,20 +3,14 @@ using BitPantry.Iota.Data.Entity;
 using BitPantry.Iota.Infrastructure.Settings;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BitPantry.Iota.Console.Commands.CICD
 {
     [Command(Namespace ="cicd")]
     public class UpdateDatabase : CommandBase
     {
-        private EntityDataContext _dbCtx;
-        private AppSettings _settings;
+        private readonly EntityDataContext _dbCtx;
+        private readonly AppSettings _settings;
 
         public UpdateDatabase(EntityDataContext dbCtx, AppSettings settings)
         {

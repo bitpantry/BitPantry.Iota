@@ -1,11 +1,8 @@
-using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using BitPantry.Iota.Infrastructure.Settings;
 using BitPantry.Iota.Web.IoC;
 using BitPantry.Iota.Infrastructure.IoC;
 using BitPantry.Iota.Application.IoC;
 using BitPantry.Iota.Web.Logging;
-using Microsoft.AspNetCore.Routing.Constraints;
 using BitPantry.Iota.Common;
 using Microsoft.Data.SqlClient;
 

@@ -1,11 +1,6 @@
 ﻿using BitPantry.Iota.Data.Entity;
 using BitPantry.Iota.Infrastructure.Caching;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BitPantry.Iota.Application
 {
@@ -32,12 +27,13 @@ namespace BitPantry.Iota.Application
             int fromChapterNumber,
             int fromVerseNumber,
             int toChapterNumber,
-            int toVerseNumber)
+            int toVerseNumber,
+            CancellationToken cancellationToken)
         {
             return await BuildGetPassageQuery(dbSet, bibleId, bookNumber, fromChapterNumber, fromVerseNumber, toChapterNumber, toVerseNumber)
                 .AsNoTracking()
                 .WithCaching(cache)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
 
         private static IQueryable<Verse> BuildGetPassageQuery(

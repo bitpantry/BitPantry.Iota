@@ -1,20 +1,15 @@
 ﻿using BitPantry.CommandLine.API;
-using BitPantry.Iota.Application.CRQS.Bible.Query;
+using BitPantry.Iota.Application.Parsers;
+using BitPantry.Iota.Application.Service;
 using BitPantry.Iota.Common;
-using BitPantry.Iota.Data.Entity;
-using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BitPantry.Iota.Console.Commands.Card
 {
     [Command(Namespace = "Card")]
     public class Create : CommandBase
     {
-        private IMediator _med;
+        private readonly BibleService _bibleSvc;
+        private readonly CardService _cardSvc;
 
         [Argument]
         [Alias('u')]
@@ -36,9 +31,10 @@ namespace BitPantry.Iota.Console.Commands.Card
         [Description("The tab to put the new card into - Queue by default.")]
         public Tab Tab { get; set; } = Tab.Queue;
 
-        public Create(IMediator med)
+        public Create(BibleService bibleSvc, CardService cardSvc)
         {
-            _med = med;
+            _bibleSvc = bibleSvc;
+            _cardSvc = cardSvc;
         }
 
         public async Task Execute(CommandExecutionContext context)
@@ -53,7 +49,7 @@ namespace BitPantry.Iota.Console.Commands.Card
 
             if (BibleId == 0)
             {
-                var biblesResp = await _med.Send(new GetBibleTranslationsQuery());
+                var biblesResp = await _bibleSvc.GetBibleTranslations(context.CancellationToken);
                 var firstTranslation = biblesResp.First();
                 Info.WriteLine($"Using translation {firstTranslation.LongName}");
                 BibleId = firstTranslation.Id;
@@ -68,14 +64,19 @@ namespace BitPantry.Iota.Console.Commands.Card
             if (isError)
                 return;
 
-            var resp = await _med.Send(new Application.CRQS.Card.Command.CreateCardCommand(UserId, BibleId, Address, Tab));
-
-            if(!resp.IsValidAddress) {
-                Error.WriteLine("Invalid address");
-
-                if (resp.isAlreadyCreated)
-                    Error.WriteLine("Card already exists");
+            try
+            {
+                var resp = await _cardSvc.CreateCard(UserId, BibleId, Address, Tab, context.CancellationToken);
             }
+            catch(CreateCardException createCardEx)
+            {
+                Error.WriteLine(createCardEx.Message);
+            }
+            catch(PassageAddressParsingException parsingEx)
+            {
+                Error.WriteLine(parsingEx.Message);
+            }
+
         }
     }
 }

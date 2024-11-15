@@ -1,62 +1,46 @@
-﻿using Azure.Core;
-using BitPantry.Iota.Application.CRQS.Card.Command;
-using BitPantry.Iota.Application.DTO;
+﻿using BitPantry.Iota.Application.DTO;
 using BitPantry.Iota.Application.Parsers;
 using BitPantry.Iota.Data.Entity;
 using BitPantry.Iota.Infrastructure.Caching;
-using Microsoft.Identity.Client;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BitPantry.Iota.Application.Logic
 {
     public class PassageLogic
     {
-        private CacheService _cacheSvc;
-
-        public PassageLogic(CacheService cacheSvc)
+        public async Task<GetPassageResponse> GetPassageQuery(EntityDataContext dbCtx, CacheService cacheSvc, long bibleId, string addressString, CancellationToken cancellationToken)
         {
-            _cacheSvc = cacheSvc;
-        }
+            // parse passage address
 
-        public async Task<GetPassageResult> GetPassageQuery(EntityDataContext dbCtx, long bibleId, string address, bool asNoTracking = true)
-        {
-            if (string.IsNullOrEmpty(address))
-                return new GetPassageResult { Code = GetPassageResultCode.CannotParseAddress };
+            var bible = await dbCtx.Bibles.SingleOrDefaultWithCacheAsync(cacheSvc, bibleId, cancellationToken);
 
-            // parse the raw address text
-
-            var parser = new PassageAddressParser(address);
-            if (!parser.IsValid)
-                return new GetPassageResult { Code = GetPassageResultCode.CannotParseAddress };
-
-            // get the target bible translation
-
-            var bible = await dbCtx.Bibles.SingleOrDefaultWithCacheAsync(_cacheSvc, bibleId);
-
-            // resolve the given book name to an actual book
-
-            var bookName = BookNameDictionary.Get(bible.Classification, parser.Book);
-
-            if (bookName.Key == 0)
-                return new GetPassageResult { Code = GetPassageResultCode.BookNotFound };
-
-            // read verses
-
-            var verses = asNoTracking
-                    ? await dbCtx.Verses.ToListWithCacheAsync(_cacheSvc, bible.Id, bookName.Key, parser.FromChapterNumber, parser.FromVerseNumber, parser.ToChapterNumber, parser.ToVerseNumber)
-                    : await dbCtx.Verses.ToListAsync(bible.Id, bookName.Key, parser.FromChapterNumber, parser.FromVerseNumber, parser.ToChapterNumber, parser.ToVerseNumber);
-
-            // return result
-
-            return new GetPassageResult
+            try
             {
-                Code = GetPassageResultCode.Ok,
-                Passage = verses.ToPassageDto()
-            };
+                var parser = new PassageAddressParser(bible, addressString);
+
+                // read verses
+
+                var verses = await dbCtx.Verses.ToListWithCacheAsync(
+                    cacheSvc,
+                    bible.Id,
+                    parser.BookNumber,
+                    parser.FromChapterNumber,
+                    parser.FromVerseNumber,
+                    parser.ToChapterNumber,
+                    parser.ToVerseNumber,
+                    cancellationToken);
+
+                // return result
+
+                return new GetPassageResponse(verses.ToPassageDto(), null);
+            }
+            catch(PassageAddressParsingException ex)
+            {
+                // return errored response
+
+                return new GetPassageResponse(null, ex);
+            }
         }
     }
+
+
 }

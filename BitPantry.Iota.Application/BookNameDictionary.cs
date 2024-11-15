@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq.Expressions;
-using System.Runtime.InteropServices;
 using BitPantry.Iota.Data.Entity;
-using Microsoft.Identity.Client;
 
 namespace BitPantry.Iota.Application
 {
