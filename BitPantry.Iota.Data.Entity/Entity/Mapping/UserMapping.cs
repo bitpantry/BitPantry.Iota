@@ -21,5 +21,9 @@ internal static class UserMapping
             .HasForeignKey(c => c.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<User>()
+            .HasIndex(m => m.EmailAddress)
+            .IsUnique();
+
     }
 }

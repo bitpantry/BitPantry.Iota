@@ -20,13 +20,18 @@ namespace BitPantry.Iota.Application.Service
             _passageLogic = passageLogic;
         }
 
+        public async Task<long> Install(Stream stream, CancellationToken cancellationToken)
+            => await Install(new DefaultXmlBibleDataParser().Parse(stream), cancellationToken);
+
         public async Task<long> Install(string bibleDataFilePath, CancellationToken cancellationToken)
+            => await Install(new DefaultXmlBibleDataParser().Parse(bibleDataFilePath), cancellationToken);
+
+        private async Task<long> Install(Bible bible, CancellationToken cancellationToken)
         {
-            var newBible = new DefaultXmlBibleDataParser().Parse(bibleDataFilePath);
-            _dbCtx.Bibles.Add(newBible);
+            _dbCtx.Bibles.Add(bible);
             await _dbCtx.SaveChangesAsync(cancellationToken);
 
-            return newBible.Id;
+            return bible.Id;
         }
 
         public async Task<GetPassageResponse> GetBiblePassage(long bibleId, string addressString, CancellationToken cancellationToken)

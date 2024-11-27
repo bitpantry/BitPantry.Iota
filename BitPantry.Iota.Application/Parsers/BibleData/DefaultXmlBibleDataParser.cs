@@ -96,12 +96,16 @@ Here's an example XML document that exemplifies this schema --------------------
 
 namespace BitPantry.Iota.Application.Parsers.BibleData
 {
-    internal class DefaultXmlBibleDataParser : IBibleDataParser
+    public class DefaultXmlBibleDataParser : IBibleDataParser
     {
         public Bible Parse(string dataFilePath)
-        {
-            var xmlDoc = XDocument.Load(dataFilePath);
+            => Parse(XDocument.Load(dataFilePath));
 
+        public Bible Parse(Stream stream)
+            => Parse(XDocument.Load(stream));
+
+        private Bible Parse(XDocument xmlDoc)
+        {
             // Parse and validate the classification attribute
             var classificationValue = xmlDoc.Root.Attribute("classification")?.Value;
             if (!Enum.TryParse<BibleClassification>(classificationValue, out var classification) || !Enum.IsDefined(typeof(BibleClassification), classification))

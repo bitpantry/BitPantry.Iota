@@ -1,18 +1,19 @@
 ﻿namespace BitPantry.Iota.Web
 {
-    public class AppStateCookieMiddleware
+    public class AppStateCookieMiddleware : IMiddleware
     {
-        private readonly RequestDelegate _next;
+        private AppStateCookie _appStateCookie;
 
-        public AppStateCookieMiddleware(RequestDelegate next)
+        public AppStateCookieMiddleware(AppStateCookie appStateCookie)
         {
-            _next = next;
+            _appStateCookie = appStateCookie;
         }
 
-        public async Task InvokeAsync(HttpContext context, AppStateCookie appStateCookie)
+        public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
-            await _next(context);
-            appStateCookie.UpdateCookie();
+            _appStateCookie.UpdateCookie();
+            await next(context);
+
         }
     }
 }

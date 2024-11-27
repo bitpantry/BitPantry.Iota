@@ -32,7 +32,14 @@ namespace BitPantry.Iota.Console
             appBuilder.Services.ConfigureInfrastructureServices(settings, CachingStrategy.InMemory);
             appBuilder.Services.ConfigureApplicationServices();
 
-            appBuilder.Services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+            appBuilder.Services.AddLogging(cfg =>
+            {
+                cfg.AddConfiguration(config.GetSection("Logging"));
+                cfg.AddSimpleConsole(opt =>
+                {
+                    opt.SingleLine = true;
+                });
+            });
 
             appBuilder.RegisterCommands(typeof(Program));
 

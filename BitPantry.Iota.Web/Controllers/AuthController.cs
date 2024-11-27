@@ -40,9 +40,10 @@ namespace BitPantry.Iota.Web.Controllers
             
             var emailClaim = result.Principal.Identities.First().Claims.Single(c => c.Type == ClaimTypes.Email);
             var id = await _idSvc.SignInUser(emailClaim.Value, HttpContext.RequestAborted);
+
             _userIdentity.UserId = id;
 
-            return Route.RedirectTo<HomeController>(c => c.Delay(200, Url.Action<HomeController>(c => c.Index())));
+            return Route.RedirectTo<HomeController>(c => c.Delay(50, Url.Action<HomeController>(c => c.Index())));
         }
 
         public async Task<IActionResult> Logout()

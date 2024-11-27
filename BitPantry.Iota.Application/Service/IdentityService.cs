@@ -15,7 +15,7 @@ namespace BitPantry.Iota.Application.Service
             _dbCtx = dbCtx;
         }
 
-        public async Task<long> SignInUser(string emailAddress, CancellationToken cancellationToken)
+        public async Task<long> SignInUser(string emailAddress, CancellationToken cancellationToken = default)
         {
             _logger.LogDebug("User signing in :: {EmailAddress}", emailAddress);
 

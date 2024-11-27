@@ -35,7 +35,7 @@ namespace BitPantry.Iota.Web
             builder.Services.ConfigureInfrastructureServices(settings, CachingStrategy.InMemory);
             builder.Services.ConfigureApplicationServices();
 
-            if(builder.Environment.EnvironmentName == "Development")
+            if (builder.Environment.IsDevelopment())
                 builder.Services.ConfigureMiniProfiler(settings);
 
             builder.Services.AddControllersWithViews();
@@ -54,6 +54,9 @@ namespace BitPantry.Iota.Web
             app.UseMiddleware<TimeZoneMiddleware>();
             app.UseMiddleware<IotaLogEnricherMiddleware>();
 
+            //if (app.Environment.IsDevelopment())
+            //    app.UseMiddleware<FakeUserMiddleware>();
+
             // Configure the HTTP request pipeline.
 
             if (!app.Environment.IsDevelopment())
@@ -71,6 +74,11 @@ namespace BitPantry.Iota.Web
 
             app.UseStaticFiles();
 
+            if (settings.UseTestUserId.HasValue)
+                app.UseMiddleware<TestUserMiddleware>();
+
+            app.UseMiddleware<AppStateCookieMiddleware>();
+
             app.UseRouting();
 
             app.UseAuthorization();
@@ -81,8 +89,6 @@ namespace BitPantry.Iota.Web
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}")
             .RequireAuthorization();
-
-            app.UseMiddleware<AppStateCookieMiddleware>();
 
             app.Run();
         }

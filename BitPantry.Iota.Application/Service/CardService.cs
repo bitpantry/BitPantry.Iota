@@ -41,6 +41,9 @@ namespace BitPantry.Iota.Application.Service
         }
 
         public async Task<CreateCardResponse> CreateCard(long userId, long bibleId, string addressString, Tab toTab, CancellationToken cancellationToken)
+            => await CreateCard(userId, bibleId, addressString, toTab, null, cancellationToken);
+
+        public async Task<CreateCardResponse> CreateCard(long userId, long bibleId, string addressString, Tab toTab, int? order, CancellationToken cancellationToken)
         {
             _logger.LogDebug("Creating new card :: {@Request}", new { userId, bibleId, addressString, toTab });
 
@@ -70,7 +73,7 @@ namespace BitPantry.Iota.Application.Service
             var card = result.Passage.ToCard(
                 userId,
                 toTab,
-                await _dbCtx.Cards.GetNextAvailableOrder(userId, toTab, cancellationToken));
+                order.HasValue ? order.Value : await _dbCtx.Cards.GetNextAvailableOrder(userId, toTab, cancellationToken));
 
             _dbCtx.Cards.Add(card);
             await _dbCtx.SaveChangesAsync(cancellationToken);

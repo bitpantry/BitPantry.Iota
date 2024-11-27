@@ -11,14 +11,14 @@ namespace BitPantry.Iota.Web.IoC
         {
             services.AddAuthentication(o => 
                 o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme)
-            .AddCookie(builder => {
-                builder.LoginPath = "/auth";
-            })
-            .AddGoogle(GoogleDefaults.AuthenticationScheme, o =>
-            {
-                o.ClientId = settings.Identity.Google.ClientId;
-                o.ClientSecret = settings.Identity.Google.ClientSecret;
-            });
+                .AddCookie(opt => {
+                    opt.LoginPath = "/auth";
+                })
+                .AddGoogle(GoogleDefaults.AuthenticationScheme, opt =>
+                {
+                    opt.ClientId = settings.Identity.Google.ClientId;
+                    opt.ClientSecret = settings.Identity.Google.ClientSecret;
+                });
 
             return services;
         }
@@ -47,6 +47,11 @@ namespace BitPantry.Iota.Web.IoC
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Ensures the cookie is only sent over HTTPS
                 options.Cookie.SameSite = SameSiteMode.Strict; // Helps prevent cross-site request forgery
             });
+
+            // middleware
+
+            services.AddScoped<AppStateCookieMiddleware>();
+            services.AddScoped<TimeZoneMiddleware>();
 
             // services
 

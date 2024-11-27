@@ -3,6 +3,7 @@ using BitPantry.Iota.Infrastructure.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using BitPantry.Iota.Infrastructure.Caching;
+using Microsoft.Data.SqlClient;
 
 namespace BitPantry.Iota.Infrastructure.IoC
 {
