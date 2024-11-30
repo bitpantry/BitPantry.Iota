@@ -15,7 +15,7 @@ namespace BitPantry.Iota.Infrastructure.Settings
         public IConfiguration Configuration => Config;
         public ConnectionStrings ConnectionStrings { get; }
         public IdentitySettings Identity { get; }
-        public bool UseMiniProfiler => GetValue("UseMiniProfiler", true);
+        public bool UseMiniProfiler => GetValue("UseMiniProfiler", false);
         public long? UseTestUserId => GetValue<long?>("UseTestUserId", null);
 
         public AppSettings(IConfiguration config, string contextId = null) : base(config) 

@@ -2,7 +2,7 @@ using BitPantry.Iota.Common;
 
 namespace BitPantry.Iota.Web.Models;
 
-public class CreateCardModel
+public class NewCardModel
 {
 
     public bool IsValidAddress { get; set; }

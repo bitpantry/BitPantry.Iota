@@ -1,6 +1,8 @@
-﻿using BitPantry.Parsing.Strings;
+﻿using BitPantry.Iota.Data.Entity;
+using BitPantry.Parsing.Strings;
 using Microsoft.AspNetCore.DataProtection;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace BitPantry.Iota.Web
 {
@@ -23,7 +25,11 @@ namespace BitPantry.Iota.Web
         public long CurrentUserId
         {
             get { return GetValue<long>(KEY_CURRENT_USER_ID); }
-            set { SetValue(KEY_CURRENT_USER_ID, value); }
+            set 
+            {   
+                _logger.LogDebug("AppStateCookie:CurrentSureId.Set :: {AppStateCookieId}, Value={NewUserIdValue}", _uid, value);
+                SetValue(KEY_CURRENT_USER_ID, value); 
+            }
         }
 
         public AppStateCookie(IHttpContextAccessor httpContextAccessor, IDataProtectionProvider dataProtectionProvider, ILogger<AppStateCookie> logger)
@@ -41,16 +47,17 @@ namespace BitPantry.Iota.Web
             {
                 _logger.LogError(ex, "Error decrypting application state cookie");
                 _httpContextAccessor.HttpContext.Response.Cookies.Delete(COOKIE_NAME);
-
             }
+
+            _logger.LogDebug("AppStateCookie:ctor :: {AppStateCookieUid}, CurrentUserId={CurrentUserId}", _uid, CurrentUserId);
         }
 
-        public void UpdateCookie()
+        public void PersistCookie()
         {
+            _logger.LogDebug("AppStateCookie:PersistCookie :: {AppStateCookieUid}, CurrentUserId={CurrentUserId}, IsChanged={IsChanged}", _uid, CurrentUserId, IsChanged);
+
             if (IsChanged)
             {
-                _logger.LogDebug("Appending application state cookie");
-
                 _httpContextAccessor.HttpContext.Response.Cookies.Append(COOKIE_NAME, _dataProtection.Protect(JsonConvert.SerializeObject(_dict, Formatting.None)), new CookieOptions
                 {
                     HttpOnly = true,

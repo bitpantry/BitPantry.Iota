@@ -7,17 +7,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace BitPantry.Iota.Test
+namespace BitPantry.Iota.Test.ServiceTests
 {
-    public class BibleTests
+    public class BibleServiceTests
     {
-        private readonly TestEnvironment _testEnv;
-
-        public BibleTests()
-        {
-            _testEnv = TestEnvironment.Deploy();
-        }
-
         [Fact]
         public void ParseBible_BibleParsed()
         {
@@ -31,7 +24,7 @@ namespace BitPantry.Iota.Test
             bible.TranslationLongName.Should().Be("The Message");
             bible.Description.Should().Be("The Message: The Bible in Contemporary Language. Copyright © 2002 by Eugene H. Peterson. All rights reserved. Published by NavPress, a ministry of The Navigators.");
             bible.Classification.Should().Be(Data.Entity.BibleClassification.Protestant);
-            
+
             bible.Testaments.Should().HaveCount(2);
             bible.Testaments[0].Books.Should().HaveCount(39);
             bible.Testaments[1].Books.Should().HaveCount(27);

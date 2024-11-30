@@ -68,6 +68,14 @@ namespace BitPantry.Iota.Application.Service
             if (await _dbCtx.Cards.DoesCardAlreadyExistForPassage(userId, result.Passage.GetAddressString(), cancellationToken))
                 return new CreateCardResponse(CreateCardResponseResult.CardAlreadyExists, null);
 
+            // check if card order is already used
+
+            if(order.HasValue)
+            {
+                if (await _dbCtx.Cards.Where(c => c.UserId == userId && c.Tab == toTab && c.Order == order.Value).Select(c => c.Id).AnyAsync(cancellationToken))
+                    throw new InvalidOperationException($"Order {order.Value} is already taken");
+            }
+
             // create the card
 
             var card = result.Passage.ToCard(
@@ -83,7 +91,7 @@ namespace BitPantry.Iota.Application.Service
             return new CreateCardResponse(CreateCardResponseResult.Ok, card.ToDto());
         }
 
-        public async Task<bool> DoesCardAlreadyExist(long userId, long bibleId, string addressString, CancellationToken cancellationToken)
+        public async Task<bool> DoesCardAlreadyExistForUser(long userId, long bibleId, string addressString, CancellationToken cancellationToken)
         {
             var result = await _passageLogic.GetPassageQuery(_dbCtx, _cacheSvc, bibleId, addressString, cancellationToken);
             return await _dbCtx.Cards.DoesCardAlreadyExistForPassage(userId, result.Passage.GetAddressString(), cancellationToken);
@@ -157,9 +165,9 @@ namespace BitPantry.Iota.Application.Service
             await _dbCtx.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task MoveCard(long cardId, Tab toTab, CancellationToken cancellationToken)
+        public async Task MoveCard(long cardId, Tab toTab, bool atTop, CancellationToken cancellationToken)
         {
-            await _dbCtx.UseConnection(cancellationToken, async (conn, trans) => await _cardLogic.MoveCardCommand(conn, trans, cardId, toTab));
+            await _dbCtx.UseConnection(cancellationToken, async (conn, trans) => await _cardLogic.MoveCardCommand(conn, trans, cardId, toTab, atTop));
         }
 
         public async Task PromoteDailyCard(long cardId, CancellationToken cancellationToken)
@@ -211,11 +219,6 @@ namespace BitPantry.Iota.Application.Service
             return await GetCard_INTERNAL(_dbCtx.Cards.AsNoTracking().Where(c => c.Id == cardId), true, cancellationToken);
         }
 
-        public async Task<CardDto> GetCardWithoutPassage(long cardId, CancellationToken cancellationToken)
-        {
-            return await GetCard_INTERNAL(_dbCtx.Cards.AsNoTracking().Where(c => c.Id == cardId), false, cancellationToken);
-        }
-
         public async Task<CardDto> GetCard(long userId, Tab tab, int order, CancellationToken cancellationToken)
         {
             return await GetCard_INTERNAL(_dbCtx.Cards.AsNoTracking().Where(c => c.UserId == userId && c.Tab == tab && c.Order == order), true, cancellationToken);
@@ -239,6 +242,33 @@ namespace BitPantry.Iota.Application.Service
 
         public async Task<int> GetUserCardCount(long userId, CancellationToken cancellationToken)
             => await _dbCtx.Cards.CountAsync(c => c.UserId == userId, cancellationToken);
+
+        public async Task SwapDailyWithQueue(long userId, long queueCardId, CancellationToken cancellationToken)
+        {
+            // get the queue card
+
+            var queueCard = await _dbCtx.Cards.FirstOrDefaultAsync(c => c.Id == queueCardId, cancellationToken);
+
+            if (queueCard.Tab != Tab.Queue)
+                throw new InvalidOperationException($"Card with id {queueCardId} is expected to be in the queue");
+
+            // get the daily card and make updates
+
+            var dailyCard = await _dbCtx.Cards.FirstOrDefaultAsync(c => c.UserId == userId && c.Tab == Tab.Daily);
+
+            await _dbCtx.UseConnection(cancellationToken, async (conn, trans) =>
+            {
+                if(dailyCard != null)
+                    await _cardLogic.MoveCardCommand(conn, trans, dailyCard.Id, Tab.Queue, true, false);
+                await _cardLogic.MoveCardCommand(conn, trans, queueCardId, Tab.Daily, true, false);
+            });
+
+            await _dbCtx.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<int> GetCardCountForTab(long userId, Tab tab, CancellationToken cancellationToken)
+            => await _dbCtx.Cards.CountAsync(c => c.UserId == userId && c.Tab == tab, cancellationToken);
+        
     }
 
     

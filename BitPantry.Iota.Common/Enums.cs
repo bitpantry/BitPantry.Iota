@@ -20,66 +20,66 @@ public enum Tab : int
     Friday = 8,
     Saturday = 9,
 
-    [Description("Day 1")]
+    [Description("1st")]
     Day1 = 10,
-    [Description("Day 2")]
+    [Description("2nd")]
     Day2 = 11,
-    [Description("Day 3")]
+    [Description("3rd")]
     Day3 = 12,
-    [Description("Day 4")]
+    [Description("4th")]
     Day4 = 13,
-    [Description("Day 5")]
+    [Description("5th")]
     Day5 = 14,
-    [Description("Day 6")]
+    [Description("6th")]
     Day6 = 15,
-    [Description("Day 7")]
+    [Description("7th")]
     Day7 = 16,
-    [Description("Day 8")]
+    [Description("8th")]
     Day8 = 17,
-    [Description("Day 9")]
+    [Description("9th")]
     Day9 = 18,
-    [Description("Day 10")]
+    [Description("10th")]
     Day10 = 19,
-    [Description("Day 11")]
+    [Description("11th")]
     Day11 = 20,
-    [Description("Day 12")]
+    [Description("12th")]
     Day12 = 21,
-    [Description("Day 13")]
+    [Description("13th")]
     Day13 = 22,
-    [Description("Day 14")]
+    [Description("14th")]
     Day14 = 23,
-    [Description("Day 15")]
+    [Description("15th")]
     Day15 = 24,
-    [Description("Day 16")]
+    [Description("16th")]
     Day16 = 25,
-    [Description("Day 17")]
+    [Description("17th")]
     Day17 = 26,
-    [Description("Day 18")]
+    [Description("18th")]
     Day18 = 27,
-    [Description("Day 19")]
+    [Description("19th")]
     Day19 = 28,
-    [Description("Day 20")]
+    [Description("20th")]
     Day20 = 29,
-    [Description("Day 21")]
+    [Description("21st")]
     Day21 = 30,
-    [Description("Day 22")]
+    [Description("22nd")]
     Day22 = 31,
-    [Description("Day 23")]
+    [Description("23rd")]
     Day23 = 32,
-    [Description("Day 24")]
+    [Description("24th")]
     Day24 = 33,
-    [Description("Day 25")]
+    [Description("25th")]
     Day25 = 34,
-    [Description("Day 26")]
+    [Description("26th")]
     Day26 = 35,
-    [Description("Day 27")]
+    [Description("27th")]
     Day27 = 36,
-    [Description("Day 28")]
+    [Description("28th")]
     Day28 = 37,
-    [Description("Day 29")]
+    [Description("29th")]
     Day29 = 38,
-    [Description("Day 30")]
+    [Description("30th")]
     Day30 = 39,
-    [Description("Day 31")]
+    [Description("31st")]
     Day31 = 40
 }

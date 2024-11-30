@@ -1,0 +1,158 @@
+﻿@model ReviewModel
+
+@using BitPantry.Iota.Common
+@using Humanizer;
+
+<style>
+    .verse-card {
+        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+        cursor: pointer; /* Added cursor property */
+    }
+</style>
+
+<script>
+
+    function togglePassage() {
+        var firstPanel = document.getElementsByClassName("verse-card")[0];
+        var secondPanel = document.getElementsByClassName("verse-card")[1];
+
+        if (firstPanel.style.display === "block") {
+            firstPanel.style.display = "none";
+            secondPanel.style.display = "block";
+        } else {
+            firstPanel.style.display = "block";
+            secondPanel.style.display = "none";
+        }
+    }
+
+</script>
+
+<style>
+        /* Styling only for main tabs */
+    .main-tabs .nav-link {
+        color: black !important; /* Always black text for main tabs */
+    }
+
+        .main-tabs .nav-link.active {
+            background-color: #e0f2ff !important; /* Light blue background for active main tabs */
+            color: black !important; /* Ensure text remains black when active */
+            border-radius: 5px; /* Rounded corners for active tab */
+        }
+
+    /* Styling for active nested tabs */
+    .nav .nav-link.active {
+        background-color: #e0f2ff !important; /* Light blue background for active nested tabs */
+        color: black !important; /* Ensure text remains black when active */
+    }
+</style>
+
+
+<div class="lead mt-4">
+    <strong>
+        Reviewing @Model.Path.Sum(p => p.Value) card@(Model.Path.Sum(p => p.Value) > 1 ? "s" : "") today
+    </strong>
+</div>
+
+@* ------- TABS ------- *@
+
+<ul class="nav nav-tabs nav-justified mt-4 w-100 main-tabs">
+
+    @foreach (var tab in Model.Path.Keys)
+    {
+        <li class="nav-item">
+            <a class="nav-link@(Model.CurrentTab == tab ? " active" : "")" asp-action="Index" asp-route-tab="@tab">@tab.Humanize()</a>
+        </li> 
+    }
+
+</ul>
+    
+@if(Model.Path[Model.CurrentTab] > 1)
+{
+    <nav class="nav py-3" style="border-bottom: 1px solid #DEDEDE;">
+
+        @for (int i = 1; i <= Model.Path[Model.CurrentTab]; i++)
+        {
+            <a class="nav-link@(i == Model.CurrentOrder ? " active" : "")" asp-action="Index" asp-route-tab="@Model.CurrentTab" asp-route-ord="@i">@i</a>
+        }
+
+    </nav>
+}
+
+@if(Model.Card != null)
+{
+
+    <div class="mt-4">
+        <div class="col d-flex pb-4">
+            <span class="display-6">@Model.Card.Address (@Model.Card.Passage.TranslationShortName)</span>
+        </div>
+        <div class="verse-card" onclick="togglePassage()" style="display:block">
+            <p class=" text-center fst-italic p-3">
+                Click to Show passage
+            </p>
+        </div>
+        <div class="verse-card" onclick="togglePassage()" style="display:none">
+            <div class="p-3">
+                <p>
+                    <div class="row mt-4">
+                        <partial name="_PassagePartial" model='@Model.Card.Passage' />
+                    </div>
+                </p>
+                <p class="fst-italic fw-light text-center">
+                    Click to Hide Passage
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex mt-4">
+        @if(Model.CurrentTab == Tab.Daily)
+        {
+            <div class="col d-flex justify-content-start">
+                <a href="#" onclick="confirmPromote()" class="btn btn-secondary">
+                    Promote
+                </a>
+            </div>
+        }
+        <div class="col d-flex justify-content-end">
+            <a class="btn btn-success" href="@Model.NextUrl">Next</a>
+        </div>
+    </div>
+
+    @if (Model.CurrentTab == Tab.Daily)
+    {
+        <div class="mt-4">
+            Promote this card to start on the next card from your queue.
+        </div>
+
+    }
+}
+
+<!-- Confirmation dialog markup -->
+
+<div id="promoteConfirmationModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Are you sure?</h5>
+            </div>
+            <div class="modal-body">
+                <p>@Model.Card.Address will be moved to the next tab and the top card from your queue will be moved to the Daily tab.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cancelPromote()">Cancel</button>
+                <a asp-action="Promote" asp-controller="Review" asp-route-id="@Model.Card.Id" class="btn btn-primary">Promote</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function confirmPromote() {
+        $('#promoteConfirmationModal').modal('show');
+    }
+
+    function cancelPromote() {
+        $('#promoteConfirmationModal').modal('hide');
+    }
+</script>

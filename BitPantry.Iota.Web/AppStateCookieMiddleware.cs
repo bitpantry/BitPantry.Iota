@@ -11,9 +11,8 @@
 
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
-            _appStateCookie.UpdateCookie();
             await next(context);
-
+            _appStateCookie.PersistCookie();
         }
     }
 }

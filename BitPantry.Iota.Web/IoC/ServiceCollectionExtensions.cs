@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace BitPantry.Iota.Web.IoC
 {
@@ -28,6 +29,8 @@ namespace BitPantry.Iota.Web.IoC
             // components
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+
             services.AddScoped<AppStateCookie>();
             services.AddScoped<UserIdentity>();
 

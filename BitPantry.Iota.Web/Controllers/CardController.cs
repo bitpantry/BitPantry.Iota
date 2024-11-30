@@ -4,6 +4,7 @@ using BitPantry.Iota.Application.Service;
 using BitPantry.Iota.Common;
 using BitPantry.Iota.Web.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
 
 namespace BitPantry.Iota.Web.Controllers
@@ -32,13 +33,7 @@ namespace BitPantry.Iota.Web.Controllers
             return View(card.ToModel());
         }
 
-        public async Task<IActionResult> SelectNewTab(long id)
-        {
-            var resp = await _cardSvc.GetCardWithoutPassage(id, HttpContext.RequestAborted);
-            return View(resp.ToModel());
-        }
-
-        public async Task<IActionResult> Create(string address, long bibleId)
+        public async Task<IActionResult> New(string address, long bibleId)
         {
             var biblesResp = await _bibleSvc.GetBibleTranslations(HttpContext.RequestAborted);
 
@@ -46,9 +41,9 @@ namespace BitPantry.Iota.Web.Controllers
             {
                 var resp = await _bibleSvc.GetBiblePassage(bibleId, address, HttpContext.RequestAborted);
 
-                var isAlreadyCreated = resp.ParsingException == null && await _cardSvc.DoesCardAlreadyExist(_userIdentity.UserId, bibleId, address, HttpContext.RequestAborted);
+                var isAlreadyCreated = resp.ParsingException == null && await _cardSvc.DoesCardAlreadyExistForUser(_userIdentity.UserId, bibleId, address, HttpContext.RequestAborted);
 
-                return View(nameof(Create), new CreateCardModel
+                return View(nameof(New), new NewCardModel
                 {
                     Bibles = biblesResp.Select(b => b.ToModel()).ToList(),
                     BibleId = bibleId,
@@ -60,26 +55,26 @@ namespace BitPantry.Iota.Web.Controllers
 
             }
 
-            return View(nameof(Create), new CreateCardModel
+            return View(nameof(New), new NewCardModel
             {
                 Bibles = biblesResp.Select(b => b.ToModel()).ToList(),
                 BibleId = biblesResp.First().Id
             });
         }
 
-        public async Task<IActionResult> New(string address, long bibleId)
+        public async Task<IActionResult> Create(string address, long bibleId)
         {
             var resp = await _cardSvc.CreateCard(_userIdentity.UserId, bibleId, address, HttpContext.RequestAborted);
 
             if (resp.Result != Application.CreateCardResponseResult.Ok)
             {
-                return await Create(address, bibleId);
+                return await New(address, bibleId);
             }
             else
             {
                 var biblesResp = await _bibleSvc.GetBibleTranslations(HttpContext.RequestAborted);
 
-                return View(nameof(Create), new CreateCardModel
+                return View(nameof(New), new NewCardModel
                 {
                     Bibles = biblesResp.Select(_ => _.ToModel()).ToList(),
                     BibleId = biblesResp.First().Id,
@@ -90,19 +85,30 @@ namespace BitPantry.Iota.Web.Controllers
             }
         }
 
-        public async Task<IActionResult> Move(long id, Tab toTab)
-        {
-            await _cardSvc.MoveCard(id, toTab, HttpContext.RequestAborted);
-            return Route.RedirectTo<TabsController>(c => c.Tabs(toTab));      
-        }
-
         public async Task<IActionResult> Delete(long id)
         {
             var card = await _cardSvc.GetCard(id, HttpContext.RequestAborted);
             await _cardSvc.DeleteCard(id, HttpContext.RequestAborted);
 
             var referer = Request.Headers.Referer.ToString();
-            return Route.RedirectTo<TabsController>(c => c.Tabs(card.Tab));
+            return Route.RedirectTo<CollectionController>(c => c.Index(card.Tab));
+        }
+
+        public async Task<IActionResult> SendBackToQueue(long id)
+        {
+            await _cardSvc.MoveCard(id, Tab.Queue, false, HttpContext.RequestAborted);
+            var cardCountInQueue = await _cardSvc.GetCardCountForTab(_userIdentity.UserId, Tab.Queue, HttpContext.RequestAborted);
+
+            if (cardCountInQueue == 1)
+                return Route.RedirectTo<CollectionController>(c => c.Index(Tab.Queue));
+            else
+                return Route.RedirectTo<CardController>(c => c.Maintenance(id));
+        }
+
+        public async Task<IActionResult> StartNow(long id)
+        {
+            await _cardSvc.SwapDailyWithQueue(_userIdentity.UserId, id, HttpContext.RequestAborted);
+            return Route.RedirectTo<ReviewController>(c => c.Index());
         }
 
         [HttpPost]
@@ -121,3 +127,4 @@ namespace BitPantry.Iota.Web.Controllers
 
     }
 }
+

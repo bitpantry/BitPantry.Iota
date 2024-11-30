@@ -23,7 +23,6 @@ namespace BitPantry.Iota.Web.Controllers
             _logger = logger;
         }
 
-        [Route("review")]
         public async Task<IActionResult> Index()
         {
             var path = await _reviewSvc.GetReviewPath(_identity.UserId, _userTime.GetCurrentUserLocalTime(), HttpContext.RequestAborted);
@@ -33,51 +32,37 @@ namespace BitPantry.Iota.Web.Controllers
 
             // get next review step
 
-            return await Review(Tab.Daily, 1);
+            return await Index(Tab.Daily, 1);
         }
 
         [Route("review/{tab:enum}/{ord:int?}")]
-        public async Task<IActionResult> Review(Tab tab, int ord = 1)
+        public async Task<IActionResult> Index(Tab tab, int ord = 1)
         {
+            await _cardSvc.MarkCardAsReviewed(_identity.UserId, tab, ord, HttpContext.RequestAborted);
+
             var path = await _reviewSvc.GetReviewPath(_identity.UserId, _userTime.GetCurrentUserLocalTime(), HttpContext.RequestAborted);
             var card = await _cardSvc.GetCard(_identity.UserId, tab, ord, HttpContext.RequestAborted);
 
-            return View(nameof(Review), new ReviewModel(path.Path, tab, ord, card.ToModel()));
-        }
-
-        [Route("review/next/{currentTab:enum}/{currentOrd:int}")]
-        public async Task<IActionResult> Next(Tab currentTab, int currentOrd)
-        {
-            await _cardSvc.MarkCardAsReviewed(_identity.UserId, currentTab, currentOrd, HttpContext.RequestAborted);
-
-
-            var path = await _reviewSvc.GetReviewPath(_identity.UserId, _userTime.GetCurrentUserLocalTime(), HttpContext.RequestAborted);
             var helper = new ReviewPathHelper(path.Path);
+            var nextStep = helper.GetNextStep(tab, ord);
 
-            var nextStep = helper.GetNextStep(currentTab, currentOrd);
+            var nextUrl = nextStep == null
+                ? Url.Action<ReviewController>(c => c.Done())
+                : Url.Action<ReviewController>(c => c.Index(nextStep.Value.Key, nextStep.Value.Value));
 
-            if (nextStep == null)
-                return Done();
-
-            var nextTab = nextStep.Value.Key;
-            var nextOrd = nextStep.Value.Value;
-
-            var card = await _cardSvc.GetCard(_identity.UserId, nextTab, nextOrd, HttpContext.RequestAborted);
-
-            return View(nameof(Review), new ReviewModel(path.Path, nextTab, nextOrd, card.ToModel()));
+            return View(nameof(Index), new ReviewModel(path.Path, tab, ord, card.ToModel(), nextUrl));
         }
 
         [Route("review/promote/{id:long}")]
         public async Task<IActionResult> Promote(long id)
         {
-
             // promote the daily card
 
             await _cardSvc.PromoteDailyCard(id, HttpContext.RequestAborted);
 
             // go to next step in review
 
-            return await Review(Tab.Daily, 1);
+            return Route.RedirectTo<ReviewController>(c => c.Index(Tab.Daily, 1));
         }
 
         public IActionResult Done()

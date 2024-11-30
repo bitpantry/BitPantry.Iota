@@ -1,0 +1,398 @@
+﻿using BitPantry.Iota.Application;
+using BitPantry.Iota.Application.DTO;
+using BitPantry.Iota.Application.Service;
+using BitPantry.Iota.Data.Entity;
+using Dapper;
+using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
+using Xunit;
+
+namespace BitPantry.Iota.Test.ServiceTests
+{
+    public class CardServiceTests : IClassFixture<TestEnvironmentFixture>
+    {
+        private static long _bibleId;
+        private static long _user1Id;
+
+        TestEnvironment _testEnv;
+        
+        public CardServiceTests(TestEnvironmentFixture fixture)
+        {
+            _testEnv = fixture.Initialize(env =>
+            {
+                _bibleId = env.InstallBible().GetAwaiter().GetResult();
+                _user1Id = env.CreateUser().GetAwaiter().GetResult();
+            });     
+        }
+
+        [Theory]
+        [InlineData("rom 1:16")]
+        [InlineData("1 tim 3:16")]
+        [InlineData("gen 12:1-14")]
+        [InlineData("1 tim 3:4-4:1")]
+        public async Task CreateCard_CardCreated(string address)
+        {
+            using (var scope = _testEnv.CreateDependencyScope())
+            {
+                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
+
+                var resp = await svc.CreateCard(_user1Id, _bibleId, address, CancellationToken.None);
+
+                resp.Result.Should().Be(Application.CreateCardResponseResult.Ok);
+                
+                resp.Card.Should().NotBeNull();
+                resp.Card.Address.Should().NotBeNullOrEmpty();
+                resp.Card.AddedOn.Date.Should().Be(DateTime.UtcNow.Date);
+                resp.Card.LastMovedOn.Date.Should().Be(DateTime.UtcNow.Date);
+                resp.Card.LastReviewedOn.Should().BeNull();
+                resp.Card.Order.Should().BeGreaterThan(0);
+            }
+        }
+
+        [Theory]
+        [InlineData("x")]
+        [InlineData("hez 3")]
+        [InlineData("1 tim 3:4-2 tim 1:1")]
+        public async Task CreateCardInvalidAddress_InvalidAddressResult(string address)
+        {
+            using (var scope = _testEnv.CreateDependencyScope())
+            {
+                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
+
+                var resp = await svc.CreateCard(_user1Id, _bibleId, address, CancellationToken.None);
+
+                resp.Result.Should().Be(Application.CreateCardResponseResult.InvalidAddress);
+                resp.Card.Should().BeNull();
+            }
+        }
+
+        [Fact]
+        public async Task CreateTwoCards_CreatedInQueueAndDaily()
+        {
+            var newUserId = await _testEnv.CreateUser();
+
+            using (var scope = _testEnv.CreateDependencyScope())
+            {
+                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
+
+                var resp1 = await svc.CreateCard(newUserId, _bibleId, "gen 1:1", CancellationToken.None);
+                var resp2 = await svc.CreateCard(newUserId, _bibleId, "gen 1:2", CancellationToken.None);
+
+                resp1.Card.Tab.Should().Be(Common.Tab.Daily);
+                resp2.Card.Tab.Should().Be(Common.Tab.Queue);
+            }
+        }
+
+        [Fact]
+        public async Task CreateCardEmptyAddress_ArgumentNullException()
+        {
+            using (var scope = _testEnv.CreateDependencyScope())
+            {
+                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
+
+                var act = async () => { await svc.CreateCard(_user1Id, _bibleId, "", CancellationToken.None); };
+
+                await act.Should().ThrowAsync<ArgumentNullException>();
+            }
+        }
+
+        [Fact]
+        public async Task CreateMultipleCards_CardsCreatedWithCorrectOrder()
+        {
+            var newUserId = await _testEnv.CreateUser();
+
+            using (var scope = _testEnv.CreateDependencyScope())
+            {
+                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
+
+                var resp1 = await svc.CreateCard(newUserId, _bibleId, "gen 12:1", Common.Tab.Queue, null, CancellationToken.None);
+                var resp2 = await svc.CreateCard(newUserId, _bibleId, "gen 12:2", Common.Tab.Queue, null, CancellationToken.None);
+                var resp3 = await svc.CreateCard(newUserId, _bibleId, "gen 12:3", Common.Tab.Queue, null, CancellationToken.None);
+
+                resp1.Card.Order.Should().Be(1);
+                resp2.Card.Order.Should().Be(2);
+                resp3.Card.Order.Should().Be(3);
+            }
+        }
+
+        [Theory]
+        [InlineData("x 4:1")]
+        [InlineData("hez 3:1")]
+        [InlineData("j 3:7")]
+        public async Task CreateCardBadBookName_BookNameUnresolvedResult(string address)
+        {
+            using (var scope = _testEnv.CreateDependencyScope())
+            {
+                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
+
+                var resp = await svc.CreateCard(_user1Id, _bibleId, address, CancellationToken.None);
+
+                resp.Result.Should().Be(Application.CreateCardResponseResult.BookNameUnresolved);
+                resp.Card.Should().BeNull();
+            }
+        }
+
+        [Fact]
+        public async Task CreateDuplicateCard_CardAlreadyExistsResult()
+        {
+            using (var scope = _testEnv.CreateDependencyScope())
+            {
+                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
+
+                var resp = await svc.CreateCard(_user1Id, _bibleId, "jn 3:16", CancellationToken.None); 
+                resp.Result.Should().Be(Application.CreateCardResponseResult.Ok);
+
+                resp = await svc.CreateCard(_user1Id, _bibleId, "jn 3:16", CancellationToken.None);
+                resp.Result.Should().Be(Application.CreateCardResponseResult.CardAlreadyExists);
+            }
+        }
+
+        [Fact]
+        public async Task CreateCardWithOrder_CardCreated()
+        {
+            long cardId = 0;
+
+            using (var scope = _testEnv.CreateDependencyScope())
+            {
+                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
+
+                var resp = await svc.CreateCard(_user1Id, _bibleId, "rev 1:1", Common.Tab.Day10, 1, CancellationToken.None);
+                resp.Result.Should().Be(Application.CreateCardResponseResult.Ok);
+
+                cardId = resp.Card.Id;
+            }
+
+            using (var scope = _testEnv.CreateDependencyScope())
+            {
+                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
+
+                var card = await svc.GetCard(cardId, CancellationToken.None);
+
+                card.Order.Should().Be(1);
+            }
+        }
+
+        [Fact]
+        public async Task CreateCardsWithDuplicateOrder_InvalidOperationException()
+        {
+            using (var scope = _testEnv.CreateDependencyScope())
+            {
+                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
+
+                var resp1 = await svc.CreateCard(_user1Id, _bibleId, "rev 1:2", Common.Tab.Day10, 1, CancellationToken.None);
+                resp1.Result.Should().Be(Application.CreateCardResponseResult.Ok);
+
+                var act = async () => await svc.CreateCard(_user1Id, _bibleId, "rev 1:3", Common.Tab.Day10, 1, CancellationToken.None);
+                await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("Order 1 is already taken");                
+            }
+        }
+
+        [Fact]
+        public async Task DeleteAllCards_AllCardsDeleted()
+        {
+            var newUserId = await _testEnv.CreateUser();
+
+            _ = await _testEnv.CreateCards(_user1Id, _bibleId);
+            _ = await _testEnv.CreateCards(newUserId, _bibleId);
+
+            using (var scope = _testEnv.CreateDependencyScope())
+            {
+                var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
+                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
+
+                var count = await dbCtx.UseConnection(CancellationToken.None, async conn => 
+                {
+                    return await conn.QuerySingleAsync<long>("SELECT COUNT(*) FROM Cards");
+                });
+
+                count.Should().BeGreaterThan(0);
+
+                await svc.DeleteAllCards(null, CancellationToken.None);
+
+                count = await dbCtx.UseConnection(CancellationToken.None, async conn =>
+                {
+                    return await conn.QuerySingleAsync<long>("SELECT COUNT(*) FROM Cards");
+                });
+
+                count.Should().Be(0);
+
+            }
+        }
+
+        [Fact]
+        public async Task DeleteAllCardsForUser_AllCardsDeletedForUser()
+        {
+            var newUserId = await _testEnv.CreateUser();
+
+            _ = await _testEnv.CreateCards(_user1Id, _bibleId);
+            _ = await _testEnv.CreateCards(newUserId, _bibleId);
+
+            using (var scope = _testEnv.CreateDependencyScope())
+            {
+                var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
+                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
+
+                await svc.DeleteAllCards(_user1Id, CancellationToken.None);
+
+                var count = await dbCtx.UseConnection(CancellationToken.None, async conn =>
+                {
+                    return await conn.QuerySingleAsync<long>("SELECT COUNT(*) FROM Cards WHERE UserId = @UserId", new { UserId = _user1Id });
+                });
+
+                count.Should().Be(0);
+
+                count = await dbCtx.UseConnection(CancellationToken.None, async conn =>
+                {
+                    return await conn.QuerySingleAsync<long>("SELECT COUNT(*) FROM Cards WHERE UserId = @UserId", new { UserId = newUserId });
+                });
+
+                count.Should().NotBe(0);
+            }
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(5)]
+        [InlineData(null)] // last
+        public async Task DeleteQueueCard_CardDeletedTabReordered(int? cardIndex)
+        {
+            var newUserId = await _testEnv.CreateUser();
+
+            var cardDtos = await _testEnv.CreateCards(newUserId, _bibleId);
+            cardDtos = cardDtos.Where(c => c.Tab == Common.Tab.Queue).ToList();
+
+            var cardToDelete = cardIndex.HasValue ? cardDtos[cardIndex.Value] : cardDtos.Last();
+
+            using (var scope = _testEnv.CreateDependencyScope())
+            {
+                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
+                await svc.DeleteCard(cardToDelete.Id, CancellationToken.None);
+            }
+
+            using (var scope = _testEnv.CreateDependencyScope())
+            {
+                var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
+                var cards = dbCtx.Cards.AsNoTracking().Where(c => c.UserId == newUserId && c.Tab == Common.Tab.Queue);
+
+                cards.Count().Should().Be(cardDtos.Count - 1);
+                cards.Where(c => c.Id == cardToDelete.Id).FirstOrDefault().Should().BeNull();
+
+                var ord = 0;
+                foreach (var card in cards)
+                {
+                    ord++;
+                    card.Order.Should().Be(ord);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task DeleteLastCardInTab_CardDeleted()
+        {
+            var newUserId = await _testEnv.CreateUser();
+            CreateCardResponse resp = null;
+
+            using (var scope = _testEnv.CreateDependencyScope())
+            {
+                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
+                resp = await svc.CreateCard(newUserId, _bibleId, "rom 1:16", CancellationToken.None);
+                
+            }
+
+            using (var scope = _testEnv.CreateDependencyScope())
+            {
+                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
+                var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
+
+                await svc.DeleteCard(resp.Card.Id, CancellationToken.None);
+                var cards = dbCtx.Cards.Where(c => c.UserId == newUserId && c.Tab == resp.Card.Tab).ToList();
+
+                cards.Should().BeEmpty();
+
+            }
+        }
+
+        [Fact]
+        public async Task MarkCardAsReviewed_CardMarked()
+        {
+            var newUserId = await _testEnv.CreateUser();
+            CreateCardResponse resp = null;
+
+            using (var scope = _testEnv.CreateDependencyScope())
+            {
+                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
+                resp = await svc.CreateCard(newUserId, _bibleId, "rom 1:16", CancellationToken.None);
+
+                resp.Card.LastReviewedOn.Should().BeNull();
+
+                await svc.MarkCardAsReviewed(newUserId, resp.Card.Tab, resp.Card.Order, CancellationToken.None);
+            }
+
+            using (var scope = _testEnv.CreateDependencyScope())
+            {
+                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
+                var card = await svc.GetCard(resp.Card.Id, CancellationToken.None);
+                card.LastReviewedOn.Value.Date.Should().Be(DateTime.UtcNow.Date);
+            }
+        }
+
+        [Theory]
+        [InlineData(1, 2)]
+        [InlineData(null, 1)]
+        [InlineData(1, null)]
+        [InlineData(2, 1)]
+        [InlineData(3, 6)]
+        [InlineData(6, 1)]
+        [InlineData(null, null)]
+        [InlineData(1, 1)]
+        public async Task ReorderCard_CardReorderedAndTabOrderUpdated(int? fromOrd, int? toOrd)
+        {
+            var newUserId = await _testEnv.CreateUser();
+            var cards = await _testEnv.CreateCards(newUserId, _bibleId, CancellationToken.None);
+
+            cards = cards.Where(c => c.Tab == Common.Tab.Queue).ToList();
+
+            if (!fromOrd.HasValue)
+                fromOrd = cards.Max(c => c.Order);
+
+            if (!toOrd.HasValue)
+                toOrd = cards.Max(c => c.Order);
+
+            var cardToReorder = cards.Single(c => c.Order == fromOrd.Value);
+
+            using (var scope = _testEnv.CreateDependencyScope())
+            {
+                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
+                await svc.ReorderCard(newUserId, Common.Tab.Queue, cardToReorder.Id, toOrd.Value, CancellationToken.None);
+            }
+
+            using (var scope = _testEnv.CreateDependencyScope())
+            {
+                var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
+                var reorderedCards = await dbCtx.Cards.Where(c => c.UserId == newUserId && c.Tab == Common.Tab.Queue).OrderBy(c => c.Order).ToListAsync(CancellationToken.None);
+
+                var updatedCard = reorderedCards.Single(c => c.Order == toOrd.Value);
+
+                updatedCard.Id.Should().Be(cardToReorder.Id);
+
+                var ord = 0;
+                foreach (var card in reorderedCards)
+                {
+                    ord++;
+                    card.Order.Should().Be(ord);
+                }
+            }
+
+
+        }
+    }
+
+    
+}

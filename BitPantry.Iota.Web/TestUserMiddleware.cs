@@ -14,7 +14,7 @@ public class TestUserMiddleware
 
     public async Task InvokeAsync(HttpContext context, AppSettings settings, UserIdentity userIdentity)
     {
-        if (!userIdentity.IsAuthenticated)
+        if (!userIdentity.IsAuthenticated || userIdentity.UserId != settings.UseTestUserId)
         {
             // Simulate a logged-in user
             var claims = new List<Claim>

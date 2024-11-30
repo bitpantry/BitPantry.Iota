@@ -20,6 +20,7 @@ namespace BitPantry.Iota.Web
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+                .AddUserSecrets<Program>()
                 .AddEnvironmentVariables();
 
             // configure logging
@@ -35,7 +36,7 @@ namespace BitPantry.Iota.Web
             builder.Services.ConfigureInfrastructureServices(settings, CachingStrategy.InMemory);
             builder.Services.ConfigureApplicationServices();
 
-            if (builder.Environment.IsDevelopment())
+            if (settings.UseMiniProfiler)
                 builder.Services.ConfigureMiniProfiler(settings);
 
             builder.Services.AddControllersWithViews();
@@ -51,11 +52,11 @@ namespace BitPantry.Iota.Web
 
             app.Logger.LogInformation("Starting BitPantry.Iota.Web :: {Environment}, {DataSource}", builder.Environment.EnvironmentName, connStrBuilder.DataSource);
 
-            app.UseMiddleware<TimeZoneMiddleware>();
-            app.UseMiddleware<IotaLogEnricherMiddleware>();
+            if (settings.UseTestUserId.HasValue)
+                app.UseMiddleware<TestUserMiddleware>();
 
-            //if (app.Environment.IsDevelopment())
-            //    app.UseMiddleware<FakeUserMiddleware>();
+            app.UseMiddleware<IotaLogEnricherMiddleware>();
+            app.UseMiddleware<TimeZoneMiddleware>();
 
             // Configure the HTTP request pipeline.
 
@@ -74,16 +75,14 @@ namespace BitPantry.Iota.Web
 
             app.UseStaticFiles();
 
-            if (settings.UseTestUserId.HasValue)
-                app.UseMiddleware<TestUserMiddleware>();
-
             app.UseMiddleware<AppStateCookieMiddleware>();
+
+            if (settings.UseMiniProfiler)
+                app.UseMiniProfiler();
 
             app.UseRouting();
 
             app.UseAuthorization();
-
-            app.UseMiniProfiler();
 
             app.MapControllerRoute(
                 name: "default",

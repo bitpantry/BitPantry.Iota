@@ -1,5 +1,6 @@
 using BitPantry.Iota.Application.Service;
 using BitPantry.Iota.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -49,8 +50,14 @@ namespace BitPantry.Iota.Web.Controllers
             return View(new { Delay = delay, RedirectUrl = redirectUrl });
         }
 
-        public IActionResult Feedback()
-            => View(nameof(Feedback));
+        [AllowAnonymous]
+        public IActionResult AddTimezoneCookie(string redirectUrl)
+        {
+            return View(new { RedirectUrl =  redirectUrl });
+        }
+
+        public IActionResult Documentation()
+            => View(nameof(Documentation));
 
         
     }

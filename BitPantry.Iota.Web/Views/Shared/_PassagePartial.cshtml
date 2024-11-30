@@ -20,6 +20,12 @@
                 @foreach (var verse in chapter.Value)
                 {
                     <span><sup><strong>@verse.Key</strong></sup> @verse.Value </span>
+
+                    @if (Model.ToChapterNumber == chapter.Key && Model.ToVerseNumber == verse.Key)
+                    {
+                        <span class="ms-2">(@Model.TranslationShortName)</span>
+                    }
+
                 }
 
             </p>

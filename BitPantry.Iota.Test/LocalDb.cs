@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Net;
+using BitPantry.Iota.Data.Entity;
 using BitPantry.Iota.Infrastructure.Settings;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;

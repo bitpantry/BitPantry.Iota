@@ -16,7 +16,7 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
                     <img src="~/logo.png" alt="BitPantry Logo" style="height: 35px;" />
@@ -27,16 +27,19 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Review" asp-action="Index">Review</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Review" asp-action="Index">Start Review</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link dropdown-toggle text-dark" href="#" id="nestedDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Cards
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="nestedDropdown">
-                                <li><a class="dropdown-item" asp-area="" asp-controller="Card" asp-action="Create">New</a></li>
-                                <li><a class="dropdown-item" asp-area="" asp-controller="Tabs" asp-action="Index">View All</a></li>
+                                <li><a class="dropdown-item" asp-area="" asp-controller="Card" asp-action="New">New</a></li>
+                                <li><a class="dropdown-item" asp-area="" asp-controller="Collection" asp-action="Index">View All</a></li>
                             </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Settings" asp-action="Index">Settings</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link dropdown-toggle text-dark" href="#" id="nestedDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -44,7 +47,7 @@
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="nestedDropdown">
                                 <li><a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="GetStarted">Getting Started</a></li>
-                                <li><a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="About">Feedback</a></li>
+                                <li><a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Documentation">Documentation</a></li>
                             </ul>
                         </li>
                     </ul>
@@ -63,16 +66,11 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
-
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-
-            const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            document.cookie = `@(Constants.TIMEZONE_KEY_NAME)=${timeZone}; path=/; secure; samesite=strict`;
-        });
+        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        document.cookie = `@(Constants.TIMEZONE_KEY_NAME)=${timeZone}; path=/; secure; samesite=strict`;
     </script>
-
-    <mini-profiler  />
+    <mini-profiler />
 @* 	<div class="d-none d-xl-block" style="background: #007bff; color: #fff; padding: 5px; text-align: center;">XL</div>
     <div class="d-none d-lg-block d-xl-none" style="background: #27a745; color: #fff; padding: 5px; text-align: center;">LG</div>
     <div class="d-none d-md-block d-lg-none" style="background: #ffc108; color: #fff; padding: 5px; text-align: center;">MD</div>

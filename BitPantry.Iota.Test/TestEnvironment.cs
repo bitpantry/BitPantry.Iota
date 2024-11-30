@@ -3,6 +3,7 @@ using BitPantry.Iota.Data.Entity;
 using BitPantry.Iota.Infrastructure;
 using BitPantry.Iota.Infrastructure.IoC;
 using BitPantry.Iota.Infrastructure.Settings;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -30,7 +31,6 @@ namespace BitPantry.Iota.Test
         private readonly AppSettings _appSettings;
         private readonly ServiceProvider? _serviceProvider;
         private readonly LocalDb _localDb;
-        private readonly TestDataService _testDataService;
 
         public string ContextId { get; } = Crypt.GenerateSecureRandomString(8);
         public bool IsDeployed { get; private set; } = false;
@@ -52,7 +52,6 @@ namespace BitPantry.Iota.Test
             services.ConfigureInfrastructureServices(_appSettings, CachingStrategy.InMemory);
             services.ConfigureApplicationServices();
 
-            services.AddScoped<TestDataService>();
             services.AddScoped<LocalDb>();
 
             services.AddLogging(cfg =>
@@ -67,23 +66,9 @@ namespace BitPantry.Iota.Test
             _serviceProvider = services.BuildServiceProvider();
 
             _localDb = _serviceProvider.GetRequiredService<LocalDb>();
-            _testDataService = _serviceProvider.GetRequiredService<TestDataService>();
         }
 
-        private void Deploy()
-        {
-            lock (_lock)
-            {
-                if (IsDeployed) return;
-
-                _localDb.Deploy(true).Wait();
-                _testDataService.Install(_options.InstallTestData).Wait();
-
-                IsDeployed = true;
-            }
-        }
-
-        public static TestEnvironment Deploy(Action<TestEnvironmentOptions> deployOptionsAction = null)
+        public static TestEnvironment Create(Action<TestEnvironmentOptions> deployOptionsAction = null)
         {
             var opt = new TestEnvironmentOptions();
 
@@ -93,6 +78,24 @@ namespace BitPantry.Iota.Test
             env.Deploy();
 
             return env;
+        }
+
+        private void Deploy()
+        {
+            lock (_lock)
+            {
+                if (IsDeployed) return;
+
+                _localDb.Deploy(true).Wait();
+
+                using (var scope = CreateDependencyScope())
+                {
+                    var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
+                    dbCtx.Database.Migrate();
+                }
+
+                IsDeployed = true;
+            }
         }
 
         public void Reset()

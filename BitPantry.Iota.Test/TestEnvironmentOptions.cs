@@ -9,13 +9,6 @@ namespace BitPantry.Iota.Test
 {
     public class TestEnvironmentOptions
     {
-        public bool InstallTestData { get; private set; } = false;
-
-        public TestEnvironmentOptions WithTestData()
-        {
-            InstallTestData = true;
-            return this;
-        }
         
     }
 }

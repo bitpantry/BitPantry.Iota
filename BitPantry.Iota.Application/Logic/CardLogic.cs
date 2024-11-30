@@ -43,10 +43,10 @@ namespace BitPantry.Iota.Application.Logic
             return false;
         }
 
-
-        public async Task MoveCardCommand(DbConnection dbConnection, DbTransaction transaction, long cardId, Tab toTab)
+        public async Task MoveCardCommand(DbConnection dbConnection, DbTransaction transaction, long cardId, Tab toTab, bool atTop = true, bool cascade = true)
         {
             // Get the current order and tab of the card to be moved
+
             var cardInfo = await dbConnection.QuerySingleOrDefaultAsync<dynamic>(
                 "SELECT UserId, [Order], Tab FROM Cards WHERE Id = @CardId",
                 new { cardId },
@@ -59,19 +59,12 @@ namespace BitPantry.Iota.Application.Logic
             int currentTab = cardInfo.Tab;
             long userId = cardInfo.UserId;
 
-            _logger.LogDebug("Moving card {CardId} :: {CurrentTab} => {ToTab}", cardId, (Tab)currentTab, toTab);
+            _logger.LogDebug("Moving card {CardId} :: {CurrentTab} => {ToTab} (AtTop: {AtTop})", cardId, (Tab)currentTab, toTab, atTop);
 
-            // Move the card and put in order 1 in the new tab
+            // Determine the order placement in the new tab
 
-            string sql = @"
-                DECLARE @CurrentOrder INT;
-                DECLARE @CurrentTab INT;
-
-                -- Get the current order and tab of the card being moved
-                SELECT @CurrentOrder = [Order], @CurrentTab = Tab
-                FROM Cards 
-                WHERE Id = @CardId;
-
+            string orderLogic = atTop
+                ? @"
                 -- Shift the orders in the new tab to make room for the moved card at order 1
                 UPDATE Cards
                 SET [Order] = [Order] + 1
@@ -82,7 +75,26 @@ namespace BitPantry.Iota.Application.Logic
                 -- Move the card to the new tab and set its order to 1
                 UPDATE Cards
                 SET Tab = @ToTab, [Order] = 1, LastMovedOn = @Timestamp
+                WHERE Id = @CardId;"
+                    : @"
+                -- Get the maximum order in the destination tab
+                DECLARE @MaxOrder INT = (SELECT ISNULL(MAX([Order]), 0) FROM Cards WHERE Tab = @ToTab AND UserId = @UserId);
+
+                -- Move the card to the new tab and set its order to MaxOrder + 1
+                UPDATE Cards
+                SET Tab = @ToTab, [Order] = @MaxOrder + 1, LastMovedOn = @Timestamp
+                WHERE Id = @CardId;";
+
+                    string sql = $@"
+                DECLARE @CurrentOrder INT;
+                DECLARE @CurrentTab INT;
+
+                -- Get the current order and tab of the card being moved
+                SELECT @CurrentOrder = [Order], @CurrentTab = Tab
+                FROM Cards 
                 WHERE Id = @CardId;
+
+                {orderLogic}
 
                 -- Adjust the order of cards in the old tab to fill any gaps
                 UPDATE Cards
@@ -106,8 +118,8 @@ namespace BitPantry.Iota.Application.Logic
             await dbConnection.ExecuteAsync(sql, parameters, transaction);
 
             // Cascade promote cards in the destination tab if single card tab
-
-            if(toTab < Tab.Day1 && toTab != Tab.Queue)
+           
+            if (cascade && toTab < Tab.Day1 && toTab != Tab.Queue)
             {
                 var existingCardId = await dbConnection.QuerySingleOrDefaultAsync<long?>(
                     @"SELECT Id
@@ -126,9 +138,9 @@ namespace BitPantry.Iota.Application.Logic
                 }
             }
 
-            // if the card just moved was the daily card, try to promote the next queue card
+            // If the card just moved was the daily card, try to promote the next queue card
 
-            if (currentTab == (int)Tab.Daily)
+            if (cascade && currentTab == (int)Tab.Daily)
                 _ = await TryPromoteNextQueueCardCommand(dbConnection, transaction, userId);
         }
 

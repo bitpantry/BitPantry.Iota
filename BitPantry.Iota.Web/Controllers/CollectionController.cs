@@ -5,23 +5,22 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BitPantry.Iota.Web.Controllers
 {
-    public class TabsController : Controller
+    public class CollectionController : Controller
     {
         private UserIdentity _identity;
         private TabsService _tabSvc;
 
-        public TabsController(UserIdentity identity, TabsService tabSvc) 
+        public CollectionController(UserIdentity identity, TabsService tabSvc) 
         {
             _identity = identity;
             _tabSvc = tabSvc;
         }
 
-        [Route("tabs")]
         public async Task<IActionResult> Index()
-            => await Tabs(Tab.Queue);
+            => await Index(Tab.Queue);
 
-        [Route("tabs/{tab:enum}")]
-        public async Task<IActionResult> Tabs(Tab tab)
+        [Route("collection/{tab:enum}")]
+        public async Task<IActionResult> Index(Tab tab)
         {
             var counts = await _tabSvc.GetCardCountByTab(_identity.UserId, HttpContext.RequestAborted);
 
@@ -53,7 +52,7 @@ namespace BitPantry.Iota.Web.Controllers
             };
 
 
-            return View(nameof(Tabs), model);
+            return View(nameof(Index), model);
         }
 
         private Tab GetNextSubTabWithData(Tab[] subTabs, Dictionary<Tab, int> tabsWithData)
