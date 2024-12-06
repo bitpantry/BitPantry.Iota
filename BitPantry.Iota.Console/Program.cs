@@ -7,6 +7,7 @@ using BitPantry.Iota.Infrastructure.Settings;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using BitPantry.Iota.Application.Service;
 
 namespace BitPantry.Iota.Console
 {
@@ -30,7 +31,7 @@ namespace BitPantry.Iota.Console
             var appBuilder = new CommandLineApplicationBuilder();
 
             appBuilder.Services.ConfigureInfrastructureServices(settings, CachingStrategy.InMemory);
-            appBuilder.Services.ConfigureApplicationServices();
+            appBuilder.Services.ConfigureApplicationServices(GetWorkflowService);
 
             appBuilder.Services.AddLogging(cfg =>
             {
@@ -84,6 +85,11 @@ namespace BitPantry.Iota.Console
                     System.Console.ResetColor();
                 }
             }
+        }
+
+        private static IWorkflowService GetWorkflowService(IServiceProvider svcProvider)
+        {
+            return svcProvider.GetRequiredService<BasicWorkflowService>();
         }
     }
 }

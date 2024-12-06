@@ -9,13 +9,14 @@ namespace BitPantry.Iota.Application.Service
     public class TabsService
     {
         private EntityDataContext _dbCtx;
-        private CardLogic _cardLogc;
 
-        public TabsService(EntityDataContext dbCtx, CardLogic cardLogic)
+        public TabsService(EntityDataContext dbCtx)
         {
             _dbCtx = dbCtx;
-            _cardLogc = cardLogic;
         }
+
+        public async Task<int> GetCardCountForTab(long userId, Tab tab, CancellationToken cancellationToken)
+            => await _dbCtx.Cards.CountAsync(c => c.UserId == userId && c.Tab == tab, cancellationToken);
 
         public async Task<List<CardDto>> GetCardsForTab(long userId, Tab tab, CancellationToken cancellationToken)
         {

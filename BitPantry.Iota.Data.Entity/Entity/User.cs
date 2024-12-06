@@ -1,4 +1,5 @@
-﻿using System.Data.Common;
+﻿using BitPantry.Iota.Common;
+using System.Data.Common;
 
 namespace BitPantry.Iota.Data.Entity
 {
@@ -7,5 +8,6 @@ namespace BitPantry.Iota.Data.Entity
         public string EmailAddress { get; set; }
         public DateTime LastLogin { get; set; }
         public List<Card> Cards { get; set; }
+        public WorkflowType? WorkflowType { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using BitPantry.Iota.Application.IoC;
+using BitPantry.Iota.Application.Service;
 using BitPantry.Iota.Data.Entity;
 using BitPantry.Iota.Infrastructure;
 using BitPantry.Iota.Infrastructure.IoC;
@@ -22,11 +23,11 @@ using static System.Formats.Asn1.AsnWriter;
 
 namespace BitPantry.Iota.Test
 {
-    public class TestEnvironment : IDisposable
+    public class ApplicationEnvironment : IDisposable
     {
         private object _lock = new object();
 
-        private TestEnvironmentOptions _options;
+        private ApplicationEnvironmentOptions _options;
 
         private readonly AppSettings _appSettings;
         private readonly ServiceProvider? _serviceProvider;
@@ -35,14 +36,14 @@ namespace BitPantry.Iota.Test
         public string ContextId { get; } = Crypt.GenerateSecureRandomString(8);
         public bool IsDeployed { get; private set; } = false;
 
-
-        private TestEnvironment(TestEnvironmentOptions options)
+        private ApplicationEnvironment(ApplicationEnvironmentOptions options)
         {
             _options = options;
 
             var config = new ConfigurationManager()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile("appsettings.test.json", optional: false, reloadOnChange: true)
                 .Build();
 
             _appSettings = new AppSettings(config, ContextId);
@@ -50,7 +51,7 @@ namespace BitPantry.Iota.Test
             var services = new ServiceCollection();
 
             services.ConfigureInfrastructureServices(_appSettings, CachingStrategy.InMemory);
-            services.ConfigureApplicationServices();
+            services.ConfigureApplicationServices(GetWorkflowService);
 
             services.AddScoped<LocalDb>();
 
@@ -68,13 +69,25 @@ namespace BitPantry.Iota.Test
             _localDb = _serviceProvider.GetRequiredService<LocalDb>();
         }
 
-        public static TestEnvironment Create(Action<TestEnvironmentOptions> deployOptionsAction = null)
+        private IWorkflowService GetWorkflowService(IServiceProvider provider)
         {
-            var opt = new TestEnvironmentOptions();
+            switch (_options.WorkflowType) {
+                case Common.WorkflowType.Basic:
+                    return provider.GetRequiredService<BasicWorkflowService>();
+                case Common.WorkflowType.Advanced:
+                    return provider.GetRequiredService<AdvancedWorkflowService>();
+                default:
+                    throw new NotImplementedException($"No case for {_options.WorkflowType} is implemented.");
+            }
+        }
 
-            deployOptionsAction?.Invoke(opt);
+        public static ApplicationEnvironment Create(Action<ApplicationEnvironmentOptions> createOptAction = null)
+        {
+            var opt = new ApplicationEnvironmentOptions();
 
-            var env = new TestEnvironment(opt);
+            createOptAction?.Invoke(opt);
+
+            var env = new ApplicationEnvironment(opt);
             env.Deploy();
 
             return env;

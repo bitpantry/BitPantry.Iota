@@ -25,5 +25,6 @@ namespace BitPantry.Iota.Infrastructure
             }
             return stringBuilder.ToString();
         }
+
     }
 }

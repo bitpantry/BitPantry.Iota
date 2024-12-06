@@ -13,11 +13,11 @@ using System.Threading.Tasks;
 
 namespace BitPantry.Iota.Test
 {
-    public static class TestEnvironmentExtensions
+    public static class ApplicationEnvironmentExtensions
     {
         public static int _testUserIndex = 0;
 
-        public static async Task<long> CreateUser(this TestEnvironment testEnv, string emailAddress = null, CancellationToken cancellationToken = default)
+        public static async Task<long> CreateUser(this ApplicationEnvironment testEnv, string emailAddress = null, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(emailAddress))
             {
@@ -38,7 +38,7 @@ namespace BitPantry.Iota.Test
 
         }
 
-        public static async Task<long> InstallBible(this TestEnvironment testEnv, CancellationToken cancellationToken = default)
+        public static async Task<long> InstallBible(this ApplicationEnvironment testEnv, CancellationToken cancellationToken = default)
         {
             using (var scope = testEnv.CreateDependencyScope())
             {
@@ -47,7 +47,7 @@ namespace BitPantry.Iota.Test
             }
         }
 
-        public static async Task<List<CardDto>> CreateCards(this TestEnvironment testEnv, long userId, long bibleId, CancellationToken cancellationToken = default)
+        public static async Task<List<CardDto>> CreateCards(this ApplicationEnvironment testEnv, long userId, long bibleId, CancellationToken cancellationToken = default)
         {
             using (var scope = testEnv.CreateDependencyScope())
             {

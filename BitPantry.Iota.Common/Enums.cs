@@ -83,3 +83,9 @@ public enum Tab : int
     [Description("31st")]
     Day31 = 40
 }
+
+public enum WorkflowType : int
+{
+    Basic = 1,
+    Advanced = 2
+}

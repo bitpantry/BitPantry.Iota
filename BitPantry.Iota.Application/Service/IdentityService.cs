@@ -35,6 +35,8 @@ namespace BitPantry.Iota.Application.Service
 
             await _dbCtx.SaveChangesAsync(cancellationToken);
 
+            _dbCtx.ChangeTracker.Clear();
+
             return user.Id;
         }
 

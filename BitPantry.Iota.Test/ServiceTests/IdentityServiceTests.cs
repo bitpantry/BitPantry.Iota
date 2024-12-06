@@ -1,6 +1,7 @@
 ﻿using BitPantry.Iota.Application;
 using BitPantry.Iota.Application.Service;
 using BitPantry.Iota.Data.Entity;
+using BitPantry.Iota.Test.Fixtures;
 using Dapper;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -14,13 +15,14 @@ using Xunit;
 
 namespace BitPantry.Iota.Test.ServiceTests
 {
-    public class IdentityServiceTests : IClassFixture<TestEnvironmentFixture>
+    [Collection("Services")]
+    public class IdentityServiceTests 
     {
-        TestEnvironment _testEnv;
+        ApplicationEnvironment _testEnv;
 
-        public IdentityServiceTests(TestEnvironmentFixture fixture)
+        public IdentityServiceTests(ApplicationEnvironmentCollectionFixture fixture)
         {
-            _testEnv = fixture.Initialize();
+            _testEnv = fixture.Environment;
         }
 
         [Fact]
@@ -58,12 +60,8 @@ namespace BitPantry.Iota.Test.ServiceTests
             using (var scope = _testEnv.CreateDependencyScope())
             {
                 var svc = scope.ServiceProvider.GetRequiredService<IdentityService>();
+                
                 userId = await svc.SignInUser("testuser@test.com");
-            }
-
-            using (var scope = _testEnv.CreateDependencyScope())
-            {
-                var svc = scope.ServiceProvider.GetRequiredService<IdentityService>();
                 var nextUserId = await svc.SignInUser("testuser@test.com");
 
                 nextUserId.Should().Be(userId); // same user

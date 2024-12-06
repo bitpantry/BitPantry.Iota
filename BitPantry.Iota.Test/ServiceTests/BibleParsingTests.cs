@@ -9,7 +9,7 @@ using Xunit;
 
 namespace BitPantry.Iota.Test.ServiceTests
 {
-    public class BibleServiceTests
+    public class BibleParsingTests
     {
         [Fact]
         public void ParseBible_BibleParsed()

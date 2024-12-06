@@ -16,4 +16,8 @@
     <ProjectReference Include="..\BitPantry.Iota.Common\BitPantry.Iota.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Workflow\" />
+  </ItemGroup>
+
 </Project>

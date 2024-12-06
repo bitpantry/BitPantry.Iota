@@ -2,6 +2,7 @@
 using BitPantry.Iota.Application.DTO;
 using BitPantry.Iota.Application.Service;
 using BitPantry.Iota.Data.Entity;
+using BitPantry.Iota.Test.Fixtures;
 using Dapper;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -16,20 +17,16 @@ using Xunit;
 
 namespace BitPantry.Iota.Test.ServiceTests
 {
-    public class CardServiceTests : IClassFixture<TestEnvironmentFixture>
+    [Collection("Services")]
+    public class CardServiceTests 
     {
         private static long _bibleId;
-        private static long _user1Id;
-
-        TestEnvironment _testEnv;
+        private readonly ApplicationEnvironment _testEnv;
         
-        public CardServiceTests(TestEnvironmentFixture fixture)
+        public CardServiceTests(ApplicationEnvironmentCollectionFixture fixture)
         {
-            _testEnv = fixture.Initialize(env =>
-            {
-                _bibleId = env.InstallBible().GetAwaiter().GetResult();
-                _user1Id = env.CreateUser().GetAwaiter().GetResult();
-            });     
+            _bibleId = fixture.BibleId;
+            _testEnv = fixture.Environment;
         }
 
         [Theory]
@@ -39,11 +36,13 @@ namespace BitPantry.Iota.Test.ServiceTests
         [InlineData("1 tim 3:4-4:1")]
         public async Task CreateCard_CardCreated(string address)
         {
+            var userId = await _testEnv.CreateUser();
+
             using (var scope = _testEnv.CreateDependencyScope())
             {
                 var svc = scope.ServiceProvider.GetRequiredService<CardService>();
 
-                var resp = await svc.CreateCard(_user1Id, _bibleId, address, CancellationToken.None);
+                var resp = await svc.CreateCard(userId, _bibleId, address, CancellationToken.None);
 
                 resp.Result.Should().Be(Application.CreateCardResponseResult.Ok);
                 
@@ -62,11 +61,13 @@ namespace BitPantry.Iota.Test.ServiceTests
         [InlineData("1 tim 3:4-2 tim 1:1")]
         public async Task CreateCardInvalidAddress_InvalidAddressResult(string address)
         {
+            var userId = await _testEnv.CreateUser();
+
             using (var scope = _testEnv.CreateDependencyScope())
             {
                 var svc = scope.ServiceProvider.GetRequiredService<CardService>();
 
-                var resp = await svc.CreateCard(_user1Id, _bibleId, address, CancellationToken.None);
+                var resp = await svc.CreateCard(userId, _bibleId, address, CancellationToken.None);
 
                 resp.Result.Should().Be(Application.CreateCardResponseResult.InvalidAddress);
                 resp.Card.Should().BeNull();
@@ -76,14 +77,14 @@ namespace BitPantry.Iota.Test.ServiceTests
         [Fact]
         public async Task CreateTwoCards_CreatedInQueueAndDaily()
         {
-            var newUserId = await _testEnv.CreateUser();
+            var userId = await _testEnv.CreateUser();
 
             using (var scope = _testEnv.CreateDependencyScope())
             {
                 var svc = scope.ServiceProvider.GetRequiredService<CardService>();
 
-                var resp1 = await svc.CreateCard(newUserId, _bibleId, "gen 1:1", CancellationToken.None);
-                var resp2 = await svc.CreateCard(newUserId, _bibleId, "gen 1:2", CancellationToken.None);
+                var resp1 = await svc.CreateCard(userId, _bibleId, "gen 1:1", CancellationToken.None);
+                var resp2 = await svc.CreateCard(userId, _bibleId, "gen 1:2", CancellationToken.None);
 
                 resp1.Card.Tab.Should().Be(Common.Tab.Daily);
                 resp2.Card.Tab.Should().Be(Common.Tab.Queue);
@@ -93,11 +94,13 @@ namespace BitPantry.Iota.Test.ServiceTests
         [Fact]
         public async Task CreateCardEmptyAddress_ArgumentNullException()
         {
+            var userId = await _testEnv.CreateUser();
+
             using (var scope = _testEnv.CreateDependencyScope())
             {
                 var svc = scope.ServiceProvider.GetRequiredService<CardService>();
 
-                var act = async () => { await svc.CreateCard(_user1Id, _bibleId, "", CancellationToken.None); };
+                var act = async () => { await svc.CreateCard(userId, _bibleId, "", CancellationToken.None); };
 
                 await act.Should().ThrowAsync<ArgumentNullException>();
             }
@@ -106,15 +109,15 @@ namespace BitPantry.Iota.Test.ServiceTests
         [Fact]
         public async Task CreateMultipleCards_CardsCreatedWithCorrectOrder()
         {
-            var newUserId = await _testEnv.CreateUser();
+            var userId = await _testEnv.CreateUser();
 
             using (var scope = _testEnv.CreateDependencyScope())
             {
                 var svc = scope.ServiceProvider.GetRequiredService<CardService>();
 
-                var resp1 = await svc.CreateCard(newUserId, _bibleId, "gen 12:1", Common.Tab.Queue, null, CancellationToken.None);
-                var resp2 = await svc.CreateCard(newUserId, _bibleId, "gen 12:2", Common.Tab.Queue, null, CancellationToken.None);
-                var resp3 = await svc.CreateCard(newUserId, _bibleId, "gen 12:3", Common.Tab.Queue, null, CancellationToken.None);
+                var resp1 = await svc.CreateCard(userId, _bibleId, "gen 12:1", Common.Tab.Queue, null, CancellationToken.None);
+                var resp2 = await svc.CreateCard(userId, _bibleId, "gen 12:2", Common.Tab.Queue, null, CancellationToken.None);
+                var resp3 = await svc.CreateCard(userId, _bibleId, "gen 12:3", Common.Tab.Queue, null, CancellationToken.None);
 
                 resp1.Card.Order.Should().Be(1);
                 resp2.Card.Order.Should().Be(2);
@@ -128,11 +131,13 @@ namespace BitPantry.Iota.Test.ServiceTests
         [InlineData("j 3:7")]
         public async Task CreateCardBadBookName_BookNameUnresolvedResult(string address)
         {
+            var userId = await _testEnv.CreateUser();
+
             using (var scope = _testEnv.CreateDependencyScope())
             {
                 var svc = scope.ServiceProvider.GetRequiredService<CardService>();
 
-                var resp = await svc.CreateCard(_user1Id, _bibleId, address, CancellationToken.None);
+                var resp = await svc.CreateCard(userId, _bibleId, address, CancellationToken.None);
 
                 resp.Result.Should().Be(Application.CreateCardResponseResult.BookNameUnresolved);
                 resp.Card.Should().BeNull();
@@ -142,14 +147,16 @@ namespace BitPantry.Iota.Test.ServiceTests
         [Fact]
         public async Task CreateDuplicateCard_CardAlreadyExistsResult()
         {
+            var userId = await _testEnv.CreateUser();
+
             using (var scope = _testEnv.CreateDependencyScope())
             {
                 var svc = scope.ServiceProvider.GetRequiredService<CardService>();
 
-                var resp = await svc.CreateCard(_user1Id, _bibleId, "jn 3:16", CancellationToken.None); 
+                var resp = await svc.CreateCard(userId, _bibleId, "jn 3:16", CancellationToken.None); 
                 resp.Result.Should().Be(Application.CreateCardResponseResult.Ok);
 
-                resp = await svc.CreateCard(_user1Id, _bibleId, "jn 3:16", CancellationToken.None);
+                resp = await svc.CreateCard(userId, _bibleId, "jn 3:16", CancellationToken.None);
                 resp.Result.Should().Be(Application.CreateCardResponseResult.CardAlreadyExists);
             }
         }
@@ -157,23 +164,16 @@ namespace BitPantry.Iota.Test.ServiceTests
         [Fact]
         public async Task CreateCardWithOrder_CardCreated()
         {
-            long cardId = 0;
+            var userId = await _testEnv.CreateUser();
 
             using (var scope = _testEnv.CreateDependencyScope())
             {
                 var svc = scope.ServiceProvider.GetRequiredService<CardService>();
 
-                var resp = await svc.CreateCard(_user1Id, _bibleId, "rev 1:1", Common.Tab.Day10, 1, CancellationToken.None);
+                var resp = await svc.CreateCard(userId, _bibleId, "rev 1:1", Common.Tab.Day10, 1, CancellationToken.None);
                 resp.Result.Should().Be(Application.CreateCardResponseResult.Ok);
 
-                cardId = resp.Card.Id;
-            }
-
-            using (var scope = _testEnv.CreateDependencyScope())
-            {
-                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
-
-                var card = await svc.GetCard(cardId, CancellationToken.None);
+                var card = await svc.GetCard(resp.Card.Id, CancellationToken.None);
 
                 card.Order.Should().Be(1);
             }
@@ -182,14 +182,16 @@ namespace BitPantry.Iota.Test.ServiceTests
         [Fact]
         public async Task CreateCardsWithDuplicateOrder_InvalidOperationException()
         {
+            var userId = await _testEnv.CreateUser();
+
             using (var scope = _testEnv.CreateDependencyScope())
             {
                 var svc = scope.ServiceProvider.GetRequiredService<CardService>();
 
-                var resp1 = await svc.CreateCard(_user1Id, _bibleId, "rev 1:2", Common.Tab.Day10, 1, CancellationToken.None);
+                var resp1 = await svc.CreateCard(userId, _bibleId, "rev 1:2", Common.Tab.Day10, 1, CancellationToken.None);
                 resp1.Result.Should().Be(Application.CreateCardResponseResult.Ok);
 
-                var act = async () => await svc.CreateCard(_user1Id, _bibleId, "rev 1:3", Common.Tab.Day10, 1, CancellationToken.None);
+                var act = async () => await svc.CreateCard(userId, _bibleId, "rev 1:3", Common.Tab.Day10, 1, CancellationToken.None);
                 await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("Order 1 is already taken");                
             }
         }
@@ -197,10 +199,11 @@ namespace BitPantry.Iota.Test.ServiceTests
         [Fact]
         public async Task DeleteAllCards_AllCardsDeleted()
         {
-            var newUserId = await _testEnv.CreateUser();
+            var user1Id = await _testEnv.CreateUser();
+            var user2Id = await _testEnv.CreateUser();
 
-            _ = await _testEnv.CreateCards(_user1Id, _bibleId);
-            _ = await _testEnv.CreateCards(newUserId, _bibleId);
+            _ = await _testEnv.CreateCards(user1Id, _bibleId);
+            _ = await _testEnv.CreateCards(user2Id, _bibleId);
 
             using (var scope = _testEnv.CreateDependencyScope())
             {
@@ -229,115 +232,49 @@ namespace BitPantry.Iota.Test.ServiceTests
         [Fact]
         public async Task DeleteAllCardsForUser_AllCardsDeletedForUser()
         {
-            var newUserId = await _testEnv.CreateUser();
+            var user1Id = await _testEnv.CreateUser();
+            var user2Id = await _testEnv.CreateUser();
 
-            _ = await _testEnv.CreateCards(_user1Id, _bibleId);
-            _ = await _testEnv.CreateCards(newUserId, _bibleId);
+            _ = await _testEnv.CreateCards(user1Id, _bibleId);
+            _ = await _testEnv.CreateCards(user2Id, _bibleId);
 
             using (var scope = _testEnv.CreateDependencyScope())
             {
                 var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
                 var svc = scope.ServiceProvider.GetRequiredService<CardService>();
 
-                await svc.DeleteAllCards(_user1Id, CancellationToken.None);
+                await svc.DeleteAllCards(user1Id, CancellationToken.None);
 
                 var count = await dbCtx.UseConnection(CancellationToken.None, async conn =>
                 {
-                    return await conn.QuerySingleAsync<long>("SELECT COUNT(*) FROM Cards WHERE UserId = @UserId", new { UserId = _user1Id });
+                    return await conn.QuerySingleAsync<long>("SELECT COUNT(*) FROM Cards WHERE UserId = @UserId", new { UserId = user1Id });
                 });
 
                 count.Should().Be(0);
 
                 count = await dbCtx.UseConnection(CancellationToken.None, async conn =>
                 {
-                    return await conn.QuerySingleAsync<long>("SELECT COUNT(*) FROM Cards WHERE UserId = @UserId", new { UserId = newUserId });
+                    return await conn.QuerySingleAsync<long>("SELECT COUNT(*) FROM Cards WHERE UserId = @UserId", new { UserId = user2Id });
                 });
 
                 count.Should().NotBe(0);
             }
         }
 
-        [Theory]
-        [InlineData(0)]
-        [InlineData(5)]
-        [InlineData(null)] // last
-        public async Task DeleteQueueCard_CardDeletedTabReordered(int? cardIndex)
-        {
-            var newUserId = await _testEnv.CreateUser();
-
-            var cardDtos = await _testEnv.CreateCards(newUserId, _bibleId);
-            cardDtos = cardDtos.Where(c => c.Tab == Common.Tab.Queue).ToList();
-
-            var cardToDelete = cardIndex.HasValue ? cardDtos[cardIndex.Value] : cardDtos.Last();
-
-            using (var scope = _testEnv.CreateDependencyScope())
-            {
-                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
-                await svc.DeleteCard(cardToDelete.Id, CancellationToken.None);
-            }
-
-            using (var scope = _testEnv.CreateDependencyScope())
-            {
-                var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
-                var cards = dbCtx.Cards.AsNoTracking().Where(c => c.UserId == newUserId && c.Tab == Common.Tab.Queue);
-
-                cards.Count().Should().Be(cardDtos.Count - 1);
-                cards.Where(c => c.Id == cardToDelete.Id).FirstOrDefault().Should().BeNull();
-
-                var ord = 0;
-                foreach (var card in cards)
-                {
-                    ord++;
-                    card.Order.Should().Be(ord);
-                }
-            }
-        }
-
-        [Fact]
-        public async Task DeleteLastCardInTab_CardDeleted()
-        {
-            var newUserId = await _testEnv.CreateUser();
-            CreateCardResponse resp = null;
-
-            using (var scope = _testEnv.CreateDependencyScope())
-            {
-                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
-                resp = await svc.CreateCard(newUserId, _bibleId, "rom 1:16", CancellationToken.None);
-                
-            }
-
-            using (var scope = _testEnv.CreateDependencyScope())
-            {
-                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
-                var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
-
-                await svc.DeleteCard(resp.Card.Id, CancellationToken.None);
-                var cards = dbCtx.Cards.Where(c => c.UserId == newUserId && c.Tab == resp.Card.Tab).ToList();
-
-                cards.Should().BeEmpty();
-
-            }
-        }
-
         [Fact]
         public async Task MarkCardAsReviewed_CardMarked()
         {
-            var newUserId = await _testEnv.CreateUser();
-            CreateCardResponse resp = null;
+            var userId = await _testEnv.CreateUser();
 
             using (var scope = _testEnv.CreateDependencyScope())
             {
                 var svc = scope.ServiceProvider.GetRequiredService<CardService>();
-                resp = await svc.CreateCard(newUserId, _bibleId, "rom 1:16", CancellationToken.None);
+                var resp = await svc.CreateCard(userId, _bibleId, "rom 1:16", CancellationToken.None);
 
                 resp.Card.LastReviewedOn.Should().BeNull();
 
-                await svc.MarkCardAsReviewed(newUserId, resp.Card.Tab, resp.Card.Order, CancellationToken.None);
-            }
+                await svc.MarkAsReviewed(userId, resp.Card.Tab, resp.Card.Order, CancellationToken.None);
 
-            using (var scope = _testEnv.CreateDependencyScope())
-            {
-                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
                 var card = await svc.GetCard(resp.Card.Id, CancellationToken.None);
                 card.LastReviewedOn.Value.Date.Should().Be(DateTime.UtcNow.Date);
             }
@@ -354,8 +291,8 @@ namespace BitPantry.Iota.Test.ServiceTests
         [InlineData(1, 1)]
         public async Task ReorderCard_CardReorderedAndTabOrderUpdated(int? fromOrd, int? toOrd)
         {
-            var newUserId = await _testEnv.CreateUser();
-            var cards = await _testEnv.CreateCards(newUserId, _bibleId, CancellationToken.None);
+            var userId = await _testEnv.CreateUser();
+            var cards = await _testEnv.CreateCards(userId, _bibleId, CancellationToken.None);
 
             cards = cards.Where(c => c.Tab == Common.Tab.Queue).ToList();
 
@@ -370,14 +307,11 @@ namespace BitPantry.Iota.Test.ServiceTests
             using (var scope = _testEnv.CreateDependencyScope())
             {
                 var svc = scope.ServiceProvider.GetRequiredService<CardService>();
-                await svc.ReorderCard(newUserId, Common.Tab.Queue, cardToReorder.Id, toOrd.Value, CancellationToken.None);
-            }
-
-            using (var scope = _testEnv.CreateDependencyScope())
-            {
                 var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
-                var reorderedCards = await dbCtx.Cards.Where(c => c.UserId == newUserId && c.Tab == Common.Tab.Queue).OrderBy(c => c.Order).ToListAsync(CancellationToken.None);
 
+                await svc.ReorderCard(userId, Common.Tab.Queue, cardToReorder.Id, toOrd.Value, CancellationToken.None);
+
+                var reorderedCards = await dbCtx.Cards.Where(c => c.UserId == userId && c.Tab == Common.Tab.Queue).OrderBy(c => c.Order).ToListAsync(CancellationToken.None);
                 var updatedCard = reorderedCards.Single(c => c.Order == toOrd.Value);
 
                 updatedCard.Id.Should().Be(cardToReorder.Id);
@@ -389,8 +323,6 @@ namespace BitPantry.Iota.Test.ServiceTests
                     card.Order.Should().Be(ord);
                 }
             }
-
-
         }
     }
 

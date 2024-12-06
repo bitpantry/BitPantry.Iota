@@ -26,7 +26,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Bibles", "Bibles", "{E30F57
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitPantry.Iota.Common", "BitPantry.Iota.Common\BitPantry.Iota.Common.csproj", "{C9870D51-603C-4DCA-B36D-6DB5FB381076}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitPantry.Iota.Test", "BitPantry.Iota.Test\BitPantry.Iota.Test.csproj", "{9A8022AA-D784-4D54-8BAB-E5B966B0ABC8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitPantry.Iota.Test", "BitPantry.Iota.Test\BitPantry.Iota.Test.csproj", "{9A8022AA-D784-4D54-8BAB-E5B966B0ABC8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

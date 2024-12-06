@@ -1,4 +1,5 @@
 using System;
+using BitPantry.Iota.Common;
 using Microsoft.EntityFrameworkCore;
 
 namespace BitPantry.Iota.Data.Entity.Mapping;
@@ -25,5 +26,7 @@ internal static class UserMapping
             .HasIndex(m => m.EmailAddress)
             .IsUnique();
 
+        modelBuilder.Entity<User>()
+            .Property(u => u.WorkflowType);
     }
 }
