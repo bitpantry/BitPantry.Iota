@@ -31,7 +31,7 @@ namespace BitPantry.Iota.Console
             var appBuilder = new CommandLineApplicationBuilder();
 
             appBuilder.Services.ConfigureInfrastructureServices(settings, CachingStrategy.InMemory);
-            appBuilder.Services.ConfigureApplicationServices(GetWorkflowService);
+            appBuilder.Services.ConfigureApplicationServices();
 
             appBuilder.Services.AddLogging(cfg =>
             {

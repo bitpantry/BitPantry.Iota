@@ -6,6 +6,7 @@ using BitPantry.Iota.Infrastructure.Settings;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 
+
 namespace BitPantry.Iota.Test
 {
     public class LocalDb

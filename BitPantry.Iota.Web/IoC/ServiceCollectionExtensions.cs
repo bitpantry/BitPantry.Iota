@@ -9,7 +9,7 @@ namespace BitPantry.Iota.Web.IoC
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection ConfigureIdentityServices(this IServiceCollection services, AppSettings settings)
+        public static IServiceCollection ConfigureWebIdentityServices(this IServiceCollection services, AppSettings settings)
         {
             services.AddAuthentication(o => 
                 o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme)

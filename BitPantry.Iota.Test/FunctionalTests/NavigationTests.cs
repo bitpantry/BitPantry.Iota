@@ -10,15 +10,14 @@ using System.Xml.Linq;
 
 namespace BitPantry.Iota.Test.FunctionalTests
 {
-    public class NavigationTests : IClassFixture<WebServerFixture>, IClassFixture<ApplicationEnvironmentFixture>
+    [Collection("playwright")]
+    public class NavigationTests 
     {
-        private readonly WebServerFixture _webSvrFixture;
-        private readonly ApplicationEnvironmentFixture _testEnvFixture;
+        private readonly PlaywrightFixture _pwFixture;
 
-        public NavigationTests(WebServerFixture webSvrFixture, ApplicationEnvironmentFixture testEnvFixture)
+        public NavigationTests(PlaywrightFixture pwFixture)
         {
-            _webSvrFixture = webSvrFixture;
-            _testEnvFixture = testEnvFixture;
+            _pwFixture = pwFixture;
         }
 
         [Fact]

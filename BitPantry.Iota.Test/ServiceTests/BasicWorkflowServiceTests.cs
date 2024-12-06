@@ -15,26 +15,26 @@ using Xunit;
 
 namespace BitPantry.Iota.Test.ServiceTests
 {
-    [Collection("Services")]
+    [Collection("env")]
     public class BasicWorkflowServiceTests
     {
         private readonly long _bibleId;
-        private readonly ApplicationEnvironment _testEnv;
+        private readonly ApplicationEnvironment _env;
 
-        public BasicWorkflowServiceTests(ApplicationEnvironmentCollectionFixture fixture)
+        public BasicWorkflowServiceTests(AppEnvironmentFixture fixture)
         {
             _bibleId = fixture.BibleId;
-            _testEnv = fixture.Environment;
+            _env = fixture.Environment;
         }
 
         [Fact]
         public async Task DeleteDailyCard_QueueCardAutoPromoted()
         {
-            var newUserId = await _testEnv.CreateUser();
+            var newUserId = await _env.CreateUser();
             long dailyCardId = 0;
             long queueCardId = 0;
 
-            using (var scope = _testEnv.CreateDependencyScope())
+            using (var scope = _env.ServiceProvider.CreateScope())
             {
                 var svc = scope.ServiceProvider.GetRequiredService<CardService>();
                 var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
@@ -52,7 +52,7 @@ namespace BitPantry.Iota.Test.ServiceTests
                 dailyCardId = cards[1].Id;
             }
 
-            using (var scope = _testEnv.CreateDependencyScope())
+            using (var scope = _env.ServiceProvider.CreateScope())
             {
                 var svc = scope.ServiceProvider.GetRequiredService<IWorkflowService>();
                 var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
@@ -70,9 +70,9 @@ namespace BitPantry.Iota.Test.ServiceTests
         [Fact]
         public async Task MoveQueueCardToOccupiedDaily_CardMovedCascadingToOdd()
         {
-            var newUserId = await _testEnv.CreateUser();
+            var newUserId = await _env.CreateUser();
 
-            using (var scope = _testEnv.CreateDependencyScope())
+            using (var scope = _env.ServiceProvider.CreateScope())
             {
                 var wfSvc = scope.ServiceProvider.GetRequiredService<IWorkflowService>();
                 var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
@@ -93,9 +93,9 @@ namespace BitPantry.Iota.Test.ServiceTests
         [Fact]
         public async Task MoveQueueCardToOccupiedDailyOdd_CardMovedCascadingToEven()
         {
-            var newUserId = await _testEnv.CreateUser();
+            var newUserId = await _env.CreateUser();
 
-            using (var scope = _testEnv.CreateDependencyScope())
+            using (var scope = _env.ServiceProvider.CreateScope())
             {
                 var wfSvc = scope.ServiceProvider.GetRequiredService<IWorkflowService>();
                 var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
@@ -117,9 +117,9 @@ namespace BitPantry.Iota.Test.ServiceTests
         [Fact]
         public async Task MoveQueueCardToOccupiedDailyOddEven_CardMovedCascading()
         {
-            var newUserId = await _testEnv.CreateUser();
+            var newUserId = await _env.CreateUser();
 
-            using (var scope = _testEnv.CreateDependencyScope())
+            using (var scope = _env.ServiceProvider.CreateScope())
             {
                 var wfSvc = scope.ServiceProvider.GetRequiredService<IWorkflowService>();
                 var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
@@ -145,9 +145,9 @@ namespace BitPantry.Iota.Test.ServiceTests
         [Fact]
         public async Task MoveQueueCardToOccupiedDailyOddEvenSunday_CardMovedCascading()
         {
-            var newUserId = await _testEnv.CreateUser();
+            var newUserId = await _env.CreateUser();
 
-            using (var scope = _testEnv.CreateDependencyScope())
+            using (var scope = _env.ServiceProvider.CreateScope())
             {
                 var wfSvc = scope.ServiceProvider.GetRequiredService<IWorkflowService>();
                 var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
@@ -174,9 +174,9 @@ namespace BitPantry.Iota.Test.ServiceTests
         [Fact]
         public async Task MoveQueueCardToOccupiedDailyOddEvenWeek_CardMovedCascading()
         {
-            var newUserId = await _testEnv.CreateUser();
+            var newUserId = await _env.CreateUser();
 
-            using (var scope = _testEnv.CreateDependencyScope())
+            using (var scope = _env.ServiceProvider.CreateScope())
             {
                 var wfSvc = scope.ServiceProvider.GetRequiredService<IWorkflowService>();
                 var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
@@ -215,9 +215,9 @@ namespace BitPantry.Iota.Test.ServiceTests
         [Fact]
         public async Task MoveQueueCardToOccupiedDailyOddEvenWeekDay1_CardMovedCascading()
         {
-            var newUserId = await _testEnv.CreateUser();
+            var newUserId = await _env.CreateUser();
 
-            using (var scope = _testEnv.CreateDependencyScope())
+            using (var scope = _env.ServiceProvider.CreateScope())
             {
                 var wfSvc = scope.ServiceProvider.GetRequiredService<IWorkflowService>();
                 var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
@@ -258,10 +258,10 @@ namespace BitPantry.Iota.Test.ServiceTests
         [Fact]
         public async Task MoveQueueCardToOccupiedDailyOddEvenWeekDate_CardMovedCascading()
         {
-            var newUserId = await _testEnv.CreateUser();
-            await _testEnv.CreateCards(newUserId, _bibleId, CancellationToken.None);
+            var newUserId = await _env.CreateUser();
+            await _env.CreateCards(newUserId, _bibleId, CancellationToken.None);
 
-            using (var scope = _testEnv.CreateDependencyScope())
+            using (var scope = _env.ServiceProvider.CreateScope())
             {
                 var wfSvc = scope.ServiceProvider.GetRequiredService<IWorkflowService>();
                 var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
@@ -292,10 +292,10 @@ namespace BitPantry.Iota.Test.ServiceTests
         [Fact]
         public async Task MoveQueueCardToOccupiedDailyOddEvenWeekDateDay1_CardMovedCascading()
         {
-            var newUserId = await _testEnv.CreateUser();
-            await _testEnv.CreateCards(newUserId, _bibleId, CancellationToken.None);
+            var newUserId = await _env.CreateUser();
+            await _env.CreateCards(newUserId, _bibleId, CancellationToken.None);
 
-            using (var scope = _testEnv.CreateDependencyScope())
+            using (var scope = _env.ServiceProvider.CreateScope())
             {
                 var wfSvc = scope.ServiceProvider.GetRequiredService<IWorkflowService>();
                 var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();

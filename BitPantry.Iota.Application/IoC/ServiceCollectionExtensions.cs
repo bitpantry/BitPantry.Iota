@@ -10,8 +10,7 @@ namespace BitPantry.Iota.Application.IoC
     public static class ServiceCollectionExtensions
     {
         public static void ConfigureApplicationServices(
-            this IServiceCollection services,
-            Func<IServiceProvider, IWorkflowService> workflowServiceProviderFunc)
+            this IServiceCollection services)
         {
             // services
 
@@ -26,7 +25,8 @@ namespace BitPantry.Iota.Application.IoC
 
             services.AddScoped<BasicWorkflowService>();
             services.AddScoped<AdvancedWorkflowService>();
-            services.AddScoped(svc => workflowServiceProviderFunc(svc));
+            services.AddScoped<WorkflowServiceSwitch>();
+            services.AddScoped(svc => svc.GetRequiredService<IWorkflowServiceProvider>().GetWorkflowService());
 
             // logic
 

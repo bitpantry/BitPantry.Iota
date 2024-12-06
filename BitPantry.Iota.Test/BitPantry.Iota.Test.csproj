@@ -28,6 +28,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="..\BitPantry.Iota.Web\Views\**\*.cshtml" Link="Views\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\BitPantry.Iota.Web\wwwroot\**\*" Link="wwwroot\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.0" />
     <PackageReference Include="Dapper" Version="2.1.35" />
     <PackageReference Include="FluentAssertions" Version="6.12.2" />

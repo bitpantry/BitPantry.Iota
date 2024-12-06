@@ -13,14 +13,18 @@ namespace BitPantry.Iota.Infrastructure.Settings
     public class AppSettings : AppSettingsBase
     {
         public IConfiguration Configuration => Config;
+
+        public string ContextId { get; }
         public ConnectionStrings ConnectionStrings { get; }
         public IdentitySettings Identity { get; }
         public bool UseMiniProfiler => GetValue("UseMiniProfiler", false);
         public bool EnableTestInfrastructure => GetValue("EnableTestInfrastructure", false);
 
-        public AppSettings(IConfiguration config, string dataContextId = null) : base(config) 
+        public AppSettings(IConfiguration config, string contextId = null) : base(config) 
         {
-            ConnectionStrings = new ConnectionStrings(config, dataContextId);
+            ContextId = contextId;
+
+            ConnectionStrings = new ConnectionStrings(config, contextId);
             Identity = new IdentitySettings(config);
         }
     }

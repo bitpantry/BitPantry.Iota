@@ -13,11 +13,11 @@ using System.Threading.Tasks;
 
 namespace BitPantry.Iota.Test
 {
-    public static class ApplicationEnvironmentExtensions
+    public static class TestFixtureServiceExtensions
     {
         public static int _testUserIndex = 0;
 
-        public static async Task<long> CreateUser(this ApplicationEnvironment testEnv, string emailAddress = null, CancellationToken cancellationToken = default)
+        public static async Task<long> CreateUser(this IHaveServiceProvider env, string emailAddress = null, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(emailAddress))
             {
@@ -25,7 +25,7 @@ namespace BitPantry.Iota.Test
                 emailAddress = $"testUser{_testUserIndex}@test.com";
             }
 
-            using (var scope = testEnv.CreateDependencyScope())
+            using (var scope = env.ServiceProvider.CreateScope())
             {
                 var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
 
@@ -38,18 +38,18 @@ namespace BitPantry.Iota.Test
 
         }
 
-        public static async Task<long> InstallBible(this ApplicationEnvironment testEnv, CancellationToken cancellationToken = default)
+        public static async Task<long> InstallBible(this IHaveServiceProvider env, CancellationToken cancellationToken = default)
         {
-            using (var scope = testEnv.CreateDependencyScope())
+            using (var scope = env.ServiceProvider.CreateScope())
             {
                 var svc = scope.ServiceProvider.GetRequiredService<BibleService>();
                 return await svc.Install(new MemoryStream(Encoding.UTF8.GetBytes(Resource.Bible_ESV)), cancellationToken);
             }
         }
 
-        public static async Task<List<CardDto>> CreateCards(this ApplicationEnvironment testEnv, long userId, long bibleId, CancellationToken cancellationToken = default)
+        public static async Task<List<CardDto>> CreateCards(this ApplicationEnvironment env, long userId, long bibleId, CancellationToken cancellationToken = default)
         {
-            using (var scope = testEnv.CreateDependencyScope())
+            using (var scope = env.ServiceProvider.CreateScope())
             {
                 var cardDtos = new List<CardDto>();
 

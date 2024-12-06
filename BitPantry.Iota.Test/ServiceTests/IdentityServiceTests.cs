@@ -15,20 +15,20 @@ using Xunit;
 
 namespace BitPantry.Iota.Test.ServiceTests
 {
-    [Collection("Services")]
+    [Collection("env")]
     public class IdentityServiceTests 
     {
-        ApplicationEnvironment _testEnv;
+        ApplicationEnvironment _env;
 
-        public IdentityServiceTests(ApplicationEnvironmentCollectionFixture fixture)
+        public IdentityServiceTests(AppEnvironmentFixture fixture)
         {
-            _testEnv = fixture.Environment;
+            _env = fixture.Environment;
         }
 
         [Fact]
         public async Task SignInNewUser_UserSignedIn()
         {
-            using (var scope = _testEnv.CreateDependencyScope())
+            using (var scope = _env.ServiceProvider.CreateScope())
             {
                 var svc = scope.ServiceProvider.GetRequiredService<IdentityService>();
                 var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
@@ -43,7 +43,7 @@ namespace BitPantry.Iota.Test.ServiceTests
                 var userId = await svc.SignInUser("user@test.com");
             }
 
-            using (var scope = _testEnv.CreateDependencyScope())
+            using (var scope = _env.ServiceProvider.CreateScope())
             {
                 var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
                 var user = await dbCtx.Users.Where(c => c.EmailAddress.Equals("user@test.com")).SingleAsync();
@@ -57,7 +57,7 @@ namespace BitPantry.Iota.Test.ServiceTests
         {
             long userId = 0;
 
-            using (var scope = _testEnv.CreateDependencyScope())
+            using (var scope = _env.ServiceProvider.CreateScope())
             {
                 var svc = scope.ServiceProvider.GetRequiredService<IdentityService>();
                 

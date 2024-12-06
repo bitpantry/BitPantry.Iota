@@ -2,17 +2,8 @@
 {
     public static class ILoggingBuilderExtensions
     {
-        public static ILoggingBuilder ConfigureIotaLogging(this ILoggingBuilder builder, string envName, ConfigurationManager config)
+        public static ILoggingBuilder ConfigureIotaWebLogging(this ILoggingBuilder builder, string envName, ConfigurationManager config)
         {
-            // builder = builder.ClearProviders();
-
-            //builder.AddJsonConsole(options =>
-            //{
-            //    options.IncludeScopes = true;
-            //    options.UseUtcTimestamp = true;
-            //    options.JsonWriterOptions = options.JsonWriterOptions with { Indented = true };
-            //});
-
             var seqSection = config.GetSection("Seq");
             if (seqSection.Exists()) 
                 builder.AddSeq(seqSection);

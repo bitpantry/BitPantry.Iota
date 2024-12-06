@@ -23,7 +23,7 @@ namespace BitPantry.Iota.Console.Commands.User
             _dbCtx = dbCtx;
         }
 
-        public async Task Execute(CommandExecutionContext ctx)
+        public void Execute(CommandExecutionContext ctx)
         {
             var user = _dbCtx.Users.AsNoTracking().Single(u => u.EmailAddress.ToUpper() == EmailAddress.ToUpper());
 

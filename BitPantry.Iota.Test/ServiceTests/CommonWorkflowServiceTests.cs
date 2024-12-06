@@ -15,15 +15,15 @@ using Xunit;
 
 namespace BitPantry.Iota.Test.ServiceTests
 {
-    [Collection("Services")]
+    [Collection("env")]
     public class CommonWorkflowServiceTests 
     {
-        private readonly ApplicationEnvironment _testEnv;
+        private readonly ApplicationEnvironment _env;
         private long _bibleId;
 
-        public CommonWorkflowServiceTests(ApplicationEnvironmentCollectionFixture fixture)
+        public CommonWorkflowServiceTests(AppEnvironmentFixture fixture)
         {
-            _testEnv = fixture.Environment;
+            _env = fixture.Environment;
             _bibleId = fixture.BibleId;
         }
 
@@ -32,10 +32,10 @@ namespace BitPantry.Iota.Test.ServiceTests
         [InlineData(WorkflowType.Basic)]
         public async Task GetReviewPathFullData_ReviewPathCreated(WorkflowType workflowType)
         {
-            var userId = await _testEnv.CreateUser();
-            await _testEnv.CreateCards(userId, _bibleId);
+            var userId = await _env.CreateUser();
+            await _env.CreateCards(userId, _bibleId);
 
-            using (var scope = _testEnv.CreateDependencyScope())
+            using (var scope = _env.ServiceProvider.CreateScope())
             {
                 var svc = scope.ServiceProvider.GetWorkflowService(workflowType);
 
@@ -62,9 +62,9 @@ namespace BitPantry.Iota.Test.ServiceTests
         [InlineData(WorkflowType.Basic)]
         public async Task GetReviewPathPartialData_ReviewPathCreated(WorkflowType workflowType)
         {
-            var userId = await _testEnv.CreateUser();
+            var userId = await _env.CreateUser();
 
-            using (var scope = _testEnv.CreateDependencyScope())
+            using (var scope = _env.ServiceProvider.CreateScope())
             {
                 var wfSvc = scope.ServiceProvider.GetWorkflowService(workflowType);
                 var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
@@ -94,9 +94,9 @@ namespace BitPantry.Iota.Test.ServiceTests
         [InlineData(WorkflowType.Basic)]
         public async Task GetReviewPathNoData_EmptyReviewPathCreated(WorkflowType workflowType)
         {
-            var userId = await _testEnv.CreateUser();
+            var userId = await _env.CreateUser();
 
-            using (var scope = _testEnv.CreateDependencyScope())
+            using (var scope = _env.ServiceProvider.CreateScope())
             {
                 var wfSvc = scope.ServiceProvider.GetWorkflowService(workflowType);
                 var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
@@ -114,14 +114,14 @@ namespace BitPantry.Iota.Test.ServiceTests
         [InlineData(WorkflowType.Basic, null)] // last
         public async Task DeleteQueueCard_CardDeletedTabReordered(WorkflowType workflowType, int? cardIndex)
         {
-            var userId = await _testEnv.CreateUser();
+            var userId = await _env.CreateUser();
 
-            var cardDtos = await _testEnv.CreateCards(userId, _bibleId);
+            var cardDtos = await _env.CreateCards(userId, _bibleId);
             cardDtos = cardDtos.Where(c => c.Tab == Common.Tab.Queue).ToList();
 
             var cardToDelete = cardIndex.HasValue ? cardDtos[cardIndex.Value] : cardDtos.Last();
 
-            using (var scope = _testEnv.CreateDependencyScope())
+            using (var scope = _env.ServiceProvider.CreateScope())
             {
                 var svc = scope.ServiceProvider.GetWorkflowService(workflowType);
                 var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
@@ -146,10 +146,10 @@ namespace BitPantry.Iota.Test.ServiceTests
         [InlineData(WorkflowType.Basic)]
         public async Task DeleteLastCardInTab_CardDeleted(WorkflowType workflowType)
         {
-            var userId = await _testEnv.CreateUser();
+            var userId = await _env.CreateUser();
             CreateCardResponse resp = null;
 
-            using (var scope = _testEnv.CreateDependencyScope())
+            using (var scope = _env.ServiceProvider.CreateScope())
             {
                 var svc = scope.ServiceProvider.GetRequiredService<CardService>();
                 var wfSvc = scope.ServiceProvider.GetWorkflowService(workflowType);
@@ -168,9 +168,9 @@ namespace BitPantry.Iota.Test.ServiceTests
         [InlineData(WorkflowType.Basic)]
         public async Task MoveQueueCardToEmptyDaily_CardMoved(WorkflowType workflowType)
         {
-            var userId = await _testEnv.CreateUser();
+            var userId = await _env.CreateUser();
 
-            using (var scope = _testEnv.CreateDependencyScope())
+            using (var scope = _env.ServiceProvider.CreateScope())
             {
                 var wfSvc = scope.ServiceProvider.GetWorkflowService(workflowType);
                 var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();

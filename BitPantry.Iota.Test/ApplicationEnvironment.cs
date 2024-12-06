@@ -1,9 +1,11 @@
-﻿using BitPantry.Iota.Application.IoC;
+﻿using BitPantry.Iota.Application;
+using BitPantry.Iota.Application.IoC;
 using BitPantry.Iota.Application.Service;
 using BitPantry.Iota.Data.Entity;
 using BitPantry.Iota.Infrastructure;
 using BitPantry.Iota.Infrastructure.IoC;
 using BitPantry.Iota.Infrastructure.Settings;
+using BitPantry.Iota.Web;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,35 +25,27 @@ using static System.Formats.Asn1.AsnWriter;
 
 namespace BitPantry.Iota.Test
 {
-    public class ApplicationEnvironment : IDisposable
+    public class ApplicationEnvironment : IDisposable, IHaveServiceProvider
     {
-        private object _lock = new object();
-
         private ApplicationEnvironmentOptions _options;
 
         private readonly AppSettings _appSettings;
-        private readonly ServiceProvider? _serviceProvider;
         private readonly LocalDb _localDb;
 
         public string ContextId { get; } = Crypt.GenerateSecureRandomString(8);
-        public bool IsDeployed { get; private set; } = false;
+        public IServiceProvider ServiceProvider { get; }
 
         private ApplicationEnvironment(ApplicationEnvironmentOptions options)
         {
+            System.Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
+
             _options = options;
 
-            var config = new ConfigurationManager()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile("appsettings.test.json", optional: false, reloadOnChange: true)
-                .Build();
+            var config = IotaAppBootstrap.BuildIotaConfiguration("Test");
 
             _appSettings = new AppSettings(config, ContextId);
 
-            var services = new ServiceCollection();
-
-            services.ConfigureInfrastructureServices(_appSettings, CachingStrategy.InMemory);
-            services.ConfigureApplicationServices(GetWorkflowService);
+            var services = new ServiceCollection().AddCoreIotaServices<DefaultWorkflowServiceProvider>(_appSettings);
 
             services.AddScoped<LocalDb>();
 
@@ -64,77 +58,37 @@ namespace BitPantry.Iota.Test
                 });
             });
 
-            _serviceProvider = services.BuildServiceProvider();
+            ServiceProvider = services.BuildServiceProvider();
 
-            _localDb = _serviceProvider.GetRequiredService<LocalDb>();
+            _localDb = ServiceProvider.GetRequiredService<LocalDb>();
         }
 
-        private IWorkflowService GetWorkflowService(IServiceProvider provider)
-        {
-            switch (_options.WorkflowType) {
-                case Common.WorkflowType.Basic:
-                    return provider.GetRequiredService<BasicWorkflowService>();
-                case Common.WorkflowType.Advanced:
-                    return provider.GetRequiredService<AdvancedWorkflowService>();
-                default:
-                    throw new NotImplementedException($"No case for {_options.WorkflowType} is implemented.");
-            }
-        }
-
-        public static ApplicationEnvironment Create(Action<ApplicationEnvironmentOptions> createOptAction = null)
+        public static async Task<ApplicationEnvironment> Create(Action<ApplicationEnvironmentOptions> createOptAction = null)
         {
             var opt = new ApplicationEnvironmentOptions();
 
             createOptAction?.Invoke(opt);
 
             var env = new ApplicationEnvironment(opt);
-            env.Deploy();
+            await env.Deploy();
 
             return env;
         }
 
-        private void Deploy()
+        private async Task Deploy()
         {
-            lock (_lock)
+            await _localDb.Deploy(true);
+
+            using (var scope = ServiceProvider.CreateScope())
             {
-                if (IsDeployed) return;
-
-                _localDb.Deploy(true).Wait();
-
-                using (var scope = CreateDependencyScope())
-                {
-                    var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
-                    dbCtx.Database.Migrate();
-                }
-
-                IsDeployed = true;
+                var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
+                dbCtx.Database.Migrate();
             }
         }
-
-        public void Reset()
-        {
-            lock (_lock)
-            {
-                if(IsDeployed)
-                    Cleanup();
-                Deploy();
-            }
-        }
-
-        public IServiceScope CreateDependencyScope()
-            => _serviceProvider.CreateScope();
 
         private void Cleanup()
         {
-            lock (_lock)
-            {
-                if (!IsDeployed) return;
-
-                _localDb.DropDatabase();
-                _serviceProvider?.Dispose();
-
-                IsDeployed = false;
-            }
+            _localDb.DropDatabase();
         }
 
         public void Dispose() => Cleanup();
