@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Workflow\**" />
+    <EmbeddedResource Remove="Workflow\**" />
+    <None Remove="Workflow\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.35" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
@@ -17,10 +23,6 @@
     <ProjectReference Include="..\BitPantry.Iota.Data.Entity\BitPantry.Iota.Data.Entity.csproj" />
     <ProjectReference Include="..\BitPantry.Iota.Infrastructure\BitPantry.Iota.Infrastructure.csproj" />
     <ProjectReference Include="..\BitPantry.Iota.Common\BitPantry.Iota.Common.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Workflow\" />
   </ItemGroup>
 
 </Project>

@@ -45,7 +45,7 @@
     }
 </style>
 
-<div class="lead mt-4">
+<div data-testid="review.pnlSummary" class="lead mt-4">
     <strong>
         Reviewing @Model.Path.Sum(p => p.Value) card@(Model.Path.Sum(p => p.Value) > 1 ? "s" : "") today
     </strong>
@@ -53,12 +53,12 @@
 
 @* ------- TABS ------- *@
 
-<ul class="nav nav-tabs nav-justified mt-4 w-100 main-tabs">
+<ul data-testid="review.tabs" class="nav nav-tabs nav-justified mt-4 w-100 main-tabs">
 
     @foreach (var tab in Model.Path.Keys)
     {
         <li class="nav-item">
-            <a class="nav-link@(Model.CurrentTab == tab ? " active" : "")" asp-action="Index" asp-route-tab="@tab">@tab.Humanize()</a>
+            <a class="nav-link@(Model.CurrentTab == tab ? " active" : "")" asp-action="Index" data-testid="review.tab@(tab)" asp-route-tab="@tab">@tab.Humanize()</a>
         </li> 
     }
 
@@ -70,7 +70,7 @@
 
         @for (int i = 1; i <= Model.Path[Model.CurrentTab]; i++)
         {
-            <a class="nav-link@(i == Model.CurrentOrder ? " active" : "")" asp-action="Index" asp-route-tab="@Model.CurrentTab" asp-route-ord="@i">@i</a>
+            <a class="nav-link@(i == Model.CurrentOrder ? " active" : "")" asp-action="Index" asp-route-tab="@Model.CurrentTab" data-testid="review.cardtab_@(i)" asp-route-ord="@i">@i</a>
         }
 
     </nav>
@@ -81,14 +81,14 @@
 
     <div class="mt-4">
         <div class="col d-flex pb-4">
-            <span class="display-6">@Model.Card.Address (@Model.Card.Passage.TranslationShortName)</span>
+            <span data-testid="review.pnlAddress" class="display-6">@Model.Card.Address (@Model.Card.Passage.TranslationShortName)</span>
         </div>
-        <div class="verse-card" onclick="togglePassage()" style="display:block">
+        <div data-testid="review.pnlPassageCollapsed" class="verse-card" onclick="togglePassage()" style="display:block">
             <p class=" text-center fst-italic p-3">
                 Click to Show passage
             </p>
         </div>
-        <div class="verse-card" onclick="togglePassage()" style="display:none">
+        <div data-testid="review.pnlPassageExpanded" class="verse-card" onclick="togglePassage()" style="display:none">
             <div class="p-3">
                 <p>
                     <div class="row mt-4">
@@ -106,13 +106,13 @@
         @if(Model.CurrentTab == Tab.Daily)
         {
             <div class="col d-flex justify-content-start">
-                <a href="#" onclick="confirmPromote()" class="btn btn-secondary">
+                <a href="#" onclick="confirmPromote()" data-testid="review.btnPromote" class="btn btn-secondary">
                     Promote
                 </a>
             </div>
         }
         <div class="col d-flex justify-content-end">
-            <a class="btn btn-success" href="@Model.NextUrl">Next</a>
+            <a data-testid="review.btnNext" class="btn btn-success" href="@Model.NextUrl">Next</a>
         </div>
     </div>
 
@@ -127,7 +127,7 @@
 
 <!-- Confirmation dialog markup -->
 
-<div id="promoteConfirmationModal" class="modal fade" tabindex="-1" role="dialog">
+<div data-testid="review.diaConfirmPromote" id="promoteConfirmationModal" class="modal fade" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -137,8 +137,8 @@
                 <p>@Model.Card.Address will be moved to the next tab and the top card from your queue will be moved to the Daily tab.</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cancelPromote()">Cancel</button>
-                <a asp-action="Promote" asp-controller="Review" asp-route-id="@Model.Card.Id" class="btn btn-primary">Promote</a>
+                <button data-testid="review.btnConfirmPromoteCancel" type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cancelPromote()">Cancel</button>
+                <a data-testid="review.btnConfirmPromote" asp-action="Promote" asp-controller="Review" asp-route-id="@Model.Card.Id" class="btn btn-primary">Promote</a>
             </div>
         </div>
     </div>

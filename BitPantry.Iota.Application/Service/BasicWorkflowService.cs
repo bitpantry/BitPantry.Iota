@@ -130,7 +130,7 @@ namespace BitPantry.Iota.Application.Service
 
             await MoveCard_INTERNAL(userId, cardId, tab, toTab, toTop, cancellationToken);
 
-            // if the card being moved is the daily card, move up the next queue card (if any)
+            // if the card being moved is the daily card and there is a different card in the queue, move up the next queue card (if any)
 
             if (tab == Tab.Daily)
             {
@@ -145,7 +145,7 @@ namespace BitPantry.Iota.Application.Service
                     });
                 });
 
-                if (nextQueueCardId.HasValue)
+                if (nextQueueCardId.HasValue && nextQueueCardId != cardId)
                     await MoveCard_INTERNAL(userId, nextQueueCardId.Value, Tab.Queue, Tab.Daily, toTop = true, cancellationToken);
             }
         }

@@ -21,33 +21,33 @@
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
                     <img src="~/logo.png" alt="BitPantry Logo" style="height: 35px;" />
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler" data-testid="nav.togglemenu" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Review" asp-action="Index">Start Review</a>
+                            <a class="nav-link text-dark" data-testid="nav.startReview" asp-area="" asp-controller="Review" asp-action="Index">Start Review</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link dropdown-toggle text-dark" href="#" id="nestedDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle text-dark" data-testid="nav.cards" href="#" id="nestedDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Cards
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="nestedDropdown">
-                                <li><a class="dropdown-item" asp-area="" asp-controller="Card" asp-action="New">New</a></li>
-                                <li><a class="dropdown-item" asp-area="" asp-controller="Collection" asp-action="Index">View All</a></li>
+                                <li><a class="dropdown-item" asp-area="" data-testid="nav.cards.new" asp-controller="Card" asp-action="New">New</a></li>
+                                <li><a class="dropdown-item" asp-area="" data-testid="nav.cards.viewAll" asp-controller="Collection" asp-action="Index">View All</a></li>
                             </ul>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Settings" asp-action="Index">Settings</a>
+                            <a class="nav-link text-dark" asp-area="" data-testid="nav.settings" asp-controller="Settings" asp-action="Index">Settings</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link dropdown-toggle text-dark" href="#" id="nestedDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle text-dark" data-testid="nav.help" href="#" id="nestedDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Help
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="nestedDropdown">
-                                <li><a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="GetStarted">Getting Started</a></li>
-                                <li><a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Documentation">Documentation</a></li>
+                                <li><a class="dropdown-item" asp-area="" data-testid="nav.help.gettingStarted" asp-controller="Home" asp-action="GetStarted">Getting Started</a></li>
+                                <li><a class="dropdown-item" asp-area="" data-testid="nav.help.documentation" asp-controller="Home" asp-action="Documentation">Documentation</a></li>
                             </ul>
                         </li>
                     </ul>

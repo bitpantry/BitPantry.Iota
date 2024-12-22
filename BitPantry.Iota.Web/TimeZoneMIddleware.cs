@@ -19,8 +19,6 @@ namespace BitPantry.Iota.Web
 
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
-            _logger.LogTrace($"{nameof(TimeZoneMiddleware)}:{nameof(InvokeAsync)}");
-
             // Try to get the time zone from the cookie
             if (context.Request.Cookies.TryGetValue(Constants.TIMEZONE_KEY_NAME, out var timeZone))
             {

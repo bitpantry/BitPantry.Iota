@@ -13,9 +13,9 @@
     <div class="row mt-4">
         <div class="col-8 col-md-8 col-lg-6 col-xl-5">
             <div class="input-group">
-                <input id="address" name="address" class="form-control" placeholder="e.g., romans 12:1-2" style="outline: none; box-shadow: none;" />
+                <input id="address" name="address" data-testid="card.new.txtAddress" class="form-control" placeholder="e.g., romans 12:1-2" style="outline: none; box-shadow: none;" />
                 <div class="input-group-append">
-                    <button type="submit" class="btn btn-primary">Go</button>
+                    <button type="submit" data-testid="card.new.btnGo" class="btn btn-primary">Go</button>
                 </div>
             </div>
         </div>
@@ -23,7 +23,7 @@
                 @Html.DropDownListFor( 
                     m => m.BibleId,   
                     new SelectList(Model.Bibles, nameof(BibleModel.Id), nameof(BibleModel.ShortName)),  
-                    new { @class = "form-control" } 
+                    new { @class = "form-control", data_testId = "card.new.ddlTranslation" } 
                 )
         </div>
     </div>
@@ -33,7 +33,7 @@
 
 @if(Model.CreatedCardId > 0)
 {
-    <p class="fs-6 mt-4">
+    <p data-testid="card.new.cardCreatedMsg" class="fs-6 mt-4">
         Added @Model.CreatedAddress to the @Model.CreatedToTab.Humanize() tab. 
     </p>
 
@@ -42,39 +42,39 @@
     </p>
 
     <div class="pt-4">
-        <a class="btn btn-primary btn-sm me-1" asp-action="Index" asp-controller="Tabs">View All Cards</a>
-        <a class="btn btn-primary btn-sm" asp-action="Index" asp-controller="Review">Start Review</a>
+        <a class="btn btn-primary btn-sm me-1" asp-action="Index" data-testid="card.new.viewAll" asp-controller="Collection">View All Cards</a>
+        <a class="btn btn-primary btn-sm" asp-action="Index" data-testid="card.new.startReview" asp-controller="Review">Start Review</a>
     </div>
 
 }
 else if(!string.IsNullOrEmpty(Model.AddressQuery) && !Model.IsValidAddress) 
 {
-    <div class="mt-4 fs-6">
+    <div data-testid="card.new.noPassageFoundMsg" class="mt-4 fs-6">
         No passage found for "@(Model.AddressQuery)"
     </div>
 }
 else if(Model.Passage != null)
 {
     <div class="mt-5">
-        <span class="display-6">@Model.Passage.Address</span>
+        <span data-testid="card.new.searchResultAddress" class="display-6">@Model.Passage.Address</span>
     </div>
 
-    <div class="mt-4">
+    <div data-testid="card.new.searchResultPassage" class="mt-4">
         <partial name="_PassagePartial" model="@Model.Passage" />
     </div>
 
     <div class="mt-5">
         @if(Model.IsCardAlreadyCreated)
         {
-            <button class="btn btn-primary" disabled>Create Card</button>
-            <div class="mt-2 fw-light">Card already exists</div>
+            <button class="btn btn-primary" data-testid="card.new.createCardDisabled" disabled>Create Card</button>
+            <div data-testid="card.new.cardAlreadyExistsMsg" class="mt-2 fw-light">Card already exists</div>
         }
         else
         {
             <form asp-action="Create" id="createForm">
                 <input type="hidden" name="address" value="@Model.Passage.Address" />
                 <input type="hidden" name="bibleId" value="@Model.BibleId" />
-                <button class="btn btn-primary" type="submit">Create Card</button>
+                <button class="btn btn-primary" data-testid="card.new.createCard" type="submit">Create Card</button>
             </form>
         }           
     </div>

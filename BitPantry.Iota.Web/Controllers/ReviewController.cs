@@ -1,8 +1,10 @@
 ﻿using BitPantry.Iota.Application;
+using BitPantry.Iota.Application.DTO;
 using BitPantry.Iota.Application.Service;
 using BitPantry.Iota.Common;
 using BitPantry.Iota.Web.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Cryptography;
 
 namespace BitPantry.Iota.Web.Controllers
 {
@@ -32,15 +34,22 @@ namespace BitPantry.Iota.Web.Controllers
 
             // get next review step
 
-            return await Index(Tab.Daily, 1);
+            return Route.RedirectTo<ReviewController>(c => c.Index(path.Path.First().Key, 1));
         }
 
         [Route("review/{tab:enum}/{ord:int?}")]
         public async Task<IActionResult> Index(Tab tab, int ord = 1)
         {
-            await _cardSvc.MarkAsReviewed(_identity.UserId, tab, ord, HttpContext.RequestAborted);
+            // redirect to first available card in path if card for given tab / order doesn't exist
 
             var path = await _workflowSvc.GetReviewPath(_identity.UserId, _userTime.GetCurrentUserLocalTime(), HttpContext.RequestAborted);
+            if (!path.Path.ContainsKey(tab))
+                return Route.RedirectTo<ReviewController>(c => c.Index(path.Path.First().Key, 1));
+
+            // load card
+
+            await _cardSvc.MarkAsReviewed(_identity.UserId, tab, ord, HttpContext.RequestAborted);
+            
             var card = await _cardSvc.GetCard(_identity.UserId, tab, ord, HttpContext.RequestAborted);
 
             var helper = new ReviewPathHelper(path.Path);
@@ -62,7 +71,8 @@ namespace BitPantry.Iota.Web.Controllers
 
             // go to next step in review
 
-            return Route.RedirectTo<ReviewController>(c => c.Index(Tab.Daily, 1));
+            var path = await _workflowSvc.GetReviewPath(_identity.UserId, _userTime.GetCurrentUserLocalTime(), HttpContext.RequestAborted);
+            return Route.RedirectTo<ReviewController>(c => c.Index(path.Path.First().Key, 1));
         }
 
         public IActionResult Done()

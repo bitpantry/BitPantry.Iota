@@ -10,19 +10,19 @@
     <div>
         @if(Model.Tab == BitPantry.Iota.Common.Tab.Queue)
         {
-            <a href="#" onclick="confirmStartNow()" class="btn btn-secondary px-3">
+            <a href="#" data-testid="card.maint.btnStartNow" onclick="confirmStartNow()" class="btn btn-secondary px-3">
                 Start Now
             </a>
         }
         else
         {
-            <a href="#" onclick="confirmSendBackToQueue()" class="btn btn-secondary px-3">
+            <a href="#" data-testid="card.maint.btnSendBackToQueue" onclick="confirmSendBackToQueue()" class="btn btn-secondary px-3">
                 Send Back to Queue
             </a>
         }
     </div>
     <div class="ps-2">
-        <a href="#" onclick="confirmDelete()" class="btn btn-danger px-3">
+        <a href="#" data-testid="card.maint.btnDelete" onclick="confirmDelete()" class="btn btn-danger px-3">
             Delete
         </a>
     </div>
@@ -30,7 +30,7 @@
 
 <!-- DELETE Confirmation dialog markup -->
 
-<div id="deleteConfirmationModal" class="modal fade" tabindex="-1" role="dialog">
+<div id="deleteConfirmationModal" data-testid="card.maint.diaConfirmDelete" class="modal fade" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -41,8 +41,8 @@
                 <p class="fw-bold fs-5">@Model.Passage.Address</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cancelDelete()">Cancel</button>
-                <a asp-action="Delete" asp-controller="Card" asp-route-id="@Model.Id" class="btn btn-danger">Delete</a>
+                <button type="button" data-testid="card.maint.btnConfirmDeleteCancel" class="btn btn-secondary" data-dismiss="modal" onclick="cancelDelete()">Cancel</button>
+                <a asp-action="Delete" asp-controller="Card" asp-route-id="@Model.Id" data-testid="card.maint.btnConfirmDelete" class="btn btn-danger">Delete</a>
             </div>
         </div>
     </div>
@@ -50,7 +50,7 @@
 
 <!-- START NOW Confirmation dialog markup -->
 
-<div id="startNowConfirmationModal" class="modal fade" tabindex="-1" role="dialog">
+<div id="startNowConfirmationModal" data-testid="card.maint.diaConfirmStartNow" class="modal fade" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -61,8 +61,8 @@
                 <p class="fw-bold fs-5">@Model.Passage.Address</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cancelStartNow()">Cancel</button>
-                <a asp-action="StartNow" asp-controller="Card" asp-route-id="@Model.Id" class="btn btn-primary">Ok</a>
+                <button type="button" class="btn btn-secondary" data-testid="card.maint.btnConfirmStartNowCancel" data-dismiss="modal" onclick="cancelStartNow()">Cancel</button>
+                <a asp-action="StartNow" asp-controller="Card" asp-route-id="@Model.Id" data-testid="card.maint.btnConfirmStartNow" class="btn btn-primary">Ok</a>
             </div>
         </div>
     </div>
@@ -70,7 +70,7 @@
 
 <!-- SEND BACK TO QUEUE Confirmation dialog markup -->
 
-<div id="sendBackToQueueConfirmationModal" class="modal fade" tabindex="-1" role="dialog">
+<div id="sendBackToQueueConfirmationModal" data-testid="card.maint.diaConfirmSendToQueue" class="modal fade" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -81,8 +81,8 @@
                 <p class="fw-bold fs-5">@Model.Passage.Address</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cancelSendBackToQueue()">Cancel</button>
-                <a asp-action="SendBackToQueue" asp-controller="Card" asp-route-id="@Model.Id" class="btn btn-primary">Ok</a>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" data-testid="card.maint.btnConfirmSendToQueueCancel" onclick="cancelSendBackToQueue()">Cancel</button>
+                <a asp-action="SendBackToQueue" asp-controller="Card" asp-route-id="@Model.Id" data-testid="card.maint.btnConfirmSendToQueue" class="btn btn-primary">Ok</a>
             </div>
         </div>
     </div>

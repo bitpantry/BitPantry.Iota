@@ -13,17 +13,15 @@ namespace BitPantry.Iota.Web.Controllers
     [AllowAnonymous]
     public class AuthController : Controller
     {
+        private ILogger<AuthController> _logger;
         private UserIdentity _userIdentity;
         private IdentityService _idSvc;
-        private UserService _userService;
-        private AppSettings _settings;
 
-        public AuthController(UserIdentity userIdentity, IdentityService idSvc, UserService userSvc, AppSettings settings) 
+        public AuthController(ILogger<AuthController> logger, UserIdentity userIdentity, IdentityService idSvc) 
         { 
+            _logger = logger;
             _userIdentity = userIdentity;
             _idSvc = idSvc;
-            _userService = userSvc;
-            _settings = settings;
         }
 
         public IActionResult Index()
@@ -58,27 +56,6 @@ namespace BitPantry.Iota.Web.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        public async Task<IActionResult> AuthenticateTestUser(long id)
-        {
-            if(!_settings.EnableTestInfrastructure)
-                return NotFound();
 
-            var user = await _userService.GetUser(id);
-
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, id.ToString()),
-                new Claim(ClaimTypes.Email, user.EmailAddress)
-            };
-
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var principal = new ClaimsPrincipal(identity);
-
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-
-            _userIdentity.UserId = id;
-
-            return Route.RedirectTo<HomeController>(c => c.Delay(50, Url.Action<HomeController>(c => c.Index())));
-        }
     }
 }

@@ -29,7 +29,7 @@ namespace BitPantry.Iota.Application.Service
             _passageLogic = passageLogic;
         }
 
-        public async Task<CreateCardResponse> CreateCard(long userId, long bibleId, string addressString, CancellationToken cancellationToken)
+        public async Task<CreateCardResponse> CreateCard(long userId, long bibleId, string addressString, CancellationToken cancellationToken = default)
         {
             var tab = await _dbCtx.Cards.AnyAsync(c => c.UserId == userId && c.Tab == Tab.Daily)
                 ? Tab.Queue
@@ -38,7 +38,7 @@ namespace BitPantry.Iota.Application.Service
             return await CreateCard(userId, bibleId, addressString, tab, cancellationToken);
         }
 
-        public async Task<CreateCardResponse> CreateCard(long userId, long bibleId, string addressString, Tab toTab, CancellationToken cancellationToken)
+        public async Task<CreateCardResponse> CreateCard(long userId, long bibleId, string addressString, Tab toTab, CancellationToken cancellationToken = default)
             => await CreateCard(userId, bibleId, addressString, toTab, null, cancellationToken);
 
         public async Task<CreateCardResponse> CreateCard(long userId, long bibleId, string addressString, Tab toTab, int? order, CancellationToken cancellationToken)

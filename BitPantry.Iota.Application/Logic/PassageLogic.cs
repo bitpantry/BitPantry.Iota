@@ -29,6 +29,9 @@ namespace BitPantry.Iota.Application.Logic
                     parser.ToVerseNumber,
                     cancellationToken);
 
+                if(verses.Count == 0)
+                    throw new PassageAddressParsingException(bible.Id, addressString, PassageAddressParsingExceptionCode.InvalidAddress, "The address is invalid - no verses found");
+
                 // return result
 
                 return new GetPassageResponse(verses.ToPassageDto(), null);

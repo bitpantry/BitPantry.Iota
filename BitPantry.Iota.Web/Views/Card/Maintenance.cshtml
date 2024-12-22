@@ -10,7 +10,7 @@
 <div class="row justify-content-center mb-2">
 
     <div class="col-8 d-flex align-items-center">
-        <a href="@backUrl" class="btn btn-primary px-3">
+        <a href="@backUrl" data-testid="card.maint.btnClose" class="btn btn-primary px-3">
             Close
         </a>
     </div>
@@ -19,7 +19,7 @@
             
         <ul class="nav nav-tabs nav-justified w-100">
             <li class="nav-item">
-                <a class="nav-link active" style="background-color: #e0f2ff">@Model.Tab.Humanize()</a>
+                <a class="nav-link active" data-testid="card.maint.tab" style="background-color: #e0f2ff">@Model.Tab.Humanize()</a>
             </li>
         </ul>
 

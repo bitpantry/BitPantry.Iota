@@ -8,8 +8,8 @@
             @Model.CardCountToReviewToday cards to review today
         </div>
         <div class="d-inline-flex mt-4">
-            <a class="btn btn-success" asp-controller="Review" asp-action="Index" role="button">Review Today's Cards</a>
-            <a class="btn btn-primary ms-3" asp-controller="Card" asp-action="New" role="button">Add Cards</a>
+            <a class="btn btn-success" asp-controller="Review" data-testid="home.index.startReview" asp-action="Index" role="button">Review Today's Cards</a>
+            <a class="btn btn-primary ms-3" asp-controller="Card" data-testid="home.index.createCardOne" asp-action="New" role="button">Create Cards</a>
         </div>
     }
     else if(!Model.HasCards)
@@ -18,8 +18,8 @@
             You haven't created any cards yet
         </div>
         <div class="d-inline-flex mt-4">
-            <a class="btn btn-success" asp-controller="Card" asp-action="New">Create Cards</a>
-            <a class="btn btn-primary ms-3" asp-controller="Home" asp-action="GetStarted">Read Getting Started</a>
+            <a class="btn btn-success" asp-controller="Card" data-testid="home.index.createCardsTwo" asp-action="New">Create Cards</a>
+            <a class="btn btn-primary ms-3" asp-controller="Home" data-testid="home.index.readGettingStarted" asp-action="GetStarted">Read Getting Started</a>
         </div>
     }
 

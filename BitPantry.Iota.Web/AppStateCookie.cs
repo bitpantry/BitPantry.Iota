@@ -27,7 +27,6 @@ namespace BitPantry.Iota.Web
             get { return GetValue<long>(KEY_CURRENT_USER_ID); }
             set 
             {   
-                _logger.LogDebug("AppStateCookie:CurrentSureId.Set :: {AppStateCookieId}, Value={NewUserIdValue}", _uid, value);
                 SetValue(KEY_CURRENT_USER_ID, value); 
             }
         }
@@ -48,14 +47,10 @@ namespace BitPantry.Iota.Web
                 _logger.LogError(ex, "Error decrypting application state cookie");
                 _httpContextAccessor.HttpContext.Response.Cookies.Delete(COOKIE_NAME);
             }
-
-            _logger.LogDebug("AppStateCookie:ctor :: {AppStateCookieUid}, CurrentUserId={CurrentUserId}", _uid, CurrentUserId);
         }
 
         public void PersistCookie()
         {
-            _logger.LogDebug("AppStateCookie:PersistCookie :: {AppStateCookieUid}, CurrentUserId={CurrentUserId}, IsChanged={IsChanged}", _uid, CurrentUserId, IsChanged);
-
             if (IsChanged)
             {
                 _httpContextAccessor.HttpContext.Response.Cookies.Append(COOKIE_NAME, _dataProtection.Protect(JsonConvert.SerializeObject(_dict, Formatting.None)), new CookieOptions

@@ -20,22 +20,22 @@
 
 <ul class="nav nav-tabs nav-justified mt-4 w-100 main-tabs">
     <li class="nav-item">
-        <a class="nav-link@(Model.ActiveTab == Tab.Queue ? " active" : "")" asp-action="index" asp-route-tab="@Tab.Queue">Queue</a>
+        <a class="nav-link@(Model.ActiveTab == Tab.Queue ? " active" : "")" data-testid="collection.tabQueue" asp-action="index" asp-route-tab="@Tab.Queue">Queue</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link@(Model.ActiveTab == Tab.Daily ? " active" : "")" asp-action="index" asp-route-tab="@Tab.Daily">Daily</a>
+        <a class="nav-link@(Model.ActiveTab == Tab.Daily ? " active" : "")" asp-action="index" data-testid="collection.tabDaily" asp-route-tab="@Tab.Daily">Daily</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link@(Model.ActiveTab == Tab.Odd ? " active" : "")" asp-action="index" asp-route-tab="@Tab.Odd">Odd</a>
+        <a class="nav-link@(Model.ActiveTab == Tab.Odd ? " active" : "")" asp-action="index" data-testid="collection.tabOdd" asp-route-tab="@Tab.Odd">Odd</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link@(Model.ActiveTab == Tab.Even ? " active" : "")" asp-action="index" asp-route-tab="@Tab.Even">Even</a>
+        <a class="nav-link@(Model.ActiveTab == Tab.Even ? " active" : "")" asp-action="index" data-testid="collection.tabEven" asp-route-tab="@Tab.Even">Even</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link@(isWeekTabActive ? " active" : "")" asp-action="index" asp-route-tab="@Tab.Sunday">Weekday</a>
+        <a class="nav-link@(isWeekTabActive ? " active" : "")" asp-action="index" data-testid="collection.tabWeekday" asp-route-tab="@Tab.Sunday">Weekday</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link@(isMonthTabActive ? " active" : "")" asp-action="index" asp-route-tab="@Tab.Day1">Date</a>
+        <a class="nav-link@(isMonthTabActive ? " active" : "")" asp-action="index" data-testid="collection.tabDate"  asp-route-tab="@Tab.Day1">Date</a>
     </li>
 </ul>
 
@@ -50,7 +50,7 @@
 
             @foreach (var day in Model.WeekdaysWithData)
             {
-                <a class="nav-link@(day == Model.ActiveTab ? " active" : "")" asp-action="index" asp-route-tab="@day">@day.Humanize()</a>
+                <a class="nav-link@(day == Model.ActiveTab ? " active" : "")" asp-action="index" data-testid="collection.tab@(day)" asp-route-tab="@day">@day.Humanize()</a>
             }
 
         </nav>
@@ -67,7 +67,7 @@
 
             @foreach (var day in Model.DaysOfMonthWithData)
             {
-                <a class="nav-link@(day == Model.ActiveTab ? " active" : "")" asp-action="index" asp-route-tab="@day">@(((int)day) - (int)Tab.Saturday)</a>
+                <a class="nav-link@(day == Model.ActiveTab ? " active" : "")" asp-action="index" data-testid="collection.tab@(day)" asp-route-tab="@day">@(((int)day) - (int)Tab.Saturday)</a>
             }
 
         </nav>
@@ -94,13 +94,13 @@
 
         <div class="row justify-content-center">
             <div class="col-md-10 col-lg-8 col-xl-8">
-                <ul id="cardsList" class="list-group">
+                <ul id="cardsList" data-testid="collection.cardList" class="list-group">
                     @foreach (var card in Model.Cards)
                     {
-                        <li class="list-group-item" id="@card.Id">
+                        <li class="list-group-item" data-testid="collection.cardListItem_@(card.Id)" id="@card.Id">
                             @if (Model.ActiveTab == Tab.Queue)
                             {
-                                <img src="~/drag.svg" alt="Icon" class="handle me-2" width="24" height="24" />
+                                <img src="~/drag.svg" alt="Icon" data-testid="collection.cardListItemHandle_@(card.Id)" class="handle me-2" width="24" height="24" />
                             }
                             <a asp-action="Maintenance" asp-controller="Card" asp-route-id="@card.Id">@card.Address</a>
                         </li>
@@ -156,7 +156,7 @@ else if(Model.Cards.Count == 1) @* ------- SINGLE CARD ------- *@
 }
 else
 {
-    <div class="container mt-4 display-6">No cards found</div>
+    <div class="container mt-4 display-6" data-testid="collection.pnlNoCardsFound">No cards found</div>
 }
 
 
