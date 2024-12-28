@@ -20,11 +20,11 @@
             </div>
         </div>
         <div class="col-4 col-md-3 col-lg-2 col-xl-1">
-                @Html.DropDownListFor( 
-                    m => m.BibleId,   
-                    new SelectList(Model.Bibles, nameof(BibleModel.Id), nameof(BibleModel.ShortName)),  
-                    new { @class = "form-control", data_testId = "card.new.ddlTranslation" } 
-                )
+            @Html.DropDownListFor( 
+                                  m => m.BibleId,   
+                                  new SelectList(Model.Bibles, nameof(BibleModel.Id), nameof(BibleModel.ShortName)),  
+                                  new { @class = "form-control", data_testId = "card.new.ddlTranslation" } 
+                              )
         </div>
     </div>
 </form>
@@ -66,7 +66,16 @@ else if(Model.Passage != null)
     <div class="mt-5">
         @if(Model.IsCardAlreadyCreated)
         {
-            <button class="btn btn-primary" data-testid="card.new.createCardDisabled" disabled>Create Card</button>
+            @if (Model.WorkflowType == BitPantry.Iota.Common.WorkflowType.Basic)
+            {
+                <button class="btn btn-primary" data-testid="card.new.createCardDisabled" disabled>Create Card</button>
+            }
+            else
+            {
+                <button id="createBtnDrop" data-testid="card.new.btnCreateDdlDisabled" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" disabled>
+                    Create Card
+                </button>
+            }
             <div data-testid="card.new.cardAlreadyExistsMsg" class="mt-2 fw-light">Card already exists</div>
         }
         else
@@ -74,7 +83,31 @@ else if(Model.Passage != null)
             <form asp-action="Create" id="createForm">
                 <input type="hidden" name="address" value="@Model.Passage.Address" />
                 <input type="hidden" name="bibleId" value="@Model.BibleId" />
-                <button class="btn btn-primary" data-testid="card.new.createCard" type="submit">Create Card</button>
+
+                @if (Model.WorkflowType == BitPantry.Iota.Common.WorkflowType.Basic)
+                {
+                    <button class="btn btn-primary" data-testid="card.new.createCard" type="submit">Create Card</button>
+                }
+                else
+                {
+                    <div class="btn-group" role="group">
+                        <button id="createBtnDrop" data-testid="card.new.btnCreateDdl" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            Create Card
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="createBtnDrop">
+                            <li>
+                                <button type="submit" class="dropdown-item" data-testid="card.new.btnAddToQueue" name="addToTab" value="@(BitPantry.Iota.Common.Tab.Queue)">
+                                    Add to Queue Tab
+                                </button>
+                            </li>
+                            <li>
+                                <button type="submit" class="dropdown-item" data-testid="card.new.btnAddToDaily" name="addToTab" value="@(BitPantry.Iota.Common.Tab.Daily)">
+                                    Add to Daily Tab
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                }
             </form>
         }           
     </div>

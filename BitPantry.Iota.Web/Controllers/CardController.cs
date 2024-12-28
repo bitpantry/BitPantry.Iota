@@ -1,4 +1,5 @@
-﻿using BitPantry.Iota.Application.DTO;
+﻿using BitPantry.Iota.Application;
+using BitPantry.Iota.Application.DTO;
 using BitPantry.Iota.Application.Parsers;
 using BitPantry.Iota.Application.Service;
 using BitPantry.Iota.Common;
@@ -13,15 +14,15 @@ namespace BitPantry.Iota.Web.Controllers
     {
         private readonly CardService _cardSvc;
         private readonly IWorkflowService _workflowSvc;
-        private readonly UserIdentity _userIdentity;
+        private readonly CurrentUser _currentUser;
         private readonly BibleService _bibleSvc;
         private readonly TabsService _tabSvc;
 
-        public CardController(CardService cardSvc, IWorkflowService workflowSvc, BibleService bibleSvc, TabsService tabSvc, UserIdentity userIdentity)
+        public CardController(CardService cardSvc, IWorkflowService workflowSvc, BibleService bibleSvc, TabsService tabSvc, CurrentUser currentUser)
         {
             _cardSvc = cardSvc;
             _workflowSvc = workflowSvc;
-            _userIdentity = userIdentity;
+            _currentUser = currentUser;
             _bibleSvc = bibleSvc;
             _tabSvc = tabSvc;
         }
@@ -45,7 +46,7 @@ namespace BitPantry.Iota.Web.Controllers
             {
                 var resp = await _bibleSvc.GetBiblePassage(bibleId, address, HttpContext.RequestAborted);
 
-                var isAlreadyCreated = resp.ParsingException == null && await _cardSvc.DoesCardAlreadyExistForUser(_userIdentity.UserId, bibleId, address, HttpContext.RequestAborted);
+                var isAlreadyCreated = resp.ParsingException == null && await _cardSvc.DoesCardAlreadyExistForUser(_currentUser.UserId, bibleId, address, HttpContext.RequestAborted);
 
                 return View(nameof(New), new NewCardModel
                 {
@@ -54,7 +55,8 @@ namespace BitPantry.Iota.Web.Controllers
                     IsValidAddress = resp.ParsingException == null,
                     IsCardAlreadyCreated = isAlreadyCreated,
                     AddressQuery = address,
-                    Passage = resp.Passage?.ToModel()
+                    Passage = resp.Passage?.ToModel(),
+                    WorkflowType = _currentUser.WorkflowType
                 });
 
             }
@@ -68,7 +70,9 @@ namespace BitPantry.Iota.Web.Controllers
 
         public async Task<IActionResult> Create(string address, long bibleId)
         {
-            var resp = await _cardSvc.CreateCard(_userIdentity.UserId, bibleId, address, HttpContext.RequestAborted);
+            var resp = _currentUser.WorkflowType == WorkflowType.Basic
+                ? await _cardSvc.CreateCard(_currentUser.UserId, bibleId, address, HttpContext.RequestAborted)
+                : await _cardSvc.CreateCard(_currentUser.UserId, bibleId, address, (Tab)Enum.Parse(typeof(Tab), Request.Form["addToTab"]), HttpContext.RequestAborted);            
 
             if (resp.Result != Application.CreateCardResponseResult.Ok)
             {
@@ -101,7 +105,7 @@ namespace BitPantry.Iota.Web.Controllers
         public async Task<IActionResult> SendBackToQueue(long id)
         {
             await _workflowSvc.MoveCard(id, Tab.Queue, false, HttpContext.RequestAborted);
-            var cardCountInQueue = await _tabSvc.GetCardCountForTab(_userIdentity.UserId, Tab.Queue, HttpContext.RequestAborted);
+            var cardCountInQueue = await _tabSvc.GetCardCountForTab(_currentUser.UserId, Tab.Queue, HttpContext.RequestAborted);
 
             if (cardCountInQueue == 1)
                 return Route.RedirectTo<CollectionController>(c => c.Index(Tab.Queue));
@@ -111,7 +115,7 @@ namespace BitPantry.Iota.Web.Controllers
 
         public async Task<IActionResult> StartNow(long id)
         {
-            await _workflowSvc.SwapTopQueueCardForDaily(id, HttpContext.RequestAborted);
+            await _workflowSvc.StartQueueCard(id, HttpContext.RequestAborted);
             return Route.RedirectTo<ReviewController>(c => c.Index());
         }
 
@@ -120,7 +124,7 @@ namespace BitPantry.Iota.Web.Controllers
         {
             try
             {
-                await _cardSvc.ReorderCard(_userIdentity.UserId, model.GetTabEnum(), model.CardId, model.NewOrder, HttpContext.RequestAborted);
+                await _cardSvc.ReorderCard(_currentUser.UserId, model.GetTabEnum(), model.CardId, model.NewOrder, HttpContext.RequestAborted);
                 return Json(new { success = true });
             }
             catch (Exception ex)

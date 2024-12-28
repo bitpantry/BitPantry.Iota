@@ -1,16 +1,24 @@
-﻿namespace BitPantry.Iota.Web
+﻿using BitPantry.Iota.Infrastructure.Settings;
+
+namespace BitPantry.Iota.Web
 {
     public class UserTimeService
     {
         private IHttpContextAccessor _httpContextAccessor;
+        private readonly AppSettings _appSettings;
+        private readonly TestSettings _testSettings;
 
-        public UserTimeService(IHttpContextAccessor httpContextAccessor)
+        public UserTimeService(IHttpContextAccessor httpContextAccessor, AppSettings appSettings, TestSettings testSettings)
         {
             _httpContextAccessor = httpContextAccessor;
+            _appSettings = appSettings;
+            _testSettings = testSettings;
         }
 
         public string UserTimezone
-            => _httpContextAccessor.HttpContext.Items[Constants.TIMEZONE_KEY_NAME] as string; // ?? "American/Chicago";
+            => _appSettings.EnableTestInfrastructure
+                ? _testSettings.UserTimezone ?? _httpContextAccessor.HttpContext.Items[Constants.TIMEZONE_KEY_NAME] as string
+                : _httpContextAccessor.HttpContext.Items[Constants.TIMEZONE_KEY_NAME] as string; 
 
         public DateTime ConvertUtcToUserLocalTime(DateTime utcDateTime)
         {
@@ -32,7 +40,7 @@
         // Overload to get the current UTC DateTime in the user's local time zone
         public DateTime GetCurrentUserLocalTime()
         {
-            DateTime utcNow = DateTime.UtcNow;
+            DateTime utcNow = _appSettings.EnableTestInfrastructure ? _testSettings.UserCurrentTimeUtc : DateTime.UtcNow;
             return ConvertUtcToUserLocalTime(utcNow);
         }
 

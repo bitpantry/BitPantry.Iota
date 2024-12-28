@@ -13,7 +13,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using FluentAssertions;
 
-namespace BitPantry.Iota.Test.Playwright.Functional
+namespace BitPantry.Iota.Test.Playwright.Common
 {
     [TestClass]
     public class CollectionTests : PageTest
@@ -61,7 +61,7 @@ namespace BitPantry.Iota.Test.Playwright.Functional
             {
                 var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
 
-                var resp = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Common.Tab.Daily);
+                var resp = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Iota.Common.Tab.Daily);
             }
 
             await Page.GetByTestId("collection.tabDaily").ClickAsync();
@@ -84,7 +84,7 @@ namespace BitPantry.Iota.Test.Playwright.Functional
             {
                 var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
 
-                var resp = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Common.Tab.Queue);
+                var resp = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Iota.Common.Tab.Queue);
             }
 
             await Page.GetByTestId("collection.tabQueue").ClickAsync();
@@ -107,9 +107,9 @@ namespace BitPantry.Iota.Test.Playwright.Functional
             {
                 var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
 
-                var resp1 = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Common.Tab.Queue);
-                var resp2 = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:2", Common.Tab.Queue);
-                var resp3 = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:3", Common.Tab.Queue);
+                var resp1 = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Iota.Common.Tab.Queue);
+                var resp2 = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:2", Iota.Common.Tab.Queue);
+                var resp3 = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:3", Iota.Common.Tab.Queue);
 
                 await Page.GetByTestId("collection.tabQueue").ClickAsync();
 
@@ -130,9 +130,9 @@ namespace BitPantry.Iota.Test.Playwright.Functional
             {
                 var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
 
-                var resp1 = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Common.Tab.Queue);
-                var resp2 = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:2", Common.Tab.Queue);
-                var resp3 = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:3", Common.Tab.Queue);
+                var resp1 = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Iota.Common.Tab.Queue);
+                var resp2 = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:2", Iota.Common.Tab.Queue);
+                var resp3 = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:3", Iota.Common.Tab.Queue);
 
                 await Page.GetByTestId("collection.tabQueue").ClickAsync();
 
@@ -153,10 +153,10 @@ namespace BitPantry.Iota.Test.Playwright.Functional
                 var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
                 var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
 
-                await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Common.Tab.Queue);
-                await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:2", Common.Tab.Queue);
-                await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:3", Common.Tab.Queue);
-                await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:4", Common.Tab.Queue);
+                await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Iota.Common.Tab.Queue);
+                await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:2", Iota.Common.Tab.Queue);
+                await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:3", Iota.Common.Tab.Queue);
+                await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:4", Iota.Common.Tab.Queue);
 
                 var cards = await dbCtx.Cards.AsNoTracking().Where(c => c.UserId == userId).OrderBy(c => c.Order).ToListAsync();
 

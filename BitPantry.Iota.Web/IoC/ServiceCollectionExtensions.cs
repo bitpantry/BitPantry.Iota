@@ -34,6 +34,8 @@ namespace BitPantry.Iota.Web.IoC
 
             services.AddScoped<AppStateCookie>();
             services.AddScoped<UserIdentity>();
+            services.AddScoped<CurrentUser>();
+            services.AddScoped<TestSettings>();
 
             // data protection
 
@@ -56,6 +58,7 @@ namespace BitPantry.Iota.Web.IoC
 
             services.AddScoped<AppStateCookieMiddleware>();
             services.AddScoped<TimeZoneMiddleware>();
+            services.AddScoped<TestInfrastructureMiddleware>();
 
             // services
 

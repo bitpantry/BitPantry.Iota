@@ -66,7 +66,7 @@
     
 @if(Model.Path[Model.CurrentTab] > 1)
 {
-    <nav class="nav py-3" style="border-bottom: 1px solid #DEDEDE;">
+    <nav class="nav py-3" data-testid="review.subtabs" style="border-bottom: 1px solid #DEDEDE;">
 
         @for (int i = 1; i <= Model.Path[Model.CurrentTab]; i++)
         {
@@ -103,7 +103,7 @@
     </div>
 
     <div class="d-flex mt-4">
-        @if(Model.CurrentTab == Tab.Daily)
+        @if(Model.EnablePromote)
         {
             <div class="col d-flex justify-content-start">
                 <a href="#" onclick="confirmPromote()" data-testid="review.btnPromote" class="btn btn-secondary">
@@ -116,12 +116,17 @@
         </div>
     </div>
 
-    @if (Model.CurrentTab == Tab.Daily)
+    @if (Model.CurrentTab == Tab.Daily && Model.WorkflowType == WorkflowType.Basic)
     {
-        <div class="mt-4">
+        <div data-testid="review.pnlPromoteBasicMsg" class="mt-4">
             Promote this card to start on the next card from your queue.
         </div>
-
+    }
+    else if(Model.CurrentTab < Tab.Day1 && Model.WorkflowType == WorkflowType.Advanced)
+    {
+        <div data-testid="review.pnlPromoteAdvancedMsg" class="mt-4">
+            Promote this card to move it to the next tab.
+        </div>
     }
 }
 
@@ -133,8 +138,15 @@
             <div class="modal-header">
                 <h5 class="modal-title">Are you sure?</h5>
             </div>
-            <div class="modal-body">
-                <p>@Model.Card.Address will be moved to the next tab and the top card from your queue will be moved to the Daily tab.</p>
+            <div data-testid="review.pnlPromoteConfirmDialogMsg" class="modal-body">
+                @if(Model.WorkflowType == WorkflowType.Basic && Model.CurrentTab == Tab.Daily)
+                {
+                    <p>@Model.Card.Address will be moved to the next tab and the top card from your queue will be moved to the Daily tab.</p>
+                }
+                else if(Model.WorkflowType == WorkflowType.Advanced && Model.CurrentTab < Tab.Day1)
+                {
+                    <p>@Model.Card.Address will be moved to the next tab.</p>
+                }
             </div>
             <div class="modal-footer">
                 <button data-testid="review.btnConfirmPromoteCancel" type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cancelPromote()">Cancel</button>

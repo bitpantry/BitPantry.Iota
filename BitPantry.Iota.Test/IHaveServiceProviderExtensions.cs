@@ -12,7 +12,7 @@ namespace BitPantry.Iota.Test
         private static object _lock = new object();
         public static int _testUserIndex = 0;
 
-        public static async Task<long> CreateUser(this IHaveServiceProvider env, string emailAddress = null, CancellationToken cancellationToken = default)
+        public static async Task<long> CreateUser(this IHaveServiceProvider env, WorkflowType workflowType = WorkflowType.Basic, string emailAddress = null, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(emailAddress))
             {
@@ -27,7 +27,7 @@ namespace BitPantry.Iota.Test
             {
                 var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
 
-                var user = new User { EmailAddress = emailAddress };
+                var user = new User { EmailAddress = emailAddress, WorkflowType = workflowType };
                 dbCtx.Users.Add(user);
                 await dbCtx.SaveChangesAsync(cancellationToken);
 

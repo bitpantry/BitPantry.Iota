@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BitPantry.Iota.Test.Playwright.Functional
+namespace BitPantry.Iota.Test.Playwright.Common
 {
     [TestClass]
     [DoNotParallelize]

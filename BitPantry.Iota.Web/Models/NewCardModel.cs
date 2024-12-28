@@ -18,4 +18,5 @@ public class NewCardModel
     public Tab? CreatedToTab { get; internal set; }
     public string AddressQuery { get; internal set; }
     public string CreatedAddress { get; internal set; }
+    public WorkflowType WorkflowType { get; set; }
 }

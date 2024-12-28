@@ -51,6 +51,10 @@ namespace BitPantry.Iota.Web
             // configure pipeline
 
             app.UseMiddleware<IotaLogEnricherMiddleware>();
+
+            if(settings.EnableTestInfrastructure)
+                app.UseMiddleware<TestInfrastructureMiddleware>();
+
             app.UseMiddleware<TimeZoneMiddleware>();
 
             // Configure pipeline for environments

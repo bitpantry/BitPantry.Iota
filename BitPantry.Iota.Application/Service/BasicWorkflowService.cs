@@ -38,7 +38,7 @@ namespace BitPantry.Iota.Application.Service
 
             do
             {
-                currentTab = GetNextReviewTab(currentTab, userLocalTime);
+                currentTab = currentTab.GetNextReviewTab(userLocalTime);
                 path.Add(currentTab, 0);
 
             } while (currentTab < Tab.Day1);
@@ -66,25 +66,6 @@ namespace BitPantry.Iota.Application.Service
                 userId,
                 new Dictionary<Tab, int>(path.Where(p => p.Value > 0)));
         }
-
-        private Tab GetNextReviewTab(Tab? lastTab, DateTime userLocalTime) => lastTab switch
-        {
-            Tab.Queue => Tab.Daily,
-            Tab.Daily => userLocalTime.Day % 2 == 0 ? Tab.Even : Tab.Odd,
-            Tab.Odd or Tab.Even => userLocalTime.DayOfWeek switch
-            {
-                DayOfWeek.Sunday => Tab.Sunday,
-                DayOfWeek.Monday => Tab.Monday,
-                DayOfWeek.Tuesday => Tab.Tuesday,
-                DayOfWeek.Wednesday => Tab.Wednesday,
-                DayOfWeek.Thursday => Tab.Thursday,
-                DayOfWeek.Friday => Tab.Friday,
-                DayOfWeek.Saturday => Tab.Saturday,
-                _ => throw new ArgumentOutOfRangeException("DateTime.Today.DayOfWeek", userLocalTime.DayOfWeek, "A tab is not defined for this day of the week")
-            },
-            Tab.Sunday or Tab.Monday or Tab.Tuesday or Tab.Wednesday or Tab.Thursday or Tab.Friday or Tab.Saturday => userLocalTime.Day + Tab.Saturday,
-            _ => throw new ArgumentOutOfRangeException(nameof(lastTab), lastTab.Value, "No review path is defined for this tab")
-        };
 
         public async Task PromoteCard(long cardId, CancellationToken cancellationToken)
         {
@@ -129,32 +110,13 @@ namespace BitPantry.Iota.Application.Service
             Tab tab = (Tab)cardInfo.Tab;
 
             await MoveCard_INTERNAL(userId, cardId, tab, toTab, toTop, cancellationToken);
-
-            // if the card being moved is the daily card and there is a different card in the queue, move up the next queue card (if any)
-
-            if (tab == Tab.Daily)
-            {
-                var nextQueueCardId = await _dbCtx.UseConnection(cancellationToken, async conn =>
-                {
-                    return await conn.QuerySingleOrDefaultAsync<long?>(
-                    "SELECT TOP 1 Id FROM Cards WHERE UserId = @UserId AND Tab = @QueueTab ORDER BY [Order]",
-                    new
-                    {
-                        UserId = userId,
-                        QueueTab = Tab.Queue
-                    });
-                });
-
-                if (nextQueueCardId.HasValue && nextQueueCardId != cardId)
-                    await MoveCard_INTERNAL(userId, nextQueueCardId.Value, Tab.Queue, Tab.Daily, toTop = true, cancellationToken);
-            }
         }
 
         private async Task MoveCard_INTERNAL(long userId, long cardId, Tab fromTab, Tab toTab, bool toTop, CancellationToken cancellationToken)
         {
             // move the card
 
-            await _cardSvc.MoveCard(cardId, toTab, cancellationToken, toTop);
+            await _cardSvc.MoveCard(cardId, toTab, toTop, cancellationToken);
 
             // cascade using basic workflow constraints / rules - if the tab can only have one card, then recursively push out
 
@@ -192,35 +154,13 @@ namespace BitPantry.Iota.Application.Service
             if (!tabInt.HasValue)
                 throw new InvalidOperationException($"The card, {cardId}, does not exist");
 
-            // if card is daily, check for next available queue card
-
-            long? nextQueueCardId = null;
-
-            if (tabInt.Value == (int)Tab.Daily)
-            {
-                nextQueueCardId = await _dbCtx.UseConnection(cancellationToken, async conn =>
-                {
-                    return await conn.QuerySingleOrDefaultAsync<long?>(
-                    "SELECT TOP 1 Id FROM Cards WHERE UserId = (SELECT UserId FROM Cards WHERE Id = @CardId) AND Tab = @QueueTab ORDER BY [Order]",
-                    new
-                    {
-                        CardId = cardId,
-                        QueueTab = Tab.Queue
-                    });
-                });
-            }
-
             // delete the card
 
             await _cardSvc.DeleteCard(cardId, cancellationToken);
 
-            // if the card was in the daily tab, promote the next queued card if available
-
-            if(nextQueueCardId.HasValue)
-                await MoveCard(nextQueueCardId.Value, Tab.Daily, true, cancellationToken);
         }
 
-        public async Task SwapTopQueueCardForDaily(long queueCardId, CancellationToken cancellationToken)
+        public async Task StartQueueCard(long queueCardId, CancellationToken cancellationToken)
         {
             // get the queue card
 
@@ -237,9 +177,9 @@ namespace BitPantry.Iota.Application.Service
 
             _logger.LogDebug("Swapping top queue card {QueueCardId} with daily card {DailyCardId}", queueCard.Id, dailyCard == null ? 0 : dailyCard.Id);
 
-            await _cardSvc.MoveCard(queueCardId, Tab.Daily, cancellationToken);
+            await _cardSvc.MoveCard(queueCardId, Tab.Daily, true, cancellationToken);
             if (dailyCard != null)
-                await _cardSvc.MoveCard(dailyCard.Id, Tab.Queue, cancellationToken);
+                await _cardSvc.MoveCard(dailyCard.Id, Tab.Queue, true, cancellationToken);
         }
     }
 }

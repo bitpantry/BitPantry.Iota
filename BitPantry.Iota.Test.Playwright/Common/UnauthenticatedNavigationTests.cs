@@ -3,7 +3,7 @@ using BitPantry.Iota.Web.Controllers;
 using Microsoft.Playwright;
 using Microsoft.Playwright.MSTest;
 
-namespace BitPantry.Iota.Test.Playwright.Functional
+namespace BitPantry.Iota.Test.Playwright.Common
 {
     [TestClass]
     [DoNotParallelize]

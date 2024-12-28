@@ -143,12 +143,12 @@ namespace BitPantry.Iota.Application.Service
             }
         }
 
-        public async Task<CardDto> GetCard(long cardId, CancellationToken cancellationToken)
+        public async Task<CardDto> GetCard(long cardId, CancellationToken cancellationToken = default)
         {
             return await GetCard_INTERNAL(_dbCtx.Cards.AsNoTracking().Where(c => c.Id == cardId), true, cancellationToken);
         }
 
-        public async Task<CardDto> GetCard(long userId, Tab tab, int order, CancellationToken cancellationToken)
+        public async Task<CardDto> GetCard(long userId, Tab tab, int order, CancellationToken cancellationToken = default)
         {
             return await GetCard_INTERNAL(_dbCtx.Cards.AsNoTracking().Where(c => c.UserId == userId && c.Tab == tab && c.Order == order), true, cancellationToken);
         }
@@ -174,7 +174,7 @@ namespace BitPantry.Iota.Application.Service
         public async Task<int> GetCardCountForUser(long userId, CancellationToken cancellationToken)
             => await _dbCtx.Cards.CountAsync(c => c.UserId == userId, cancellationToken);
 
-        internal async Task MoveCard(long cardId, Tab toTab, CancellationToken cancellationToken, bool toTop = true)
+        internal async Task MoveCard(long cardId, Tab toTab, bool toTop = true, CancellationToken cancellationToken = default)
         {
             _logger.LogDebug("Moving card {CardId} to tab {ToTab} (to top: {ToTop}", cardId, toTab, toTop);
 

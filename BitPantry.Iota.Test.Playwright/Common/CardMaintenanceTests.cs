@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BitPantry.Iota.Test.Playwright.Functional
+namespace BitPantry.Iota.Test.Playwright.Common
 {
     [TestClass]
     public class CardMaintenanceTests : PageTest
@@ -33,7 +33,7 @@ namespace BitPantry.Iota.Test.Playwright.Functional
             {
                 var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
 
-                var resp = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Common.Tab.Daily);
+                var resp = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Iota.Common.Tab.Daily);
 
                 await Page.GotoAsync(Fixture.Environment.GetUrlBuilder().Build($"/card/{resp.Card.Id}"));
                 await Expect(Page.GetByTestId("card.maint.tab")).ToContainTextAsync("Daily");
@@ -58,7 +58,7 @@ namespace BitPantry.Iota.Test.Playwright.Functional
             {
                 var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
 
-                var resp = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Common.Tab.Daily);
+                var resp = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Iota.Common.Tab.Daily);
 
                 await Page.GotoAsync(Fixture.Environment.GetUrlBuilder().Build($"/card/{resp.Card.Id}"));
                 await Page.GetByTestId("card.maint.btnClose").ClickAsync();
@@ -78,7 +78,7 @@ namespace BitPantry.Iota.Test.Playwright.Functional
                 var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
                 var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
 
-                var resp = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Common.Tab.Daily);
+                var resp = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Iota.Common.Tab.Daily);
 
                 await Page.GotoAsync(Fixture.Environment.GetUrlBuilder().Build($"/card/{resp.Card.Id}"));
 
@@ -93,7 +93,7 @@ namespace BitPantry.Iota.Test.Playwright.Functional
 
                 var card = await dbCtx.Cards.Where(c => c.UserId == userId).SingleAsync();
 
-                card.Tab.Should().Be(Common.Tab.Queue);
+                card.Tab.Should().Be(Iota.Common.Tab.Queue);
             }
 
         }
@@ -108,7 +108,7 @@ namespace BitPantry.Iota.Test.Playwright.Functional
                 var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
                 var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
 
-                var resp = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Common.Tab.Daily);
+                var resp = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Iota.Common.Tab.Daily);
 
                 await Page.GotoAsync(Fixture.Environment.GetUrlBuilder().Build($"/card/{resp.Card.Id}"));
 
@@ -136,7 +136,7 @@ namespace BitPantry.Iota.Test.Playwright.Functional
             {
                 var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
 
-                var resp = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Common.Tab.Odd);
+                var resp = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Iota.Common.Tab.Odd);
 
                 await Page.GotoAsync(Fixture.Environment.GetUrlBuilder().Build($"/card/{resp.Card.Id}"));
                 await Expect(Page.GetByTestId("card.maint.tab")).ToContainTextAsync("Odd");
@@ -161,7 +161,7 @@ namespace BitPantry.Iota.Test.Playwright.Functional
                 var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
                 var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
 
-                var resp = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Common.Tab.Odd);
+                var resp = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Iota.Common.Tab.Odd);
 
                 await Page.GotoAsync(Fixture.Environment.GetUrlBuilder().Build($"/card/{resp.Card.Id}"));
 
@@ -192,7 +192,7 @@ namespace BitPantry.Iota.Test.Playwright.Functional
                 var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
                 var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
 
-                var resp = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Common.Tab.Odd);
+                var resp = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Iota.Common.Tab.Odd);
 
                 await Page.GotoAsync(Fixture.Environment.GetUrlBuilder().Build($"/card/{resp.Card.Id}"));
 
@@ -207,7 +207,7 @@ namespace BitPantry.Iota.Test.Playwright.Functional
                 await Page.WaitForURLAsync(Fixture.Environment.GetUrlBuilder().Build("/collection/Queue"));
 
                 var card = await dbCtx.Cards.Where(c => c.UserId == userId).SingleAsync();
-                card.Tab.Should().Be(Common.Tab.Queue);
+                card.Tab.Should().Be(Iota.Common.Tab.Queue);
 
             }
 
@@ -222,7 +222,7 @@ namespace BitPantry.Iota.Test.Playwright.Functional
             {
                 var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
 
-                var resp = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Common.Tab.Queue);
+                var resp = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Iota.Common.Tab.Queue);
 
                 await Page.GotoAsync(Fixture.Environment.GetUrlBuilder().Build($"/card/{resp.Card.Id}"));
                 await Expect(Page.GetByTestId("card.maint.tab")).ToContainTextAsync("Queue");
@@ -247,7 +247,7 @@ namespace BitPantry.Iota.Test.Playwright.Functional
                 var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
                 var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
 
-                var resp = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Common.Tab.Queue);
+                var resp = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Iota.Common.Tab.Queue);
 
                 await Page.GotoAsync(Fixture.Environment.GetUrlBuilder().Build($"/card/{resp.Card.Id}"));
 
@@ -260,7 +260,7 @@ namespace BitPantry.Iota.Test.Playwright.Functional
                 await Page.GetByTestId("card.maint.btnConfirmStartNow").ClickAsync();
 
                 var card = await dbCtx.Cards.FindAsync(resp.Card.Id);
-                card.Tab.Should().Be(Common.Tab.Daily);
+                card.Tab.Should().Be(Iota.Common.Tab.Daily);
 
                 Page.Url.Should().BeIgnoreCase(Fixture.Environment.GetUrlBuilder().Build("/review/Daily/1"));
                 await Expect(Page.GetByRole(AriaRole.Main)).ToContainTextAsync("Romans 1:1 (ESV)");

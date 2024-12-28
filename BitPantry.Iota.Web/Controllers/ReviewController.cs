@@ -12,25 +12,23 @@ namespace BitPantry.Iota.Web.Controllers
     {
         private readonly CardService _cardSvc;
         private readonly IWorkflowService _workflowSvc;
-        private UserIdentity _identity;
-        private UserTimeService _userTime;
+        private readonly CurrentUser _currentUser;
         private ILogger<ReviewController> _logger;
 
-        public ReviewController(CardService cardSvc, IWorkflowService workflowSvc, UserIdentity identity, UserTimeService userTime, ILogger<ReviewController> logger)
+        public ReviewController(CardService cardSvc, IWorkflowService workflowSvc, CurrentUser currentUser, ILogger<ReviewController> logger)
         {
             _cardSvc = cardSvc;
             _workflowSvc = workflowSvc;
-            _identity = identity;
-            _userTime = userTime;
+            _currentUser = currentUser;
             _logger = logger;
         }
 
         public async Task<IActionResult> Index()
         {
-            var path = await _workflowSvc.GetReviewPath(_identity.UserId, _userTime.GetCurrentUserLocalTime(), HttpContext.RequestAborted);
+            var path = await _workflowSvc.GetReviewPath(_currentUser.UserId, _currentUser.CurrentUserLocalTime, HttpContext.RequestAborted);
 
             if (!path.Path.Any(p => p.Value > 0))
-                return NoCards();
+                return Route.RedirectTo<ReviewController>(c => c.NoCards());
 
             // get next review step
 
@@ -42,15 +40,15 @@ namespace BitPantry.Iota.Web.Controllers
         {
             // redirect to first available card in path if card for given tab / order doesn't exist
 
-            var path = await _workflowSvc.GetReviewPath(_identity.UserId, _userTime.GetCurrentUserLocalTime(), HttpContext.RequestAborted);
+            var path = await _workflowSvc.GetReviewPath(_currentUser.UserId, _currentUser.CurrentUserLocalTime, HttpContext.RequestAborted);
             if (!path.Path.ContainsKey(tab))
                 return Route.RedirectTo<ReviewController>(c => c.Index(path.Path.First().Key, 1));
 
             // load card
 
-            await _cardSvc.MarkAsReviewed(_identity.UserId, tab, ord, HttpContext.RequestAborted);
+            await _cardSvc.MarkAsReviewed(_currentUser.UserId, tab, ord, HttpContext.RequestAborted);
             
-            var card = await _cardSvc.GetCard(_identity.UserId, tab, ord, HttpContext.RequestAborted);
+            var card = await _cardSvc.GetCard(_currentUser.UserId, tab, ord, HttpContext.RequestAborted);
 
             var helper = new ReviewPathHelper(path.Path);
             var nextStep = helper.GetNextStep(tab, ord);
@@ -59,7 +57,7 @@ namespace BitPantry.Iota.Web.Controllers
                 ? Url.Action<ReviewController>(c => c.Done())
                 : Url.Action<ReviewController>(c => c.Index(nextStep.Value.Key, nextStep.Value.Value));
 
-            return View(nameof(Index), new ReviewModel(path.Path, tab, ord, card.ToModel(), nextUrl));
+            return View(nameof(Index), new ReviewModel(path.Path, tab, ord, card.ToModel(), nextUrl, _currentUser.WorkflowType));
         }
 
         [Route("review/promote/{id:long}")]
@@ -71,7 +69,11 @@ namespace BitPantry.Iota.Web.Controllers
 
             // go to next step in review
 
-            var path = await _workflowSvc.GetReviewPath(_identity.UserId, _userTime.GetCurrentUserLocalTime(), HttpContext.RequestAborted);
+            var path = await _workflowSvc.GetReviewPath(_currentUser.UserId, _currentUser.CurrentUserLocalTime, HttpContext.RequestAborted);
+
+            if (!path.Path.Any(p => p.Value > 0))
+                return Route.RedirectTo<ReviewController>(c => c.NoCards());
+
             return Route.RedirectTo<ReviewController>(c => c.Index(path.Path.First().Key, 1));
         }
 

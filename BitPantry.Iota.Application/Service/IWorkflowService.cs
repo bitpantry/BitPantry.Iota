@@ -14,6 +14,6 @@ namespace BitPantry.Iota.Application.Service
         Task<ReviewPathDto> GetReviewPath(long userId, DateTime userLocalTime, CancellationToken cancellationToken);
         Task MoveCard(long cardId, Tab toTab, bool toTop, CancellationToken cancellationToken);
         Task PromoteCard(long cardId, CancellationToken cancellationToken);
-        Task SwapTopQueueCardForDaily(long queueCardId, CancellationToken cancellationToken);
+        Task StartQueueCard(long queueCardId, CancellationToken cancellationToken);
     }
 }

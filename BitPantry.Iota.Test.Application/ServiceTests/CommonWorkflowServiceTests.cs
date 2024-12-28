@@ -25,6 +25,7 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
 
         [Theory]
         [InlineData(WorkflowType.Basic)]
+        [InlineData(WorkflowType.Advanced)]
         public async Task GetReviewPathFullData_ReviewPathCreated(WorkflowType workflowType)
         {
             var userId = await _env.CreateUser();
@@ -55,6 +56,7 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
 
         [Theory]
         [InlineData(WorkflowType.Basic)]
+        [InlineData(WorkflowType.Advanced)]
         public async Task GetReviewPathPartialData_ReviewPathCreated(WorkflowType workflowType)
         {
             var userId = await _env.CreateUser();
@@ -87,6 +89,64 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
 
         [Theory]
         [InlineData(WorkflowType.Basic)]
+        [InlineData(WorkflowType.Advanced)]
+        public async Task DeleteOnlyDailyEmptyQueue_CardDeleted(WorkflowType workflowType)
+        {
+            var userId = await _env.CreateUser();
+
+            using (var scope = _env.ServiceProvider.CreateScope())
+            {
+                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
+                var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
+                var wfSvc = scope.ServiceProvider.GetWorkflowService(workflowType);
+
+
+                await svc.CreateCard(userId, _bibleId, "rom 1:16", Common.Tab.Daily, CancellationToken.None);
+
+                var cards = dbCtx.Cards.AsNoTracking().Where(c => c.UserId == userId).OrderBy(c => c.Tab).ToList();
+
+                cards.Should().HaveCount(1);
+                cards[0].Tab.Should().Be(Common.Tab.Daily);
+
+                var dailyCard = cards[0].Id;
+
+                await wfSvc.DeleteCard(dailyCard, CancellationToken.None);
+
+                cards = dbCtx.Cards.AsNoTracking().Where(c => c.UserId == userId).OrderBy(c => c.Tab).ToList();
+
+                cards.Should().BeEmpty();
+            }
+        }
+
+        [Theory]
+        [InlineData(WorkflowType.Basic)]
+        [InlineData(WorkflowType.Advanced)]
+        public async Task DeleteOnlyDailyWithQueue_CardDeletedNoQueuePromoted(WorkflowType workflowType)
+        {
+            var userId = await _env.CreateUser();
+
+            using (var scope = _env.ServiceProvider.CreateScope())
+            {
+                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
+                var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
+                var wfSvc = scope.ServiceProvider.GetWorkflowService(workflowType);
+
+                var dailyCard = await svc.CreateCard(userId, _bibleId, "rom 1:16", Common.Tab.Daily, CancellationToken.None);
+                var queueCard = await svc.CreateCard(userId, _bibleId, "rom 1:17", Common.Tab.Queue, CancellationToken.None);
+
+                await wfSvc.DeleteCard(dailyCard.Card.Id, CancellationToken.None);
+
+                var cards = dbCtx.Cards.AsNoTracking().Where(c => c.UserId == userId).OrderBy(c => c.Tab).ToList();
+
+                cards.Should().HaveCount(1);
+                cards[0].Id.Should().Be(queueCard.Card.Id);
+                cards[0].Tab.Should().Be(Common.Tab.Queue);
+            }
+        }
+
+        [Theory]
+        [InlineData(WorkflowType.Basic)]
+        [InlineData(WorkflowType.Advanced)]
         public async Task GetReviewPathNoData_EmptyReviewPathCreated(WorkflowType workflowType)
         {
             var userId = await _env.CreateUser();
@@ -107,6 +167,9 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
         [InlineData(WorkflowType.Basic, 0)]
         [InlineData(WorkflowType.Basic, 5)]
         [InlineData(WorkflowType.Basic, null)] // last
+        [InlineData(WorkflowType.Advanced, 0)]
+        [InlineData(WorkflowType.Advanced, 5)]
+        [InlineData(WorkflowType.Advanced, null)] // last
         public async Task DeleteQueueCard_CardDeletedTabReordered(WorkflowType workflowType, int? cardIndex)
         {
             var userId = await _env.CreateUser();
@@ -139,10 +202,10 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
 
         [Theory]
         [InlineData(WorkflowType.Basic)]
+        [InlineData(WorkflowType.Advanced)]
         public async Task DeleteLastCardInTab_CardDeleted(WorkflowType workflowType)
         {
             var userId = await _env.CreateUser();
-            CreateCardResponse resp = null;
 
             using (var scope = _env.ServiceProvider.CreateScope())
             {
@@ -150,7 +213,7 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
                 var wfSvc = scope.ServiceProvider.GetWorkflowService(workflowType);
                 var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
 
-                resp = await svc.CreateCard(userId, _bibleId, "rom 1:16", CancellationToken.None);
+                var resp = await svc.CreateCard(userId, _bibleId, "rom 1:16", CancellationToken.None);
 
                 await wfSvc.DeleteCard(resp.Card.Id, CancellationToken.None);
                 var cards = dbCtx.Cards.AsNoTracking().Where(c => c.UserId == userId && c.Tab == resp.Card.Tab).ToList();
@@ -161,66 +224,52 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
 
         [Theory]
         [InlineData(WorkflowType.Basic)]
-        public async Task MoveQueueCardToEmptyDaily_CardMoved(WorkflowType workflowType)
+        [InlineData(WorkflowType.Advanced)]
+        public async Task MoveOnlyDailyCardToEmptyQueue_QueueCardNotPromoted(WorkflowType workflowType)
         {
             var userId = await _env.CreateUser();
 
             using (var scope = _env.ServiceProvider.CreateScope())
             {
+                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
                 var wfSvc = scope.ServiceProvider.GetWorkflowService(workflowType);
-                var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
 
-                var resp = await cardSvc.CreateCard(userId, _bibleId, "gen 1:1", Tab.Queue, CancellationToken.None);
-
-                await wfSvc.MoveCard(resp.Card.Id, Tab.Daily, true, CancellationToken.None);
-
-                var card = await cardSvc.GetCard(resp.Card.Id, CancellationToken.None);
-                card.Tab.Should().Be(Tab.Daily);
-            }
-        }
-
-        [Theory]
-        [InlineData(WorkflowType.Basic)]
-        public async Task MoveDailyCardToEmptyQueue_CardMovedWithNoPromoteFromQueue(WorkflowType workflowType)
-        {
-            var userId = await _env.CreateUser();
-
-            using (var scope = _env.ServiceProvider.CreateScope())
-            {
-                var wfSvc = scope.ServiceProvider.GetWorkflowService(workflowType);
-                var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
-
-                var resp = await cardSvc.CreateCard(userId, _bibleId, "gen 1:1", Tab.Daily, CancellationToken.None);
+                var resp = await svc.CreateCard(userId, _bibleId, "rom 1:16", Tab.Daily, CancellationToken.None);
 
                 await wfSvc.MoveCard(resp.Card.Id, Tab.Queue, true, CancellationToken.None);
+                var movedCard = await svc.GetCard(resp.Card.Id);
 
-                var card = await cardSvc.GetCard(resp.Card.Id, CancellationToken.None);
-                card.Tab.Should().Be(Tab.Queue);
+                movedCard.Tab.Should().Be(Tab.Queue);
             }
         }
 
         [Theory]
         [InlineData(WorkflowType.Basic)]
-        public async Task MoveDailyCardToQueue_CardMovedNextQueueCardPromoted(WorkflowType workflowType)
+        [InlineData(WorkflowType.Advanced)]
+        public async Task MoveOnlyDailyToMultipleQueue_NoQueueCardPromoted(WorkflowType workflowType)
         {
             var userId = await _env.CreateUser();
 
             using (var scope = _env.ServiceProvider.CreateScope())
             {
+                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
                 var wfSvc = scope.ServiceProvider.GetWorkflowService(workflowType);
-                var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
+                var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
 
-                var respDaily = await cardSvc.CreateCard(userId, _bibleId, "gen 1:1", Tab.Daily, CancellationToken.None);
-                var respQueue = await cardSvc.CreateCard(userId, _bibleId, "gen 1:2", Tab.Queue, CancellationToken.None);
+                var dailyCard = await svc.CreateCard(userId, _bibleId, "rom 1:16", Tab.Daily, CancellationToken.None);
+                _ = await svc.CreateCard(userId, _bibleId, "rom 1:1", Tab.Queue, CancellationToken.None);
+                _ = await svc.CreateCard(userId, _bibleId, "rom 1:2", Tab.Queue, CancellationToken.None);
 
-                await wfSvc.MoveCard(respDaily.Card.Id, Tab.Queue, false, CancellationToken.None);
 
-                var dailyCard = await cardSvc.GetCard(respDaily.Card.Id, CancellationToken.None);
-                var queueCard = await cardSvc.GetCard(respQueue.Card.Id, CancellationToken.None);
+                await wfSvc.MoveCard(dailyCard.Card.Id, Tab.Queue, true, CancellationToken.None);
+                var movedCard = await svc.GetCard(dailyCard.Card.Id);
 
-                dailyCard.Tab.Should().Be(Tab.Queue);
-                queueCard.Tab.Should().Be(Tab.Daily);
+                movedCard.Tab.Should().Be(Tab.Queue);
+
+                var queueCards = await dbCtx.Cards.AsNoTracking().Where(c => c.UserId == userId && c.Tab == Tab.Queue).ToListAsync();
+                queueCards.Should().HaveCount(3);
             }
         }
+
     }
 }

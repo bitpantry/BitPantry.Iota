@@ -3,6 +3,7 @@ using BitPantry.Iota.Common;
 using BitPantry.Iota.Data.Entity;
 using BitPantry.Iota.Test.Application.Fixtures;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BitPantry.Iota.Test.Application.ServiceTests
@@ -20,42 +21,31 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
         }
 
         [Fact]
-        public async Task DeleteDailyCard_QueueCardAutoPromoted()
+        public async Task DeleteLastDailyEmptyQueue_CardDeleted()
         {
             var newUserId = await _env.CreateUser();
-            long dailyCardId = 0;
-            long queueCardId = 0;
 
             using (var scope = _env.ServiceProvider.CreateScope())
             {
                 var svc = scope.ServiceProvider.GetRequiredService<CardService>();
                 var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
 
-                await svc.CreateCard(newUserId, _bibleId, "rom 1:16", Common.Tab.Queue, CancellationToken.None);
-                await svc.CreateCard(newUserId, _bibleId, "rom 1:17", Common.Tab.Daily, CancellationToken.None);
+                await svc.CreateCard(newUserId, _bibleId, "rom 1:16", Common.Tab.Daily, CancellationToken.None);
 
-                var cards = dbCtx.Cards.Where(c => c.UserId == newUserId).OrderBy(c => c.Tab).ToList();
-
-                cards.Should().HaveCount(2);
-                cards[0].Tab.Should().Be(Common.Tab.Queue);
-                cards[1].Tab.Should().Be(Common.Tab.Daily);
-
-                queueCardId = cards[0].Id;
-                dailyCardId = cards[1].Id;
-            }
-
-            using (var scope = _env.ServiceProvider.CreateScope())
-            {
-                var svc = scope.ServiceProvider.GetRequiredService<IWorkflowService>();
-                var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
-
-                await svc.DeleteCard(dailyCardId, CancellationToken.None);
-
-                var cards = dbCtx.Cards.Where(c => c.UserId == newUserId).OrderBy(c => c.Tab).ToList();
+                var cards = dbCtx.Cards.AsNoTracking().Where(c => c.UserId == newUserId).OrderBy(c => c.Tab).ToList();
 
                 cards.Should().HaveCount(1);
                 cards[0].Tab.Should().Be(Common.Tab.Daily);
-                cards[0].Id.Should().Be(queueCardId);
+
+                var dailyCard = cards[0].Id;
+
+                var wfSvc = scope.ServiceProvider.GetRequiredService<IWorkflowService>();
+
+                await wfSvc.DeleteCard(dailyCard, CancellationToken.None);
+
+                cards = dbCtx.Cards.AsNoTracking().Where(c => c.UserId == newUserId).OrderBy(c => c.Tab).ToList();
+
+                cards.Should().BeEmpty();
             }
         }
 
@@ -315,7 +305,5 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
                 cards.Should().HaveCount(2);
             }
         }
-
-
     }
 }

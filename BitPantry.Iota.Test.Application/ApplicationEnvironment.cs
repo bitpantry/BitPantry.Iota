@@ -1,4 +1,5 @@
 ﻿using BitPantry.Iota.Application;
+using BitPantry.Iota.Common;
 using BitPantry.Iota.Data.Entity;
 using BitPantry.Iota.Infrastructure;
 using BitPantry.Iota.Infrastructure.Settings;
