@@ -105,6 +105,7 @@ namespace BitPantry.Iota.Web.Controllers
         public async Task<IActionResult> SendBackToQueue(long id)
         {
             await _workflowSvc.MoveCard(id, Tab.Queue, false, HttpContext.RequestAborted);
+
             var cardCountInQueue = await _tabSvc.GetCardCountForTab(_currentUser.UserId, Tab.Queue, HttpContext.RequestAborted);
 
             if (cardCountInQueue == 1)
@@ -131,6 +132,12 @@ namespace BitPantry.Iota.Web.Controllers
             {
                 return Json(new { success = false, message = ex.Message });
             }
+        }
+
+        public async Task<IActionResult> Test(long id)
+        {
+            await _workflowSvc.DeleteCard(id, HttpContext.RequestAborted);
+            return Route.RedirectTo<ReviewController>(c => c.Done());
         }
 
     }

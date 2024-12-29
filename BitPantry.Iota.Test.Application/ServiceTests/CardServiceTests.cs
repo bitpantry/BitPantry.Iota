@@ -263,11 +263,16 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
                 var resp = await svc.CreateCard(userId, _bibleId, "rom 1:16", CancellationToken.None);
 
                 resp.Card.LastReviewedOn.Should().BeNull();
+                resp.Card.ReviewCount.Should().Be(0);
+                resp.Card.LastReviewedOn.Should().Be(null);
 
                 await svc.MarkAsReviewed(userId, resp.Card.Tab, resp.Card.Order, CancellationToken.None);
 
                 var card = await svc.GetCard(resp.Card.Id, CancellationToken.None);
+
                 card.LastReviewedOn.Value.Date.Should().Be(DateTime.UtcNow.Date);
+                card.ReviewCount.Should().Be(1);
+                card.LastReviewedOn.Should().NotBeNull();
             }
         }
 

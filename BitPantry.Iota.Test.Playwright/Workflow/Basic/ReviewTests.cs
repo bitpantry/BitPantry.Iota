@@ -1,5 +1,6 @@
 ﻿using BitPantry.Iota.Application.Service;
 using BitPantry.Iota.Common;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Playwright;
 using Microsoft.Playwright.MSTest;
@@ -113,6 +114,27 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Basic
                 await CommonReviewLogic.DoneViewCreateCard_CreateCardView(Page, scope, userId);
         }
 
+        [TestMethod]
+        public async Task GotoReviewView_CardMarkedAsReviewed()
+        {
+            long userId = await Init();
+            using (var scope = Fixture.Environment.ServiceProvider.CreateScope())
+            {
+                var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
+
+                var resp = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", Tab.Daily);
+
+                resp.Card.ReviewCount.Should().Be(0);
+
+                await Page.GotoAsync(Fixture.Environment.GetUrlBuilder().Build("review/daily/1"));
+
+                var card = await cardSvc.GetCard(resp.Card.Id);
+
+                card.ReviewCount.Should().Be(1);
+            }
+
+        }
+
         private async Task EvaluateTabElements(IPage page, Tab tab, int expectedCardCount = 1)
         {
             if (expectedCardCount > 0)
@@ -142,6 +164,9 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Basic
                 {
                     await Expect(page.GetByTestId("review.subtabs")).ToHaveCountAsync(0);
                 }
+
+                await Expect(Page.GetByTestId("review.pnlReviewCountMsg")).ToHaveCountAsync(0);
+                await Expect(Page.GetByTestId("review.btnGotIt")).ToHaveCountAsync(0);
             }
         }
 

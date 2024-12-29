@@ -54,8 +54,17 @@ namespace BitPantry.Iota.Data.Entity.Mapping
                 .IsRequired();
 
             modelBuilder.Entity<Card>()
+                .Property(c => c.ReviewCount)
+                .IsRequired()
+                .HasDefaultValue(0);
+
+            modelBuilder.Entity<Card>()
                 .Property(c => c.Order)
                 .IsRequired();
+
+            modelBuilder.Entity<Card>()
+                .HasIndex(c => new { c.UserId, c.Tab, c.Order })
+                .HasDatabaseName("IX_Cards_UserId_Tab_Order");
 
 
 

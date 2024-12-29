@@ -12,6 +12,7 @@ namespace BitPantry.Iota.Web
                     dto.LastMovedOn,
                     dto.LastReviewedOn,
                     dto.Tab,
+                    dto.ReviewCount,
                     dto.Order,
                     dto.Passage?.ToModel());
     }

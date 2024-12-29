@@ -7,6 +7,7 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using BitPantry.Iota.Test;
+using BitPantry.Iota.Application.DTO;
 
 namespace BitPantry.Iota.Test.Application.ServiceTests
 {

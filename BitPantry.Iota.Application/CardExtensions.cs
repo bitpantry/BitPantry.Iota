@@ -14,6 +14,7 @@ namespace BitPantry.Iota.Application
 				card.LastReviewedOn,
 				card.Tab,
 				card.Order,
+				card.ReviewCount,
 				verses);
 
 		public static async Task<CardDto> ToDtoLoadVerses(this Card card, EntityDataContext dbCtx, CancellationToken cancellationToken)

@@ -7,6 +7,10 @@ using Microsoft.Extensions.Logging;
 using Dapper;
 using BitPantry.Iota.Application.DTO;
 using System.Data.Common;
+using Polly;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal;
+using System.ComponentModel;
 
 namespace BitPantry.Iota.Application.Service
 {
@@ -16,6 +20,22 @@ namespace BitPantry.Iota.Application.Service
         private EntityDataContext _dbCtx;
         private CacheService _cacheSvc;
         private PassageLogic _passageLogic;
+
+        //private readonly ResiliencePipeline _deadlockResiliencyPipeline = Policy
+        //    .Handle<SqlException>(ex => ex.Message.Contains("deadlocked on lock resources"))
+        //    .Or<TimeoutException>()
+        //    .WaitAndRetryAsync()
+
+        private readonly ResiliencePipeline _sqlResiliencyPipeline = new ResiliencePipelineBuilder()
+            .AddRetry(new Polly.Retry.RetryStrategyOptions
+            {
+                ShouldHandle = new PredicateBuilder().Handle<SqlException>(ex => ex.Message.Contains("deadlocked on lock resources")),
+                BackoffType = DelayBackoffType.Linear,
+                UseJitter = true,
+                MaxRetryAttempts = 3,
+                Delay = TimeSpan.FromMilliseconds(50)
+            })
+            .Build();
 
         public CardService(
             ILogger<CardService> logger,
@@ -110,23 +130,45 @@ namespace BitPantry.Iota.Application.Service
 
             // delete the card
 
-            await _dbCtx.UseConnection(cancellationToken, async (conn, trans) =>
-            {
-                await conn.ExecuteAsync(@"
-                        DECLARE @CurrentOrder INT;
-                        DECLARE @CurrentTab INT;
-                        DECLARE @UserId BIGINT;
+            //await _sqlResiliencyPipeline.ExecuteAsync(async token =>
+            //{
+                await _dbCtx.UseConnection(cancellationToken, async (conn, trans) =>
+                {
+                    //await conn.ExecuteAsync(@"
+                    //DECLARE @CurrentOrder INT;
+                    //DECLARE @CurrentTab INT;
+                    //DECLARE @UserId BIGINT;
 
-                        SELECT @CurrentOrder = [Order], @CurrentTab = Tab, @UserId = UserId
-                        FROM Cards 
-                        WHERE Id = @CardId;
+                    //SELECT @CurrentOrder = [Order], @CurrentTab = Tab, @UserId = UserId
+                    //FROM Cards 
+                    //WHERE Id = @CardId;
 
-                        DELETE FROM Cards WHERE Id = @CardId;
+                    //DELETE FROM Cards WHERE Id = @CardId;
 
-                        UPDATE Cards SET [Order] = [Order] - 1 WHERE Tab = @CurrentTab AND UserId = @UserId AND [Order] > @CurrentOrder;",
-                    new { cardId },
-                    transaction: trans);
-            });
+                    //UPDATE Cards SET [Order] = [Order] - 1 WHERE Tab = @CurrentTab AND UserId = @UserId AND [Order] > @CurrentOrder;",
+                    //    new { cardId },
+                    //    transaction: trans);
+
+                    await conn.ExecuteAsync(@"
+                    DECLARE @CurrentOrder INT;
+                    DECLARE @CurrentTab INT;
+                    DECLARE @UserId BIGINT;
+
+                    SELECT @CurrentOrder = [Order], @CurrentTab = Tab, @UserId = UserId
+                    FROM Cards WITH (ROWLOCK, UPDLOCK, HOLDLOCK)
+                    WHERE Id = @CardId;
+
+                    UPDATE Cards WITH (ROWLOCK, UPDLOCK, HOLDLOCK)
+                    SET [Order] = [Order] - 1
+                    WHERE Tab = @CurrentTab AND UserId = @UserId AND [Order] > @CurrentOrder;
+
+                    DELETE FROM Cards WITH (ROWLOCK, UPDLOCK, HOLDLOCK)
+                    WHERE Id = @CardId;
+                    ",
+                        new { cardId },
+                        transaction: trans);
+                });
+            //}, cancellationToken);
         }
 
         public async Task DeleteAllCards(long? forUserId, CancellationToken cancellationToken)
@@ -180,63 +222,70 @@ namespace BitPantry.Iota.Application.Service
 
             // Determine the order placement in the new tab
 
-            await _dbCtx.UseConnection(cancellationToken, async (conn, trans) =>
-            {
-
-                string orderLogic = toTop
-                    ? @"
-                    -- Shift the orders in the new tab to make room for the moved card at order 1
-                    UPDATE Cards
-                    SET [Order] = [Order] + 1
-                    WHERE Tab = @ToTab 
-                        AND UserId = @UserId 
-                        AND [Order] >= 1;
-
-                    -- Move the card to the new tab and set its order to 1
-                    UPDATE Cards
-                    SET Tab = @ToTab, [Order] = 1, LastMovedOn = @Timestamp
-                    WHERE Id = @CardId;"
-                    : @"
-                    -- Get the maximum order in the destination tab
-                    DECLARE @MaxOrder INT = (SELECT ISNULL(MAX([Order]), 0) FROM Cards WHERE Tab = @ToTab AND UserId = @UserId);
-
-                    -- Move the card to the new tab and set its order to MaxOrder + 1
-                    UPDATE Cards
-                    SET Tab = @ToTab, [Order] = @MaxOrder + 1, LastMovedOn = @Timestamp
-                    WHERE Id = @CardId;";
-
-                string sql = $@"
-                DECLARE @CurrentOrder INT;
-                DECLARE @CurrentTab INT;
-                DECLARE @UserId BIGINT;
-
-                -- Get the current order and tab of the card being moved
-                SELECT @CurrentOrder = [Order], @CurrentTab = Tab, @UserId = UserId
-                FROM Cards 
-                WHERE Id = @CardId;
-
-                {orderLogic}
-
-                -- Adjust the order of cards in the old tab to fill any gaps
-                UPDATE Cards
-                SET [Order] = [Order] - 1
-                WHERE Tab = @CurrentTab 
-                    AND UserId = @UserId 
-                    AND [Order] > @CurrentOrder;";
-
-                // Parameters to pass to the query
-
-                var parameters = new
+            //await _sqlResiliencyPipeline.ExecuteAsync(async token =>
+            //{
+                await _dbCtx.UseConnection(cancellationToken, async (conn, trans) =>
                 {
-                    CardId = cardId,
-                    ToTab = toTab,
-                    Timestamp = DateTime.UtcNow
-                };
+                    var sql = @"
+                        DECLARE @CurrentOrder INT;
+                        DECLARE @CurrentTab   INT;
+                        DECLARE @NewOrder     INT;
+                        DECLARE @UserId       BIGINT;
 
-                // Execute the query asynchronously
+                        -- 1) Get the card’s current order/tab
+                        SELECT @CurrentOrder = [Order],
+                               @CurrentTab   = [Tab],
+                               @UserId       = [UserId]
+                        FROM Cards WITH (ROWLOCK, UPDLOCK, HOLDLOCK)
+                        WHERE Id = @CardId;
 
-                await conn.ExecuteAsync(sql, parameters, trans);
-            });
+                        -- 2) Decrement orders in old tab
+                        UPDATE Cards WITH (ROWLOCK, UPDLOCK, HOLDLOCK)
+                        SET [Order] = [Order] - 1
+                        WHERE [Tab]   = @CurrentTab
+                          AND UserId  = @UserId
+                          AND [Order] > @CurrentOrder;
+
+                        -- 3) If @ToTop = 1, move to top by shifting everyone else up
+                        IF (@ToTop = 1)
+                        BEGIN
+                            UPDATE Cards WITH (ROWLOCK, UPDLOCK, HOLDLOCK)
+                            SET [Order] = [Order] + 1
+                            WHERE [Tab]  = @ToTab
+                              AND UserId = @UserId
+                              AND [Order] >= 1;
+
+                            SET @NewOrder = 1;
+                        END
+                        ELSE
+                        BEGIN
+                            SELECT @NewOrder = ISNULL(MAX([Order]), 0) + 1
+                            FROM Cards WITH (ROWLOCK, UPDLOCK, HOLDLOCK)
+                            WHERE [Tab]  = @ToTab
+                              AND UserId = @UserId;
+                        END
+
+                        -- 4) Move the card
+                        UPDATE Cards WITH (ROWLOCK, UPDLOCK, HOLDLOCK)
+                        SET [Tab]        = @ToTab,
+                            [Order]      = @NewOrder,
+                            LastMovedOn  = @Timestamp,
+                            ReviewCount  = 0
+                        WHERE Id = @CardId
+                          AND UserId = @UserId;
+                    ";
+
+                    var args = new
+                    {
+                        CardId = cardId,
+                        ToTab = toTab,
+                        ToTop = toTop,
+                        Timestamp = DateTime.UtcNow
+                    };
+
+                    await conn.ExecuteAsync(sql, args, trans);
+                });
+            //}, cancellationToken);
 
         }
 
@@ -279,13 +328,28 @@ namespace BitPantry.Iota.Application.Service
             });
         }
 
-        public async Task MarkAsReviewed(long userId, Tab tab, int cardOrder, CancellationToken cancellationToken)
+        public async Task MarkAsReviewed(long cardId, CancellationToken cancellationToken = default)
+        {
+            _logger.LogDebug("Marking card {CardId} as reviewed", cardId);
+
+            await _dbCtx.UseConnection(cancellationToken, async (conn, trans) =>
+            {
+                await conn.ExecuteAsync("UPDATE Cards SET LastReviewedOn = @Timestamp, ReviewCount = ReviewCount + 1 WHERE Id = @CardId",
+                    new
+                    {
+                        Timestamp = DateTime.UtcNow,
+                        Cardid = cardId
+                    }, trans);
+            });
+        }
+
+        public async Task MarkAsReviewed(long userId, Tab tab, int cardOrder, CancellationToken cancellationToken = default)
         {
             _logger.LogDebug("Marking card {Tab}:{CardOrder} as reviewed", tab, cardOrder);
 
             await _dbCtx.UseConnection(cancellationToken, async (conn, trans) =>
             {
-                await conn.ExecuteAsync("UPDATE Cards SET LastReviewedOn = @Timestamp WHERE UserId = @UserId AND Tab = @Tab AND [Order] = @Order",
+                await conn.ExecuteAsync("UPDATE Cards SET LastReviewedOn = @Timestamp, ReviewCount = ReviewCount + 1 WHERE UserId = @UserId AND Tab = @Tab AND [Order] = @Order",
                     new
                     {
                         Timestamp = DateTime.UtcNow,

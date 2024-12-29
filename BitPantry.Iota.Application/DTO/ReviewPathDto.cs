@@ -14,6 +14,16 @@ namespace BitPantry.Iota.Application.DTO
         }
 
         public int CardsToReviewCount => Path.Sum(p => p.Value);
+
+        public Tab? GetNextStep(Tab forTab)
+        {
+            var keys = Path.Keys.Where(k => k > forTab).OrderBy(k => k).ToList();
+
+            if(keys.Any()) 
+                return keys.FirstOrDefault();
+
+            return null;
+        }
             
     }
 }

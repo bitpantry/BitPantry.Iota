@@ -12,6 +12,7 @@ namespace BitPantry.Iota.Application.DTO
         public DateTime? LastReviewedOn { get; }
         public Tab Tab { get; }
         public int Order { get; }
+        public int ReviewCount { get; }
         public PassageDto Passage { get; }
 
         public CardDto(
@@ -22,6 +23,7 @@ namespace BitPantry.Iota.Application.DTO
             DateTime? lastReviewedOn, 
             Tab tab, 
             int order,
+            int reviewCount,
             List<Verse> verses = null)
         {
             Id = id;
@@ -30,6 +32,7 @@ namespace BitPantry.Iota.Application.DTO
             LastMovedOn = lastMovedOn;
             LastReviewedOn = lastReviewedOn;
             Tab = tab;
+            ReviewCount = reviewCount;
             Order = order;
 
             if (verses != null)

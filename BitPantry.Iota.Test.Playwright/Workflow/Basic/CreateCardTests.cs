@@ -110,8 +110,7 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Basic
 
             await Page.GetByTestId("card.new.txtAddress").FillAsync("rom 1:1");
             await Page.GetByTestId("card.new.btnGo").ClickAsync();
-            await Page.GetByTestId("card.new.btnCreateDdl").ClickAsync();
-            await Page.GetByTestId("card.new.btnAddToQueue").ClickAsync();
+            await Page.GetByTestId("card.new.createCard").ClickAsync();
             await Page.GetByTestId("card.new.viewAll").ClickAsync();
             Page.Url.Should().BeIgnoreCase(Fixture.Environment.GetUrlBuilder().Build("collection"));
         }
@@ -123,8 +122,7 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Basic
 
             await Page.GetByTestId("card.new.txtAddress").FillAsync("rom 1:3");
             await Page.GetByTestId("card.new.btnGo").ClickAsync();
-            await Page.GetByTestId("card.new.btnCreateDdl").ClickAsync();
-            await Page.GetByTestId("card.new.btnAddToDaily").ClickAsync();
+            await Page.GetByTestId("card.new.createCard").ClickAsync();
             await Page.GetByTestId("card.new.startReview").ClickAsync();
             Page.Url.Should().BeIgnoreCase(Fixture.Environment.GetUrlBuilder().Build("review/Daily/1"));
 

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace BitPantry.Iota.Test.Playwright
@@ -22,6 +23,9 @@ namespace BitPantry.Iota.Test.Playwright
         {
             await page.GotoAsync(Fixture.Environment.GetUrlBuilder().Build(path), options);
         }
+
+        public static async Task WaitForUrlAsyncIgnoreCase(this IPage page, string path, PageWaitForURLOptions opt = null)
+            => await page.WaitForURLAsync(new Regex($"^{path}$", RegexOptions.IgnoreCase), opt);
 
         public static async Task SetUserCurrentTimeUtcOverride(this IPage page, DateTime userCurrentTimeUtcOverride)
             => await page.Context.AddCookiesAsync(

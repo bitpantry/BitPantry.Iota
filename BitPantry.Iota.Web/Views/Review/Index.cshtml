@@ -6,16 +6,16 @@
 <script>
 
     function togglePassage() {
-        var firstPanel = document.getElementsByClassName("verse-card")[0];
-        var secondPanel = document.getElementsByClassName("verse-card")[1];
+    var firstPanel = document.getElementsByClassName("verse-card")[0];
+    var secondPanel = document.getElementsByClassName("verse-card")[1];
 
-        if (firstPanel.style.display === "block") {
-            firstPanel.style.display = "none";
-            secondPanel.style.display = "block";
-        } else {
-            firstPanel.style.display = "block";
-            secondPanel.style.display = "none";
-        }
+    if (firstPanel.style.display === "block") {
+    firstPanel.style.display = "none";
+    secondPanel.style.display = "block";
+    } else {
+    firstPanel.style.display = "block";
+    secondPanel.style.display = "none";
+    }
     }
 
 </script>
@@ -24,24 +24,24 @@
 
     /* Styling only for main tabs */
     .main-tabs .nav-link {
-        color: black !important; /* Always black text for main tabs */
+    color: black !important; /* Always black text for main tabs */
     }
 
     .main-tabs .nav-link.active {
-        background-color: #e0f2ff !important; /* Light blue background for active main tabs */
-        color: black !important; /* Ensure text remains black when active */
-        border-radius: 5px; /* Rounded corners for active tab */
+    background-color: #e0f2ff !important; /* Light blue background for active main tabs */
+    color: black !important; /* Ensure text remains black when active */
+    border-radius: 5px; /* Rounded corners for active tab */
     }
 
     /* Styling for active nested tabs */
     .nav .nav-link.active {
-        background-color: #e0f2ff !important; /* Light blue background for active nested tabs */
-        color: black !important; /* Ensure text remains black when active */
+    background-color: #e0f2ff !important; /* Light blue background for active nested tabs */
+    color: black !important; /* Ensure text remains black when active */
     }
 
     .verse-card {
-        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
-        cursor: pointer; /* Added cursor property */
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    cursor: pointer; /* Added cursor property */
     }
 </style>
 
@@ -63,7 +63,7 @@
     }
 
 </ul>
-    
+
 @if(Model.Path[Model.CurrentTab] > 1)
 {
     <nav class="nav py-3" data-testid="review.subtabs" style="border-bottom: 1px solid #DEDEDE;">
@@ -80,8 +80,16 @@
 {
 
     <div class="mt-4">
-        <div class="col d-flex pb-4">
-            <span data-testid="review.pnlAddress" class="display-6">@Model.Card.Address (@Model.Card.Passage.TranslationShortName)</span>
+        <div class="d-flex pb-4">
+            <div class="d-flex flex-fill align-items-center justify-content-start">
+                <span data-testid="review.pnlAddress" class="display-6">@Model.Card.Address (@Model.Card.Passage.TranslationShortName)</span>
+            </div>
+            @if (Model.WorkflowType == WorkflowType.Advanced)
+            {
+                <div data-testid="review.pnlReviewCountMsg" class="d-flex flex-fill justify-content-end align-items-center me-3">
+                    <span class="bg-light display-6 px-1 rounded">10</span>
+                </div>
+            }
         </div>
         <div data-testid="review.pnlPassageCollapsed" class="verse-card" onclick="togglePassage()" style="display:block">
             <p class=" text-center fst-italic p-3">
@@ -112,7 +120,11 @@
             </div>
         }
         <div class="col d-flex justify-content-end">
-            <a data-testid="review.btnNext" class="btn btn-success" href="@Model.NextUrl">Next</a>
+            @if(Model.WorkflowType == WorkflowType.Advanced)
+            {
+                <a data-testid="review.btnGotIt" class="btn btn-success me-2" asp-action="gotit" asp-route-id="@Model.Card.Id">Got It</a>
+            }
+            <a data-testid="review.btnNext" class="btn btn-primary" href="@Model.NextUrl">Next</a>
         </div>
     </div>
 

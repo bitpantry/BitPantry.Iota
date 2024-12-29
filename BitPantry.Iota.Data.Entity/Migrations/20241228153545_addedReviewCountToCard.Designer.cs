@@ -4,6 +4,7 @@ using BitPantry.Iota.Data.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BitPantry.Iota.Data.Entity.Migrations
 {
     [DbContext(typeof(EntityDataContext))]
-    partial class EntityDataContextModelSnapshot : ModelSnapshot
+    [Migration("20241228153545_addedReviewCountToCard")]
+    partial class addedReviewCountToCard
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -127,8 +130,7 @@ namespace BitPantry.Iota.Data.Entity.Migrations
 
                     b.HasIndex("StartVerseId");
 
-                    b.HasIndex("UserId", "Tab", "Order")
-                        .HasDatabaseName("IX_Cards_UserId_Tab_Order");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Cards");
                 });

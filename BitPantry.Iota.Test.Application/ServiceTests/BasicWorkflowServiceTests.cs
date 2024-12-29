@@ -305,5 +305,45 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
                 cards.Should().HaveCount(2);
             }
         }
+
+        [Theory]
+        [InlineData(Tab.Queue, Tab.Daily)]
+        [InlineData(Tab.Daily, Tab.Odd)]
+        [InlineData(Tab.Odd, Tab.Sunday)]
+        [InlineData(Tab.Even, Tab.Sunday)]
+        [InlineData(Tab.Sunday, Tab.Day1)]
+        [InlineData(Tab.Monday, Tab.Day1)]
+        [InlineData(Tab.Tuesday, Tab.Day1)]
+        [InlineData(Tab.Wednesday, Tab.Day1)]
+        public async Task PromoteCard_ReviewCountReset(Tab fromTab, Tab toTab)
+        {
+            var userId = await _env.CreateUser();
+
+            using (var scope = _env.ServiceProvider.CreateScope())
+            {
+                scope.UseAdvancedWorkflow();
+
+                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
+                var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
+                var wfSvc = scope.ServiceProvider.GetRequiredService<IWorkflowService>();
+
+                var resp = await svc.CreateCard(userId, _bibleId, "rom 1:1", fromTab);
+
+                resp.Card.ReviewCount.Should().Be(0);
+
+                await svc.MarkAsReviewed(userId, resp.Card.Tab, resp.Card.Order);
+
+                var card = await svc.GetCard(resp.Card.Id);
+
+                card.ReviewCount.Should().Be(1);
+
+                await wfSvc.PromoteCard(resp.Card.Id, CancellationToken.None);
+
+                var promotedCard = await svc.GetCard(resp.Card.Id);
+
+                promotedCard.Tab.Should().Be(toTab);
+                promotedCard.ReviewCount.Should().Be(0);
+            }
+        }
     }
 }

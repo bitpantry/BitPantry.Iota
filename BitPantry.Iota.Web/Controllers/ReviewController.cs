@@ -46,8 +46,9 @@ namespace BitPantry.Iota.Web.Controllers
 
             // load card
 
-            await _cardSvc.MarkAsReviewed(_currentUser.UserId, tab, ord, HttpContext.RequestAborted);
-            
+            if (_currentUser.WorkflowType == WorkflowType.Basic)
+                await _cardSvc.MarkAsReviewed(_currentUser.UserId, tab, ord, HttpContext.RequestAborted);
+
             var card = await _cardSvc.GetCard(_currentUser.UserId, tab, ord, HttpContext.RequestAborted);
 
             var helper = new ReviewPathHelper(path.Path);
@@ -75,6 +76,26 @@ namespace BitPantry.Iota.Web.Controllers
                 return Route.RedirectTo<ReviewController>(c => c.NoCards());
 
             return Route.RedirectTo<ReviewController>(c => c.Index(path.Path.First().Key, 1));
+        }
+
+        [Route("review/gotit/{id:long}")]
+        public async Task<IActionResult> GotIt(long id)
+        {
+            // mark card as reviewed
+
+            await _cardSvc.MarkAsReviewed(id, HttpContext.RequestAborted);
+
+            // go to next step in review
+
+            var card = await _cardSvc.GetCard(id, HttpContext.RequestAborted);
+            var path = await _workflowSvc.GetReviewPath(_currentUser.UserId, _currentUser.CurrentUserLocalTime, HttpContext.RequestAborted);
+
+            var nextTab = path.GetNextStep(card.Tab);
+
+            if(nextTab == null)
+                return Route.RedirectTo<ReviewController>(c => c.Done());
+
+            return Route.RedirectTo<ReviewController>(c => c.Index(nextTab.Value, 1));
         }
 
         public IActionResult Done()
