@@ -103,7 +103,7 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
 
                 var validateOrderAction = (Tab tab, long userId) =>
                 {
-                    var cards = dbCtx.Cards.Where(c => c.Tab == fromTab && c.UserId == userId).OrderBy(c => c.FractionalOrder);
+                    var cards = dbCtx.Cards.Where(c => c.Tab == fromTab && c.UserId == userId).OrderBy(c => c.NumberedCard.RowNumber);
 
                     var rowNum = 0L;
                     foreach (var item in cards)

@@ -77,46 +77,6 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Advanced
                 await CommonCardMaintenanceLogic.DeleteCard_CardDeleted(Page, scope, userId, tab, addtlCardsInTab);
         }
 
-        [DataTestMethod]
-        [DataRow(Tab.Daily, 0)]
-        [DataRow(Tab.Queue, 0)]
-        [DataRow(Tab.Daily, 2)]
-        [DataRow(Tab.Queue, 2)]
-        [DataRow(Tab.Odd, 0)]
-        [DataRow(Tab.Even, 3)]
-        [DataRow(Tab.Day1, 0)]
-        [DataRow(Tab.Day2, 3)]
-        public async Task Test(Tab tab, int addtlCardsInTab)
-        {
-            var userId = await Init();
-            using (var scope = Fixture.Environment.ServiceProvider.CreateScope())
-            {
-                var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
-                var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
-
-                var cardResp = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", tab);
-
-                for (var i = 1; i <= addtlCardsInTab; i++)
-                    _ = await cardSvc.CreateCard(userId, Fixture.BibleId, $"rom 2:{i}", tab);
-
-                var cards = await dbCtx.Cards.AsNoTracking().Where(c => c.UserId == userId && c.Tab == tab).ToListAsync();
-
-                cards.Select(c => c.Id).Should().Contain(cardResp.Card.Id);
-                cards.Should().HaveCount(addtlCardsInTab + 1);
-
-                await Page.GotoAsync(Fixture.Environment.GetUrlBuilder().Build($"card/{cardResp.Card.Id}"));
-
-                await Page.GetByTestId("card.maint.btnTest").ClickAsync();
-
-                await Page.WaitForUrlAsyncIgnoreCase(Fixture.Environment.GetUrlBuilder().Build($"review/Done"));
-
-                cards = await dbCtx.Cards.AsNoTracking().Where(c => c.UserId == userId && c.Tab == tab).ToListAsync();
-
-                cards.Select(c => c.Id).Should().NotContain(cardResp.Card.Id);
-                cards.Should().HaveCount(addtlCardsInTab);
-            }
-        }
-
         public async Task EvaluateMaintenanceView(IPage page, Tab tab, string address = null, string passageContains = null)
         {
             await Expect(page.GetByTestId("card.maint.tab")).ToContainTextAsync(tab.Humanize());

@@ -123,7 +123,7 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Basic
                     queueCardList.OrderBy(c => c.FractionalOrder).First().Id.Should().Be(dailyCard.Card.Id);
 
                 var rowNum = 0L;
-                foreach (var item in queueCardList.OrderBy(c => c.FractionalOrder))
+                foreach (var item in queueCardList.OrderBy(c => c.NumberedCard.RowNumber))
                 {
                     rowNum.Should().Be(item.NumberedCard.RowNumber - 1);
                     rowNum = item.NumberedCard.RowNumber;

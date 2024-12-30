@@ -134,12 +134,6 @@ namespace BitPantry.Iota.Web.Controllers
             }
         }
 
-        public async Task<IActionResult> Test(long id)
-        {
-            await _workflowSvc.DeleteCard(id, HttpContext.RequestAborted);
-            return Route.RedirectTo<ReviewController>(c => c.Done());
-        }
-
     }
 }
 

@@ -23,7 +23,7 @@ namespace BitPantry.Iota.Application.Service
             var cards = await _dbCtx.Cards
                 .AsNoTracking()
                 .Where(c => c.UserId == userId && c.Tab == tab)
-                .OrderBy(c => c.FractionalOrder)
+                .OrderBy(c => c.NumberedCard.RowNumber)
                 .ToListAsync(cancellationToken);
 
             if (cards.Count == 1)
