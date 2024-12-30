@@ -1,9 +1,9 @@
 ﻿@using Humanizer
 
-@model CardModel
+@model CardMaintenanceModel
 
 @{
-    var backUrl = Url.Action<BitPantry.Iota.Web.Controllers.CollectionController>(t => t.Index(Model.Tab));
+    var backUrl = Url.Action<BitPantry.Iota.Web.Controllers.CollectionController>(t => t.Index(Model.Card.Tab));
 }
 
 
@@ -19,7 +19,7 @@
             
         <ul class="nav nav-tabs nav-justified w-100">
             <li class="nav-item">
-                <a class="nav-link active" data-testid="card.maint.tab" style="background-color: #e0f2ff">@Model.Tab.Humanize()</a>
+                <a class="nav-link active" data-testid="card.maint.tab" style="background-color: #e0f2ff">@Model.Card.Tab.Humanize()</a>
             </li>
         </ul>
 

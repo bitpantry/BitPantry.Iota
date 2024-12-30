@@ -50,12 +50,7 @@ namespace BitPantry.Iota.Test.Playwright.Workflow
             await page.GetByTestId("card.maint.btnSendBackToQueue").ClickAsync();
             await page.GetByTestId("card.maint.btnConfirmSendToQueue").ClickAsync();
 
-            await page.WaitForTimeoutAsync(1000);
-
-            if (cardsInQueue + 1 == 1)
-                await page.WaitForURLAsync(Fixture.Environment.GetUrlBuilder().Build("collection/Queue"));
-            else
-                await page.WaitForURLAsync(Fixture.Environment.GetUrlBuilder().Build($"card/{cardResp.Card.Id}"));
+            await page.WaitForURLAsync(Fixture.Environment.GetUrlBuilder().Build($"card/{cardResp.Card.Id}"));
 
             var card = await cardSvc.GetCard(cardResp.Card.Id);
 

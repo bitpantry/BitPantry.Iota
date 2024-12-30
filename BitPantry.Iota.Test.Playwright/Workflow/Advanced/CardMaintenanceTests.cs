@@ -1,4 +1,5 @@
-﻿using BitPantry.Iota.Application.Service;
+﻿using BitPantry.Iota.Application;
+using BitPantry.Iota.Application.Service;
 using BitPantry.Iota.Common;
 using BitPantry.Iota.Data.Entity;
 using FluentAssertions;
@@ -26,6 +27,7 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Advanced
         }
 
         [DataTestMethod]
+        [DataRow(Tab.Queue)]
         [DataRow(Tab.Daily)]
         [DataRow(Tab.Odd)]
         [DataRow(Tab.Monday)]
@@ -77,6 +79,44 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Advanced
                 await CommonCardMaintenanceLogic.DeleteCard_CardDeleted(Page, scope, userId, tab, addtlCardsInTab);
         }
 
+        [DataTestMethod]
+        [DataRow(1, 1)]
+        [DataRow(2, 1)]
+        [DataRow(2, 2)]
+        public async Task MoveToDailyTabFromQueue_CardMoved(int queueCardCount, int queueOrder)
+        {
+            var userId = await Init();
+
+            using (var scope = Fixture.Environment.ServiceProvider.CreateScope())
+            {
+                var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
+                var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
+
+                for (int i = 1; i <= queueCardCount; i++)
+                    _ = await cardSvc.CreateCard(userId, Fixture.BibleId, $"rom 1:{i}", Tab.Queue);
+
+                var queueCard = await cardSvc.GetCard(userId, Tab.Queue, queueOrder);
+
+                await Page.GotoAsync(Fixture.Environment.GetUrlBuilder().Build($"/card/{queueCard.Id}"));
+
+                await Page.GetByTestId("card.maint.btnMoveToDailyTab").ClickAsync();
+
+                queueCard = await cardSvc.GetCard(queueCard.Id);
+
+                queueCard.Tab.Should().Be(Tab.Daily);
+            }
+
+        }
+
+        [TestMethod]
+        public async Task NavigateDirectlyToStartNow_Forbidden()
+        {
+            _ = await Init();
+            var response = await Page.GotoAsync(Fixture.Environment.GetUrlBuilder().Build("card/startnow/0"));
+            await response.FinishedAsync();
+            response.Status.Should().Be(404);
+        }
+
         public async Task EvaluateMaintenanceView(IPage page, Tab tab, string address = null, string passageContains = null)
         {
             await Expect(page.GetByTestId("card.maint.tab")).ToContainTextAsync(tab.Humanize());
@@ -94,9 +134,16 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Advanced
             await Expect(page.GetByTestId("card.maint.btnStartNow")).ToHaveCountAsync(0);
 
             if (tab != Tab.Queue)
+            {
                 await Expect(page.GetByTestId("card.maint.btnSendBackToQueue")).ToBeVisibleAsync();
+                await Expect(Page.GetByTestId("card.maint.btnMoveToDailyTab")).ToHaveCountAsync(0);
+            }
             else
+            {
                 await Expect(page.GetByTestId("card.maint.btnSendBackToQueue")).ToHaveCountAsync(0);
+                await Expect(Page.GetByTestId("card.maint.btnMoveToDailyTab")).ToHaveCountAsync(1);
+            }
         }
+
     }
 }

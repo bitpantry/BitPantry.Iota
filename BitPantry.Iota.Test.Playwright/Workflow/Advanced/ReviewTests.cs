@@ -225,7 +225,11 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Advanced
                     await Expect(Page.GetByTestId("review.subtabs")).ToHaveCountAsync(0);
                 }
 
-                await Expect(Page.GetByTestId("review.pnlReviewCountMsg")).ToBeVisibleAsync();
+                if(tab < Tab.Day1)
+                    await Expect(Page.GetByTestId("review.pnlReviewCountMsg")).ToBeVisibleAsync();
+                else
+                    await Expect(Page.GetByTestId("review.pnlReviewCountMsg")).ToHaveCountAsync(0);
+
                 await Expect(Page.GetByTestId("review.btnGotIt")).ToBeVisibleAsync();
             }
         }

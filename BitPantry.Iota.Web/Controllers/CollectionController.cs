@@ -7,12 +7,12 @@ namespace BitPantry.Iota.Web.Controllers
 {
     public class CollectionController : Controller
     {
-        private UserIdentity _identity;
+        private readonly CurrentUser _currentUser;
         private TabsService _tabSvc;
 
-        public CollectionController(UserIdentity identity, TabsService tabSvc) 
+        public CollectionController(CurrentUser currentUser, TabsService tabSvc) 
         {
-            _identity = identity;
+            _currentUser = currentUser;
             _tabSvc = tabSvc;
         }
 
@@ -22,7 +22,7 @@ namespace BitPantry.Iota.Web.Controllers
         [Route("collection/{tab:enum}")]
         public async Task<IActionResult> Index(Tab tab)
         {
-            var counts = await _tabSvc.GetCardCountByTab(_identity.UserId, HttpContext.RequestAborted);
+            var counts = await _tabSvc.GetCardCountByTab(_currentUser.UserId, HttpContext.RequestAborted);
 
             // find a tab with data to set as active
 
@@ -39,7 +39,7 @@ namespace BitPantry.Iota.Web.Controllers
 
             // query cards
 
-            var cards = await _tabSvc.GetCardsForTab(_identity.UserId, tab, HttpContext.RequestAborted);
+            var cards = await _tabSvc.GetCardsForTab(_currentUser.UserId, tab, HttpContext.RequestAborted);
 
             // build model
 
@@ -48,7 +48,8 @@ namespace BitPantry.Iota.Web.Controllers
                 ActiveTab = tab,
                 WeekdaysWithData = counts.Keys.Where(d => d >= Common.Tab.Sunday && d <= Common.Tab.Saturday).ToArray(),
                 DaysOfMonthWithData = counts.Keys.Where(d => d > Common.Tab.Saturday).ToArray(),
-                Cards = cards.Select(c => c.ToModel()).ToList()
+                Cards = cards.Select(c => c.ToModel()).ToList(),
+                WorkflowType = _currentUser.WorkflowType
             };
 
 

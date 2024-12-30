@@ -84,10 +84,10 @@
             <div class="d-flex flex-fill align-items-center justify-content-start">
                 <span data-testid="review.pnlAddress" class="display-6">@Model.Card.Address (@Model.Card.Passage.TranslationShortName)</span>
             </div>
-            @if (Model.WorkflowType == WorkflowType.Advanced)
+            @if (Model.WorkflowType == WorkflowType.Advanced && Model.CurrentTab < Tab.Day1)
             {
                 <div data-testid="review.pnlReviewCountMsg" class="d-flex flex-fill justify-content-end align-items-center me-3">
-                    <span class="bg-light display-6 px-1 rounded">10</span>
+                    <span class="bg-light display-6 px-1 rounded">@Model.Card.ReviewCount</span>
                 </div>
             }
         </div>

@@ -2,9 +2,5 @@
 
 namespace BitPantry.Iota.Web.Models
 {
-    public class CardMaintenanceModel
-    {
-        public CardModel Card { get; set; }
-        public WorkflowType WorkflowType { get; set; }
-    }
+    public record CardMaintenanceModel(CardModel Card, WorkflowType WorkflowType) { }
 }

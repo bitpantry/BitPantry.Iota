@@ -1,4 +1,5 @@
 ﻿using BitPantry.Iota.Application.DTO;
+using BitPantry.Iota.Common;
 using BitPantry.Iota.Web.Models;
 using Humanizer;
 
@@ -16,5 +17,8 @@ namespace BitPantry.Iota.Web
                     dto.ReviewCount,
                     dto.RowNumber,
                     dto.Passage?.ToModel());
+
+        public static CardMaintenanceModel ToMaintenanceModel(this CardDto dto, WorkflowType workflowType)
+            => new CardMaintenanceModel(dto.ToModel(), workflowType);
     }
 }

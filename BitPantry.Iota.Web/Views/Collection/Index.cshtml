@@ -152,7 +152,7 @@
 } 
 else if(Model.Cards.Count == 1) @* ------- SINGLE CARD ------- *@
 {
-    <partial name="_CardMaintenancePartial" model='@Model.Cards.First()' />
+    <partial name="_CardMaintenancePartial" model='@Model.TopCardMaintenanceModel' />
 }
 else
 {

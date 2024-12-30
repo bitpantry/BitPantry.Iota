@@ -27,6 +27,7 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Basic
         }
 
         [DataTestMethod]
+        [DataRow(Tab.Queue)]
         [DataRow(Tab.Daily)]
         [DataRow(Tab.Odd)]
         [DataRow(Tab.Monday)]
@@ -132,6 +133,15 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Basic
 
         }
 
+        [TestMethod]
+        public async Task NavigateDirectlyToMoveToDailyTab_Forbidden()
+        {
+            _ = await Init();
+            var response = await Page.GotoAsync(Fixture.Environment.GetUrlBuilder().Build("card/moveToDailyTab/0"));
+            await response.FinishedAsync();
+            response.Status.Should().Be(404);
+        }
+
         public async Task EvaluateMaintenanceView(IPage page, Tab tab, string address = null, string passageContains = null)
         {
             await Expect(page.GetByTestId("card.maint.tab")).ToContainTextAsync(tab.Humanize());
@@ -145,6 +155,8 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Basic
 
             if (passageContains != null)
                 await Expect(page.GetByRole(AriaRole.Paragraph)).ToContainTextAsync(passageContains);
+
+            await Expect(Page.GetByTestId("card.maint.btnMoveToDailyTab")).ToHaveCountAsync(0);
 
             if(tab == Tab.Queue)
                 await Expect(page.GetByTestId("card.maint.btnStartNow")).ToBeVisibleAsync();

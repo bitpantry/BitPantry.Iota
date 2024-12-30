@@ -35,7 +35,7 @@ namespace BitPantry.Iota.Web.Controllers
             if (card == null)
                 return NotFound();
 
-            return View(card.ToModel());
+            return View(card.ToMaintenanceModel(_currentUser.WorkflowType));
         }
 
         public async Task<IActionResult> New(string address, long bibleId)
@@ -106,18 +106,41 @@ namespace BitPantry.Iota.Web.Controllers
         {
             await _workflowSvc.MoveCard(id, Tab.Queue, false, HttpContext.RequestAborted);
 
+            var card = await _cardSvc.GetCard(id, HttpContext.RequestAborted);
             var cardCountInQueue = await _tabSvc.GetCardCountForTab(_currentUser.UserId, Tab.Queue, HttpContext.RequestAborted);
 
-            if (cardCountInQueue == 1)
-                return Route.RedirectTo<CollectionController>(c => c.Index(Tab.Queue));
-            else
+            var maintReferrer = Request.GetCardMaintenanceReferrer();
+
+            if (maintReferrer == CardMaintenanceReferrer.CardMaintenance)
                 return Route.RedirectTo<CardController>(c => c.Maintenance(id));
+            else
+                return Route.RedirectTo<CollectionController>(c => c.Index(card.Tab));
         }
 
         public async Task<IActionResult> StartNow(long id)
         {
+            if (_currentUser.WorkflowType != WorkflowType.Basic)
+                return Forbid();
+
             await _workflowSvc.StartQueueCard(id, HttpContext.RequestAborted);
             return Route.RedirectTo<ReviewController>(c => c.Index());
+        }
+
+        public async Task<IActionResult> MoveToDailyTab(long id)
+        {
+            if (_currentUser.WorkflowType != WorkflowType.Advanced)
+                return Forbid();
+
+            await _workflowSvc.MoveCard(id, Tab.Daily, false, HttpContext.RequestAborted);
+
+            var cardCountInDaily = await _tabSvc.GetCardCountForTab(_currentUser.UserId, Tab.Daily, HttpContext.RequestAborted);
+
+            var maintReferrer = Request.GetCardMaintenanceReferrer();
+            
+            if(maintReferrer == CardMaintenanceReferrer.CardMaintenance)
+                return Route.RedirectTo<CardController>(c => c.Maintenance(id));
+            else 
+                return Route.RedirectTo<CollectionController>(c => c.Index(Tab.Queue));
         }
 
         [HttpPost]
