@@ -4,6 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using BitPantry.Iota.Infrastructure.Caching;
 using Microsoft.Data.SqlClient;
+using Thinktecture.EntityFrameworkCore;
+using Thinktecture;
 
 namespace BitPantry.Iota.Infrastructure.IoC
 {
@@ -21,7 +23,10 @@ namespace BitPantry.Iota.Infrastructure.IoC
         {
             // entity framework
 
-            services.AddDbContextPool<EntityDataContext>(o => o.UseSqlServer(settings.ConnectionStrings.EntityDataContext));
+            services.AddDbContextPool<EntityDataContext>(o =>
+            {
+                o.UseSqlServer(settings.ConnectionStrings.EntityDataContext, ssOpts => { ssOpts.AddWindowFunctionsSupport(); });
+            });
 
             // components
 

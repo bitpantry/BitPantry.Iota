@@ -331,7 +331,7 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
 
                 resp.Card.ReviewCount.Should().Be(0);
 
-                await svc.MarkAsReviewed(userId, resp.Card.Tab, resp.Card.Order);
+                await svc.MarkAsReviewed(userId, resp.Card.Tab, resp.Card.RowNumber);
 
                 var card = await svc.GetCard(resp.Card.Id);
 

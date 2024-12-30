@@ -4,6 +4,7 @@ using BitPantry.Iota.Data.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BitPantry.Iota.Data.Entity.Migrations
 {
     [DbContext(typeof(EntityDataContext))]
-    partial class EntityDataContextModelSnapshot : ModelSnapshot
+    [Migration("20241229224541_replacedCardOrderWithFractionalOrder")]
+    partial class replacedCardOrderWithFractionalOrder
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -176,24 +179,6 @@ namespace BitPantry.Iota.Data.Entity.Migrations
                     b.ToTable("DataProtectionKeys");
                 });
 
-            modelBuilder.Entity("BitPantry.Iota.Data.Entity.NumberedCard", b =>
-                {
-                    b.Property<long>("CardId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("RowNumber")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("CardId", "RowNumber");
-
-                    b.HasIndex("CardId")
-                        .IsUnique();
-
-                    b.ToTable((string)null);
-
-                    b.ToView("NumberedCardView", (string)null);
-                });
-
             modelBuilder.Entity("BitPantry.Iota.Data.Entity.Testament", b =>
                 {
                     b.Property<long>("Id")
@@ -320,17 +305,6 @@ namespace BitPantry.Iota.Data.Entity.Migrations
                     b.Navigation("Book");
                 });
 
-            modelBuilder.Entity("BitPantry.Iota.Data.Entity.NumberedCard", b =>
-                {
-                    b.HasOne("BitPantry.Iota.Data.Entity.Card", "Card")
-                        .WithOne("NumberedCard")
-                        .HasForeignKey("BitPantry.Iota.Data.Entity.NumberedCard", "CardId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Card");
-                });
-
             modelBuilder.Entity("BitPantry.Iota.Data.Entity.Testament", b =>
                 {
                     b.HasOne("BitPantry.Iota.Data.Entity.Bible", "Bible")
@@ -361,11 +335,6 @@ namespace BitPantry.Iota.Data.Entity.Migrations
             modelBuilder.Entity("BitPantry.Iota.Data.Entity.Book", b =>
                 {
                     b.Navigation("Chapters");
-                });
-
-            modelBuilder.Entity("BitPantry.Iota.Data.Entity.Card", b =>
-                {
-                    b.Navigation("NumberedCard");
                 });
 
             modelBuilder.Entity("BitPantry.Iota.Data.Entity.Chapter", b =>

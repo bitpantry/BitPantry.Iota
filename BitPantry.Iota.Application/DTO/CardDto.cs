@@ -11,7 +11,7 @@ namespace BitPantry.Iota.Application.DTO
         public DateTime LastMovedOn { get; }
         public DateTime? LastReviewedOn { get; }
         public Tab Tab { get; }
-        public int Order { get; }
+        public long RowNumber { get; }
         public int ReviewCount { get; }
         public PassageDto Passage { get; }
 
@@ -22,7 +22,7 @@ namespace BitPantry.Iota.Application.DTO
             DateTime lastMovedOn, 
             DateTime? lastReviewedOn, 
             Tab tab, 
-            int order,
+            long rowNumber,
             int reviewCount,
             List<Verse> verses = null)
         {
@@ -33,7 +33,7 @@ namespace BitPantry.Iota.Application.DTO
             LastReviewedOn = lastReviewedOn;
             Tab = tab;
             ReviewCount = reviewCount;
-            Order = order;
+            RowNumber = rowNumber;
 
             if (verses != null)
                 Passage = verses.ToPassageDto();

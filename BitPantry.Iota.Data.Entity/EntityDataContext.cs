@@ -22,6 +22,7 @@ namespace BitPantry.Iota.Data.Entity
             VerseMapping.OnModelCreating(modelBuilder);
 
             CardMapping.OnModelCreating(modelBuilder);
+            NumberedCardMapping.OnModelCreating(modelBuilder);
 
         }
 
@@ -35,6 +36,7 @@ namespace BitPantry.Iota.Data.Entity
         public DbSet<Verse> Verses { get; set; }
 
         public DbSet<Card> Cards { get; set; }
+        public DbSet<NumberedCard> NumberedCards { get; set; }
 
     }
 

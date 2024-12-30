@@ -22,6 +22,7 @@ namespace BitPantry.Iota.Data.Entity
         public long EndVerseId { get; set; }
         public Tab Tab { get; set; }
         public int ReviewCount { get; set; }
-        public double Order { get; set; }
+        public double FractionalOrder { get; set; }
+        public NumberedCard NumberedCard { get; set; }
     }
 }

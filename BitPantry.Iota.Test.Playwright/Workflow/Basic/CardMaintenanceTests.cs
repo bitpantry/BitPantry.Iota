@@ -112,7 +112,7 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Basic
                 dailyCardList.Should().HaveCount(1);
                 dailyCardList.Single().Id.Should().Be(queueCard.Id);
 
-                var queueCardList = await dbCtx.Cards.AsNoTracking().Where(c => c.UserId == userId && c.Tab == Tab.Queue).ToListAsync();
+                var queueCardList = await dbCtx.Cards.Where(c => c.UserId == userId && c.Tab == Tab.Queue).ToListAsync();
 
                 if (isDailyCard)
                     queueCardList.Should().HaveCount(queueCardCount);
@@ -120,13 +120,13 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Basic
                     queueCardList.Should().HaveCount(queueCardCount - 1);
 
                 if(isDailyCard)
-                    queueCardList.OrderBy(c => c.Order).First().Id.Should().Be(dailyCard.Card.Id);
+                    queueCardList.OrderBy(c => c.FractionalOrder).First().Id.Should().Be(dailyCard.Card.Id);
 
-                var ord = 0;
-                foreach (var item in queueCardList.OrderBy(c => c.Order))
+                var rowNum = 0L;
+                foreach (var item in queueCardList.OrderBy(c => c.FractionalOrder))
                 {
-                    ord.Should().Be(item.Order - 1);
-                    ord = item.Order;
+                    rowNum.Should().Be(item.NumberedCard.RowNumber - 1);
+                    rowNum = item.NumberedCard.RowNumber;
                 }
             }
 

@@ -19,7 +19,6 @@ namespace BitPantry.Iota.Application.IoC
             services.AddScoped<DataProtectionService>();
             services.AddScoped<IdentityService>();
             services.AddScoped<TabsService>();
-            services.AddScoped<ArchiveService>();
             services.AddScoped<CardPromotionLogic>();
             services.AddScoped<UserService>();
 

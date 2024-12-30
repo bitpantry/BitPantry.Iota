@@ -187,16 +187,16 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
 
                 await svc.DeleteCard(cardToDelete.Id, CancellationToken.None);
 
-                var cards = dbCtx.Cards.AsNoTracking().Where(c => c.UserId == userId && c.Tab == Common.Tab.Queue);
+                var cards = dbCtx.Cards.Where(c => c.UserId == userId && c.Tab == Common.Tab.Queue);
 
                 cards.Count().Should().Be(cardDtos.Count - 1);
                 cards.Where(c => c.Id == cardToDelete.Id).FirstOrDefault().Should().BeNull();
 
-                var ord = 0;
+                var rowNum = 0;
                 foreach (var card in cards)
                 {
-                    ord++;
-                    card.Order.Should().Be(ord);
+                    rowNum++;
+                    card.NumberedCard.RowNumber.Should().Be(rowNum);
                 }
             }
         }

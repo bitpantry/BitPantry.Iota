@@ -14,8 +14,6 @@ namespace BitPantry.Iota.Web
 {
     public class Program
     {
-        private static AppSettings _settings = null;
-
         public static void Main(string[] args)
         {
             var app = IotaWebBootstrap.BuildIotaWebApp(null, args, null);

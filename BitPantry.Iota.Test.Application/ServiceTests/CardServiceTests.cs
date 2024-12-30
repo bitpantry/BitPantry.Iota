@@ -43,7 +43,7 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
                 resp.Card.AddedOn.Date.Should().Be(DateTime.UtcNow.Date);
                 resp.Card.LastMovedOn.Date.Should().Be(DateTime.UtcNow.Date);
                 resp.Card.LastReviewedOn.Should().BeNull();
-                resp.Card.Order.Should().BeGreaterThan(0);
+                resp.Card.RowNumber.Should().BeGreaterThan(0);
             }
         }
 
@@ -107,13 +107,13 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
             {
                 var svc = scope.ServiceProvider.GetRequiredService<CardService>();
 
-                var resp1 = await svc.CreateCard(userId, _bibleId, "gen 12:1", Common.Tab.Queue, null, CancellationToken.None);
-                var resp2 = await svc.CreateCard(userId, _bibleId, "gen 12:2", Common.Tab.Queue, null, CancellationToken.None);
-                var resp3 = await svc.CreateCard(userId, _bibleId, "gen 12:3", Common.Tab.Queue, null, CancellationToken.None);
+                var resp1 = await svc.CreateCard(userId, _bibleId, "gen 12:1", Common.Tab.Queue, CancellationToken.None);
+                var resp2 = await svc.CreateCard(userId, _bibleId, "gen 12:2", Common.Tab.Queue, CancellationToken.None);
+                var resp3 = await svc.CreateCard(userId, _bibleId, "gen 12:3", Common.Tab.Queue, CancellationToken.None);
 
-                resp1.Card.Order.Should().Be(1);
-                resp2.Card.Order.Should().Be(2);
-                resp3.Card.Order.Should().Be(3);
+                resp1.Card.RowNumber.Should().Be(1);
+                resp2.Card.RowNumber.Should().Be(2);
+                resp3.Card.RowNumber.Should().Be(3);
             }
         }
 
@@ -149,41 +149,6 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
 
                 resp = await svc.CreateCard(userId, _bibleId, "jn 3:16", CancellationToken.None);
                 resp.Result.Should().Be(CreateCardResponseResult.CardAlreadyExists);
-            }
-        }
-
-        [Fact]
-        public async Task CreateCardWithOrder_CardCreated()
-        {
-            var userId = await _env.CreateUser();
-
-            using (var scope = _env.ServiceProvider.CreateScope())
-            {
-                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
-
-                var resp = await svc.CreateCard(userId, _bibleId, "rev 1:1", Common.Tab.Day10, 1, CancellationToken.None);
-                resp.Result.Should().Be(CreateCardResponseResult.Ok);
-
-                var card = await svc.GetCard(resp.Card.Id, CancellationToken.None);
-
-                card.Order.Should().Be(1);
-            }
-        }
-
-        [Fact]
-        public async Task CreateCardsWithDuplicateOrder_InvalidOperationException()
-        {
-            var userId = await _env.CreateUser();
-
-            using (var scope = _env.ServiceProvider.CreateScope())
-            {
-                var svc = scope.ServiceProvider.GetRequiredService<CardService>();
-
-                var resp1 = await svc.CreateCard(userId, _bibleId, "rev 1:2", Common.Tab.Day10, 1, CancellationToken.None);
-                resp1.Result.Should().Be(CreateCardResponseResult.Ok);
-
-                var act = async () => await svc.CreateCard(userId, _bibleId, "rev 1:3", Common.Tab.Day10, 1, CancellationToken.None);
-                await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("Order 1 is already taken");                
             }
         }
 
@@ -266,7 +231,7 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
                 resp.Card.ReviewCount.Should().Be(0);
                 resp.Card.LastReviewedOn.Should().Be(null);
 
-                await svc.MarkAsReviewed(userId, resp.Card.Tab, resp.Card.Order, CancellationToken.None);
+                await svc.MarkAsReviewed(userId, resp.Card.Tab, resp.Card.RowNumber, CancellationToken.None);
 
                 var card = await svc.GetCard(resp.Card.Id, CancellationToken.None);
 
@@ -277,15 +242,15 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
         }
 
         [Theory]
-        [InlineData(1, 2)]
-        [InlineData(null, 1)]
-        [InlineData(1, null)]
-        [InlineData(2, 1)]
-        [InlineData(3, 6)]
-        [InlineData(6, 1)]
+        [InlineData(1L, 2L)]
+        [InlineData(null, 1L)]
+        [InlineData(1L, null)]
+        [InlineData(2L, 1L)]
+        [InlineData(3L, 6L)]
+        [InlineData(6L, 1L)]
         [InlineData(null, null)]
-        [InlineData(1, 1)]
-        public async Task ReorderCard_CardReorderedAndTabOrderUpdated(int? fromOrd, int? toOrd)
+        [InlineData(1L, 1L)]
+        public async Task ReorderCard_CardReorderedAndTabOrderUpdated(long? fromOrd, long? toOrd)
         {
             var userId = await _env.CreateUser();
             var cards = await _env.CreateCards(userId, _bibleId, CancellationToken.None);
@@ -293,12 +258,12 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
             cards = cards.Where(c => c.Tab == Common.Tab.Queue).ToList();
 
             if (!fromOrd.HasValue)
-                fromOrd = cards.Max(c => c.Order);
+                fromOrd = cards.Max(c => c.RowNumber);
 
             if (!toOrd.HasValue)
-                toOrd = cards.Max(c => c.Order);
+                toOrd = cards.Max(c => c.RowNumber);
 
-            var cardToReorder = cards.Single(c => c.Order == fromOrd.Value);
+            var cardToReorder = cards.Single(c => c.RowNumber == fromOrd.Value);
 
             using (var scope = _env.ServiceProvider.CreateScope())
             {
@@ -307,8 +272,8 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
 
                 await svc.ReorderCard(userId, Common.Tab.Queue, cardToReorder.Id, toOrd.Value, CancellationToken.None);
 
-                var reorderedCards = await dbCtx.Cards.Where(c => c.UserId == userId && c.Tab == Common.Tab.Queue).OrderBy(c => c.Order).ToListAsync(CancellationToken.None);
-                var updatedCard = reorderedCards.Single(c => c.Order == toOrd.Value);
+                var reorderedCards = await dbCtx.Cards.Where(c => c.UserId == userId && c.Tab == Common.Tab.Queue).OrderBy(c => c.NumberedCard.RowNumber).ToListAsync(CancellationToken.None);
+                var updatedCard = reorderedCards.Single(c => c.NumberedCard.RowNumber == toOrd.Value);
 
                 updatedCard.Id.Should().Be(cardToReorder.Id);
 
@@ -316,7 +281,7 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
                 foreach (var card in reorderedCards)
                 {
                     ord++;
-                    card.Order.Should().Be(ord);
+                    card.NumberedCard.RowNumber.Should().Be(ord);
                 }
             }
         }

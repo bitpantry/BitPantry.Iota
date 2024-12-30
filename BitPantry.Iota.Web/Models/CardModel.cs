@@ -11,7 +11,7 @@ namespace BitPantry.Iota.Web.Models
         DateTime? LastReviewedOn,
         Tab Tab,
         int ReviewCount,
-        int Order = 0,
+        long RowNumber = 0,
         PassageModel Passage = null)
     {
 

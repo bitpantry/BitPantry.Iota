@@ -59,14 +59,16 @@ namespace BitPantry.Iota.Data.Entity.Mapping
                 .HasDefaultValue(0);
 
             modelBuilder.Entity<Card>()
-                .Property(c => c.Order)
+                .Property(c => c.FractionalOrder)
                 .IsRequired();
 
             modelBuilder.Entity<Card>()
-                .HasIndex(c => new { c.UserId, c.Tab, c.Order })
+                .Navigation(c => c.NumberedCard)
+                .AutoInclude();
+
+            modelBuilder.Entity<Card>()
+                .HasIndex(c => new { c.UserId, c.Tab, c.FractionalOrder })
                 .HasDatabaseName("IX_Cards_UserId_Tab_Order");
-
-
 
         }
     }

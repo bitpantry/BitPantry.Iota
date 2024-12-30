@@ -158,23 +158,23 @@ namespace BitPantry.Iota.Test.Playwright.Common
                 await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:3", Iota.Common.Tab.Queue);
                 await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:4", Iota.Common.Tab.Queue);
 
-                var cards = await dbCtx.Cards.AsNoTracking().Where(c => c.UserId == userId).OrderBy(c => c.Order).ToListAsync();
+                var cards = await dbCtx.Cards.AsNoTracking().Where(c => c.UserId == userId).OrderBy(c => c.NumberedCard.RowNumber).ToListAsync();
 
                 var reorderAction = async (Card from, Card to) =>
                 {
                     await Page.GetByTestId($"collection.cardListItemHandle_{from.Id}").DragToAsync(Page.GetByTestId($"collection.cardListItemHandle_{to.Id}"));
                     await Page.WaitForTimeoutAsync(500);
 
-                    cards = await dbCtx.Cards.AsNoTracking().Where(c => c.UserId == userId).OrderBy(c => c.Order).ToListAsync();
+                    cards = await dbCtx.Cards.AsNoTracking().Where(c => c.UserId == userId).OrderBy(c => c.NumberedCard.RowNumber).ToListAsync();
 
                     var reorderedCard = cards.Single(c => c.Id == from.Id);
-                    reorderedCard.Order.Should().Be(to.Order);
+                    reorderedCard.NumberedCard.RowNumber.Should().Be(to.NumberedCard.RowNumber);
 
-                    var orderCheck = 0;
+                    var rowNum = 0L;
                     foreach (var card in cards)
                     {
-                        orderCheck.Should().BeLessThan(card.Order);
-                        orderCheck = card.Order;
+                        rowNum.Should().BeLessThan(card.NumberedCard.RowNumber);
+                        rowNum = card.NumberedCard.RowNumber;
                     }
 
                     await Page.ReloadAsync();

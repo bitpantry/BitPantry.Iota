@@ -1,5 +1,6 @@
 ﻿using BitPantry.Iota.Application.DTO;
 using BitPantry.Iota.Web.Models;
+using Humanizer;
 
 namespace BitPantry.Iota.Web
 {
@@ -13,7 +14,7 @@ namespace BitPantry.Iota.Web
                     dto.LastReviewedOn,
                     dto.Tab,
                     dto.ReviewCount,
-                    dto.Order,
+                    dto.RowNumber,
                     dto.Passage?.ToModel());
     }
 }

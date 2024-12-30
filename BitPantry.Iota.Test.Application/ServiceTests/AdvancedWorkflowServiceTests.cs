@@ -5,6 +5,7 @@ using BitPantry.Iota.Test.Application.Fixtures;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using BitPantry.Iota.Application;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -70,7 +71,7 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
         [InlineData(Tab.Day10, 10, Tab.Daily, 0, 10, false)] // bottom day 10 card to empty daily tab
         [InlineData(Tab.Day10, 10, Tab.Daily, 3, 10, false)] // bottom day 10 card to bottom of daily tab with 3
         [InlineData(Tab.Queue, 3, Tab.Odd, 2, 2, false)] // second in queue to bottom of odd tab with 2
-        public async Task MoveCard_CardMoved(Tab fromTab, int numCardsInFromTab, Tab toTab, int numCardsInToTab, int ord, bool toTop)
+        public async Task MoveCard_CardMoved(Tab fromTab, int numCardsInFromTab, Tab toTab, int numCardsInToTab, int moveFromRowNum, bool toTop)
         {
             var userId = await _env.CreateUser();
 
@@ -88,7 +89,7 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
                 for (int i = 1; i <= numCardsInToTab; i++)
                     await svc.CreateCard(userId, _bibleId, $"rom 2:{i}", toTab);
 
-                var cardToMove = await svc.GetCard(userId, fromTab, ord);
+                var cardToMove = await svc.GetCard(userId, fromTab, moveFromRowNum);
 
                 await wfSvc.MoveCard(cardToMove.Id, toTab, toTop, CancellationToken.None);
 
@@ -96,19 +97,19 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
 
                 cardToMove.Tab.Should().Be(toTab);
                 if (toTop)
-                    cardToMove.Order.Should().Be(1);
+                    cardToMove.RowNumber.Should().Be(1);
                 else
-                    cardToMove.Order.Should().Be(numCardsInToTab + 1);
+                    cardToMove.RowNumber.Should().Be(numCardsInToTab + 1);
 
                 var validateOrderAction = (Tab tab, long userId) =>
                 {
-                    var cards = dbCtx.Cards.AsNoTracking().Where(c => c.Tab == fromTab && c.UserId == userId).OrderBy(c => c.Order);
+                    var cards = dbCtx.Cards.Where(c => c.Tab == fromTab && c.UserId == userId).OrderBy(c => c.FractionalOrder);
 
-                    var ord = 0;
+                    var rowNum = 0L;
                     foreach (var item in cards)
                     {
-                        item.Order.Should().Be(ord + 1);
-                        ord = item.Order;
+                        item.NumberedCard.RowNumber.Should().Be(rowNum + 1);
+                        rowNum = item.NumberedCard.RowNumber;
                     }
                 };
 
@@ -325,7 +326,7 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
 
                 resp.Card.ReviewCount.Should().Be(0);
 
-                await svc.MarkAsReviewed(userId, resp.Card.Tab, resp.Card.Order);
+                await svc.MarkAsReviewed(userId, resp.Card.Tab, resp.Card.RowNumber);
                 
                 var card = await svc.GetCard(resp.Card.Id);
 
