@@ -3,7 +3,9 @@ using BitPantry.Iota.Application.DTO;
 using BitPantry.Iota.Application.Parsers;
 using BitPantry.Iota.Application.Service;
 using BitPantry.Iota.Common;
+using BitPantry.Iota.Data.Entity;
 using BitPantry.Iota.Web.Models;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
@@ -68,6 +70,20 @@ namespace BitPantry.Iota.Web.Controllers
             });
         }
 
+        public async Task<IActionResult> Move(long id, Tab toTab)
+        {
+            var card = await _cardSvc.GetCard(id);
+
+            await _workflowSvc.MoveCard(id, toTab, false, HttpContext.RequestAborted);
+          
+            var maintReferrer = Request.GetCardMaintenanceReferrer();
+
+            if (maintReferrer == CardMaintenanceReferrer.CardMaintenance)
+                return Route.RedirectTo<CardController>(c => c.Maintenance(id));
+            else
+                return Route.RedirectTo<CollectionController>(c => c.Index(card.Tab));
+        }
+
         public async Task<IActionResult> Create(string address, long bibleId)
         {
             var resp = _currentUser.WorkflowType == WorkflowType.Basic
@@ -98,7 +114,6 @@ namespace BitPantry.Iota.Web.Controllers
             var card = await _cardSvc.GetCard(id, HttpContext.RequestAborted);
             await _workflowSvc.DeleteCard(id, HttpContext.RequestAborted);
 
-            var referer = Request.Headers.Referer.ToString();
             return Route.RedirectTo<CollectionController>(c => c.Index(card.Tab));
         }
 

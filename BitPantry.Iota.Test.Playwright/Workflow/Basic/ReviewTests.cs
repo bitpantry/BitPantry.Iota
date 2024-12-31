@@ -1,5 +1,6 @@
 ﻿using BitPantry.Iota.Application.Service;
 using BitPantry.Iota.Common;
+using BitPantry.Iota.Data.Entity;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Playwright;
@@ -57,7 +58,8 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Basic
         public async Task ProgressThroughReviewUsingNextButton_AllElementsRight(int day)
         {
             var userId = await Init();
-            await CommonReviewLogic.ProgressThroughReviewWithNextButton_AllElementsRight(Page, userId, day, EvaluateTabElements);
+            using(var scope = Fixture.Environment.ServiceProvider.CreateScope())
+                await CommonReviewLogic.ProgressThroughReviewWithNextButton_AllElementsRight(Page, scope, userId, day, EvaluateTabElements);
         }
 
         [DataTestMethod]
@@ -74,30 +76,6 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Basic
                 await CommonReviewLogic.ProgressThroughMultipleCardTabsWithNextButton_AllElementsRight(Page, scope, scope.ServiceProvider.GetRequiredService<AdvancedWorkflowService>(), userId, tab, EvaluateTabElements);
         }
 
-        [DataTestMethod]
-        [DataRow(Tab.Daily)]
-        [DataRow(Tab.Odd)]
-        [DataRow(Tab.Even)]
-        [DataRow(Tab.Sunday)]
-        [DataRow(Tab.Monday)]
-        [DataRow(Tab.Tuesday)]
-        [DataRow(Tab.Wednesday)]
-        [DataRow(Tab.Thursday)]
-        [DataRow(Tab.Friday)]
-        [DataRow(Tab.Saturday)]
-        [DataRow(Tab.Day1)]
-        [DataRow(Tab.Day2)]
-        [DataRow(Tab.Day3)]
-        [DataRow(Tab.Day4)]
-        [DataRow(Tab.Day5)]
-        public async Task SingleCardReview(Tab tab)
-        {
-            var userId = await Init();
-
-            using (var scope = Fixture.Environment.ServiceProvider.CreateScope())
-                await CommonReviewLogic.SingleCardReview_AllElementsRight(Page, scope, userId, tab, EvaluateTabElements);
-        }
-
         [TestMethod]
         public async Task DoneViewRestart_Restarted()
         {
@@ -109,7 +87,8 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Basic
         [TestMethod]
         public async Task DoneViewCreateCard_CreateCardView()
         {
-            long userId = await Init();
+            var userId = await Init();
+
             using (var scope = Fixture.Environment.ServiceProvider.CreateScope())
                 await CommonReviewLogic.DoneViewCreateCard_CreateCardView(Page, scope, userId);
         }
@@ -135,8 +114,73 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Basic
 
         }
 
-        private async Task EvaluateTabElements(IPage page, Tab tab, int expectedCardCount = 1)
+        [DataTestMethod]
+        [DataRow(1, 0)]
+        [DataRow(0, 0)]
+        [DataRow(0, 1)]
+        [DataRow(0, 3)]
+        public async Task ReviewNoDailyCard_AllElementsRight(int dailyCardCount, int queueCardCount)
         {
+            var userId = await Init();
+
+            using (var scope = Fixture.Environment.ServiceProvider.CreateScope())
+                await CommonReviewLogic.ReviewNoDailyCard_AllElementsRight(Page, scope, userId, dailyCardCount, queueCardCount, EvaluateTabElements);
+        }
+
+        [TestMethod]
+        public async Task ReviewNoDailyCardClickAddCards_CardNewView()
+        {
+            var userId = await Init();
+
+            using (var scope = Fixture.Environment.ServiceProvider.CreateScope())
+            {
+                var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
+
+                _ = await cardSvc.CreateCard(userId, Fixture.BibleId, $"rom 3:1", Tab.Odd);
+                _ = await cardSvc.CreateCard(userId, Fixture.BibleId, $"rom 3:2", Tab.Even);
+
+                await Page.GotoAsync(Fixture.Environment.GetUrlBuilder().Build("/review"));
+
+                await EvaluateTabElements(Page, scope, userId, Tab.Daily, 0);
+
+                await Page.GetByTestId("review.nodaily.btnCreateCards").ClickAsync();
+
+                await Page.WaitForURLAsync(Fixture.Environment.GetUrlBuilder().Build("Card/New"));
+            }
+        }
+
+        [TestMethod]
+        public async Task ReviewNoDailyCardClickPullQueue_QueueCardPulled()
+        {
+            var userId = await Init();
+
+            using (var scope = Fixture.Environment.ServiceProvider.CreateScope())
+            {
+                var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
+                var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
+
+                _ = await cardSvc.CreateCard(userId, Fixture.BibleId, $"rom 3:1", Tab.Odd);
+                _ = await cardSvc.CreateCard(userId, Fixture.BibleId, $"rom 3:2", Tab.Even);
+                var queueCardResp = await cardSvc.CreateCard(userId, Fixture.BibleId, $"rom 3:3", Tab.Queue);
+
+                await Page.GotoAsync(Fixture.Environment.GetUrlBuilder().Build("/review"));
+
+                await EvaluateTabElements(Page, scope, userId, Tab.Daily, 0);
+
+                await Page.GetByTestId("review.nodaily.btnNextQueueCard").ClickAsync();
+
+                await Page.WaitForURLAsync(Fixture.Environment.GetUrlBuilder().Build("/review/Daily/1"));
+
+                var queueCard = await cardSvc.GetCard(queueCardResp.Card.Id);
+                queueCard.Tab.Should().Be(Tab.Daily);
+            }
+        }
+
+        private async Task EvaluateTabElements(IPage page, IServiceScope scope, long userId, Tab tab, int expectedCardCount = 1)
+        {
+            var tabSvc = scope.ServiceProvider.GetRequiredService<TabsService>();
+            var queueCardCount = await tabSvc.GetCardCountForTab(userId, Tab.Queue);
+
             if (expectedCardCount > 0)
             {
                 if (tab == Tab.Daily)
@@ -168,6 +212,31 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Basic
                 await Expect(Page.GetByTestId("review.pnlReviewCountMsg")).ToHaveCountAsync(0);
                 await Expect(Page.GetByTestId("review.btnGotIt")).ToHaveCountAsync(0);
             }
+            else
+            {
+                await Expect(Page.GetByTestId("review.pnlNoCardsFound")).ToBeVisibleAsync();
+
+                if (tab == Tab.Daily)
+                {
+                    if (queueCardCount > 0)
+                    {
+                        await Expect(Page.GetByTestId("review.nodaily.pnlNextQueueCardMsg")).ToBeVisibleAsync();
+                        await Expect(Page.GetByTestId("review.nodaily.btnNextQueueCard")).ToBeVisibleAsync();
+                        await Expect(Page.GetByTestId("review.nodaily.pnlNoQueueCardMsg")).ToHaveCountAsync(0);
+                    }
+                    else
+                    {
+                        await Expect(Page.GetByTestId("review.nodaily.pnlNextQueueCardMsg")).ToHaveCountAsync(0);
+                        await Expect(Page.GetByTestId("review.nodaily.pnlNoQueueCardMsg")).ToBeVisibleAsync();
+                        await Expect(Page.GetByTestId("review.nodaily.btnNextQueueCard")).ToHaveCountAsync(0);
+                    }
+
+                    await Expect(Page.GetByTestId("review.nodaily.btnCreateCards")).ToBeVisibleAsync();
+                }
+            }
+
+            if (tab < Tab.Day1)
+                await Expect(Page.GetByTestId("review.btnNext")).ToBeVisibleAsync();
         }
 
         private async Task EvaluatePromoteDialog(IPage page)

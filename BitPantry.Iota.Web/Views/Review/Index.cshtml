@@ -140,41 +140,80 @@
             Promote this card to move it to the next tab.
         </div>
     }
-}
 
-<!-- Confirmation dialog markup -->
+    <!-- Confirmation dialog markup -->
 
-<div data-testid="review.diaConfirmPromote" id="promoteConfirmationModal" class="modal fade" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Are you sure?</h5>
-            </div>
-            <div data-testid="review.pnlPromoteConfirmDialogMsg" class="modal-body">
-                @if(Model.WorkflowType == WorkflowType.Basic && Model.CurrentTab == Tab.Daily)
-                {
-                    <p>@Model.Card.Address will be moved to the next tab and the top card from your queue will be moved to the Daily tab.</p>
-                }
-                else if(Model.WorkflowType == WorkflowType.Advanced && Model.CurrentTab < Tab.Day1)
-                {
-                    <p>@Model.Card.Address will be moved to the next tab.</p>
-                }
-            </div>
-            <div class="modal-footer">
-                <button data-testid="review.btnConfirmPromoteCancel" type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cancelPromote()">Cancel</button>
-                <a data-testid="review.btnConfirmPromote" asp-action="Promote" asp-controller="Review" asp-route-id="@Model.Card.Id" class="btn btn-primary">Promote</a>
+    <div data-testid="review.diaConfirmPromote" id="promoteConfirmationModal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Are you sure?</h5>
+                </div>
+                <div data-testid="review.pnlPromoteConfirmDialogMsg" class="modal-body">
+                    @if(Model.WorkflowType == WorkflowType.Basic && Model.CurrentTab == Tab.Daily)
+                    {
+                        <p>@Model.Card.Address will be moved to the next tab and the top card from your queue will be moved to the Daily tab.</p>
+                    }
+                    else if(Model.WorkflowType == WorkflowType.Advanced && Model.CurrentTab < Tab.Day1)
+                    {
+                        <p>@Model.Card.Address will be moved to the next tab.</p>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button data-testid="review.btnConfirmPromoteCancel" type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cancelPromote()">Cancel</button>
+                    <a data-testid="review.btnConfirmPromote" asp-action="Promote" asp-controller="Review" asp-route-id="@Model.Card.Id" class="btn btn-primary">Promote</a>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
 
-<script>
-    function confirmPromote() {
+    <script>
+        function confirmPromote() {
         $('#promoteConfirmationModal').modal('show');
-    }
+        }
 
-    function cancelPromote() {
+        function cancelPromote() {
         $('#promoteConfirmationModal').modal('hide');
+        }
+    </script>
+
+}
+else
+{
+    <div class="mt-4 display-6" data-testid="review.pnlNoCardsFound">No cards to review</div>
+    
+    @if(Model.CurrentTab == Tab.Daily)
+    {
+        @if (Model.QueueCardCount > 0)
+        {
+            <p data-testid="review.nodaily.pnlNextQueueCardMsg" class="mt-4">Press the <i>Get Next Card From Queue</i> button to start reviewing the top card from your queue now, or create new cards using the <i>Create Cards</i> button.</p>
+        }
+        else
+        {
+            <p data-testid="review.nodaily.pnlNoQueueCardMsg" class="mt-4">Create new cards using the <i>Create Cards</i> button.</p>
+        }
+        <div class="d-flex mt-4">
+            <div class="col-10 d-flex justify-content-start">
+                @if (Model.QueueCardCount > 0)
+                {
+                    <a data-testid="review.nodaily.btnNextQueueCard" data-testid="review.btnPullFromQueue" class="btn btn-secondary me-2" asp-action="GetNextQueueCard">Get Next Card From Queue</a>
+                }
+                <a data-testid="review.nodaily.btnCreateCards" class="btn btn-secondary" asp-controller="Card" asp-action="New">Create Cards</a>
+            </div>
+            <div class="col d-flex justify-content-end">
+                <a data-testid="review.btnNext" class="btn btn-primary" href="@Model.NextUrl">Next</a>
+            </div>
+        </div>
     }
-</script>
+    else
+    {
+        <p data-testid="review.nodaily.pnlNoCardMsg" class="mt-4">Promote cards </p>
+
+        <div class="d-flex mt-4">
+            <div class="col d-flex justify-content-end">
+                <a data-testid="review.btnNext" class="btn btn-primary" href="@Model.NextUrl">Next</a>
+            </div>
+        </div>
+    }
+}

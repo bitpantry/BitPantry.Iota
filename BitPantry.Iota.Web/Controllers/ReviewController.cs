@@ -11,13 +11,15 @@ namespace BitPantry.Iota.Web.Controllers
     public class ReviewController : Controller
     {
         private readonly CardService _cardSvc;
+        private readonly TabsService _tabSvc;
         private readonly IWorkflowService _workflowSvc;
         private readonly CurrentUser _currentUser;
         private ILogger<ReviewController> _logger;
 
-        public ReviewController(CardService cardSvc, IWorkflowService workflowSvc, CurrentUser currentUser, ILogger<ReviewController> logger)
+        public ReviewController(CardService cardSvc, TabsService tabSvc, IWorkflowService workflowSvc, CurrentUser currentUser, ILogger<ReviewController> logger)
         {
             _cardSvc = cardSvc;
+            _tabSvc = tabSvc;
             _workflowSvc = workflowSvc;
             _currentUser = currentUser;
             _logger = logger;
@@ -26,12 +28,6 @@ namespace BitPantry.Iota.Web.Controllers
         public async Task<IActionResult> Index()
         {
             var path = await _workflowSvc.GetReviewPath(_currentUser.UserId, _currentUser.CurrentUserLocalTime, HttpContext.RequestAborted);
-
-            if (!path.Path.Any(p => p.Value > 0))
-                return Route.RedirectTo<ReviewController>(c => c.NoCards());
-
-            // get next review step
-
             return Route.RedirectTo<ReviewController>(c => c.Index(path.Path.First().Key, 1));
         }
 
@@ -51,6 +47,8 @@ namespace BitPantry.Iota.Web.Controllers
 
             var card = await _cardSvc.GetCard(_currentUser.UserId, tab, ord, HttpContext.RequestAborted);
 
+            // build the next button url
+
             var helper = new ReviewPathHelper(path.Path);
             var nextStep = helper.GetNextStep(tab, ord);
 
@@ -58,12 +56,20 @@ namespace BitPantry.Iota.Web.Controllers
                 ? Url.Action<ReviewController>(c => c.Done())
                 : Url.Action<ReviewController>(c => c.Index(nextStep.Value.Key, nextStep.Value.Value));
 
-            return View(nameof(Index), new ReviewModel(path.Path, tab, ord, card.ToModel(), nextUrl, _currentUser.WorkflowType));
+            // if on daily tab, evaluate if should show bring up from queue button
+
+            var queueCardCount = await _tabSvc.GetCardCountForTab(_currentUser.UserId, Tab.Queue, HttpContext.RequestAborted);
+
+            // return
+
+            return View(nameof(Index), new ReviewModel(path.Path, tab, ord, card?.ToModel(), nextUrl, _currentUser.WorkflowType, queueCardCount));
         }
 
         [Route("review/promote/{id:long}")]
         public async Task<IActionResult> Promote(long id)
         {
+            var card = await _cardSvc.GetCard(id);
+
             // promote the daily card
 
             await _workflowSvc.PromoteCard(id, HttpContext.RequestAborted);
@@ -71,11 +77,22 @@ namespace BitPantry.Iota.Web.Controllers
             // go to next step in review
 
             var path = await _workflowSvc.GetReviewPath(_currentUser.UserId, _currentUser.CurrentUserLocalTime, HttpContext.RequestAborted);
+            var pathHelper = new ReviewPathHelper(path.Path);
 
-            if (!path.Path.Any(p => p.Value > 0))
-                return Route.RedirectTo<ReviewController>(c => c.NoCards());
+            var nextStep = pathHelper.GetNextStep(card.Tab, (int) card.RowNumber - 1);
 
-            return Route.RedirectTo<ReviewController>(c => c.Index(path.Path.First().Key, 1));
+            if(nextStep == null)
+                return Route.RedirectTo<ReviewController>(c => c.Done());
+            else
+                return Route.RedirectTo<ReviewController>(c => c.Index(nextStep.Value.Key, nextStep.Value.Value));
+        }
+
+        public async Task<IActionResult> GetNextQueueCard()
+        {
+            var queueCard = await _cardSvc.GetNextQueueCard(_currentUser.UserId, HttpContext.RequestAborted);
+            await _workflowSvc.MoveCard(queueCard.Id, Tab.Daily, true, HttpContext.RequestAborted);
+
+            return Route.RedirectTo<ReviewController>(r => r.Index());
         }
 
         [Route("review/gotit/{id:long}")]
@@ -103,10 +120,10 @@ namespace BitPantry.Iota.Web.Controllers
             return View(nameof(Done));
         }
 
-        public IActionResult NoCards()
-        {
-            return View(nameof(NoCards));
-        }
+        //public IActionResult NoCards()
+        //{
+        //    return View(nameof(NoCards));
+        //}
 
 
 

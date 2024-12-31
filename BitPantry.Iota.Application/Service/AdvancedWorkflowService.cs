@@ -80,7 +80,7 @@ namespace BitPantry.Iota.Application.Service
 
             return new ReviewPathDto(
                 userId,
-                new Dictionary<Tab, int>(path.Where(p => p.Value > 0)));
+                new Dictionary<Tab, int>(path));
         }
 
         public async Task MoveCard(long cardId, Tab toTab, bool toTop, CancellationToken cancellationToken)

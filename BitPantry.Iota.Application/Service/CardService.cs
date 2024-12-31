@@ -10,6 +10,7 @@ using System.Data.Common;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal;
 using System.ComponentModel;
+using System.Threading;
 
 namespace BitPantry.Iota.Application.Service
 {
@@ -353,6 +354,12 @@ namespace BitPantry.Iota.Application.Service
                         RowNumber = rowNumber
                     }, trans);
             });
+        }
+
+        public async Task<CardDto> GetNextQueueCard(long userId, CancellationToken cancellationToken)
+        {
+            var card = await _dbCtx.Cards.Where(c => c.UserId == userId && c.Tab == Tab.Queue).OrderBy(c => c.NumberedCard.RowNumber).FirstOrDefaultAsync(cancellationToken);
+            return await GetCard_INTERNAL(card, true, cancellationToken);
         }
     }
 

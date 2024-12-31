@@ -15,7 +15,7 @@ namespace BitPantry.Iota.Application.Service
             _dbCtx = dbCtx;
         }
 
-        public async Task<int> GetCardCountForTab(long userId, Tab tab, CancellationToken cancellationToken)
+        public async Task<int> GetCardCountForTab(long userId, Tab tab, CancellationToken cancellationToken = default)
             => await _dbCtx.Cards.CountAsync(c => c.UserId == userId && c.Tab == tab, cancellationToken);
 
         public async Task<List<CardDto>> GetCardsForTab(long userId, Tab tab, CancellationToken cancellationToken)

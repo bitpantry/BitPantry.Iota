@@ -108,6 +108,60 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Advanced
 
         }
 
+        [DataTestMethod]
+        [DataRow(Tab.Daily, 1, Tab.Queue, 0)]
+        [DataRow(Tab.Queue, 2, Tab.Day1, 1)]
+        [DataRow(Tab.Day1, 0, Tab.Sunday, 0)]
+        [DataRow(Tab.Monday, 3, Tab.Queue, 2)]
+        public async Task MoveCard_CardMoved(Tab fromTab, int fromCardCount, Tab toTab, int toCardCount)
+        {
+            var userId = await Init();
+
+            using (var scope = Fixture.Environment.ServiceProvider.CreateScope())
+            {
+                var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
+                var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
+
+                var cardToMoveResp = await cardSvc.CreateCard(userId, Fixture.BibleId, "rom 1:1", fromTab);
+
+                if(fromCardCount > 1)
+                {
+                    for (int i = 0; i < fromCardCount - 1; i++)
+                        _ = await cardSvc.CreateCard(userId, Fixture.BibleId, $"rom 2:{i}", fromTab);
+                }
+
+                for (int i = 0; i < toCardCount - 1; i++)
+                    _ = await cardSvc.CreateCard(userId, Fixture.BibleId, $"rom 3:{i}", toTab);
+
+                await Page.GotoAsync(Fixture.Environment.GetUrlBuilder().Build($"card/{cardToMoveResp.Card.Id}"));
+
+                await Page.GetByTestId("card.maint.btnMove").ClickAsync();
+
+                if(toTab > Tab.Even && toTab < Tab.Day1)
+                {
+                    await Page.GetByTestId("card.maint.move.weekTab").ClickAsync();
+                    await Page.GetByTestId($"card.maint.move.{toTab.ToString().ToLower()}Tab").ClickAsync();
+                }
+                else if(toTab > Tab.Saturday)
+                {
+                    await Page.GetByTestId("card.maint.move.dateTab").ClickAsync();
+                    await Page.GetByTestId($"card.maint.move.{toTab.ToString().ToLower()}Tab").ClickAsync();
+                }
+                else
+                {
+                    await Page.GetByTestId($"card.maint.move.{toTab.ToString().ToLower()}Tab").ClickAsync();
+                }
+
+                await Page.GetByTestId("card.maint.btnConfirmMove").ClickAsync();
+
+                await Page.WaitForURLAsync(Fixture.Environment.GetUrlBuilder().Build($"card/{cardToMoveResp.Card.Id}"));
+
+                var movedCard = await cardSvc.GetCard(cardToMoveResp.Card.Id);
+
+                movedCard.Tab.Should().Be(toTab);
+            }
+        }
+
         [TestMethod]
         public async Task NavigateDirectlyToStartNow_Forbidden()
         {
@@ -124,6 +178,8 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Advanced
             await Expect(page.GetByTestId("card.maint.btnClose")).ToBeVisibleAsync();
 
             await Expect(page.GetByTestId("card.maint.btnDelete")).ToBeVisibleAsync();
+
+            await Expect(page.GetByTestId("card.maint.btnMove")).ToBeVisibleAsync();
 
             if (address != null)
                 await Expect(page.GetByRole(AriaRole.Heading)).ToContainTextAsync(address);

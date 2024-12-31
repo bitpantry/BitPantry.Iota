@@ -148,7 +148,9 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Basic
 
             await Expect(page.GetByTestId("card.maint.btnClose")).ToBeVisibleAsync();
 
-            await Expect(page.GetByTestId("card.maint.btnDelete")).ToBeVisibleAsync();      
+            await Expect(page.GetByTestId("card.maint.btnDelete")).ToBeVisibleAsync();
+
+            await Expect(page.GetByTestId("card.maint.btnMove")).ToHaveCountAsync(0);
 
             if (address != null)
                 await Expect(page.GetByRole(AriaRole.Heading)).ToContainTextAsync(address);

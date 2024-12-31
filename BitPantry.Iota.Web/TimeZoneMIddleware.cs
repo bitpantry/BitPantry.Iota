@@ -27,8 +27,6 @@ namespace BitPantry.Iota.Web
             }
             else 
             {
-                _logger.LogDebug($"Time zone cookie not found - redirecting to {ADD_COOKIE_URL_PATH} to acquire cookie");
-
                 if (context.Request.Path.Equals(ADD_COOKIE_URL_PATH, StringComparison.InvariantCultureIgnoreCase))
                     await next(context);
                 else

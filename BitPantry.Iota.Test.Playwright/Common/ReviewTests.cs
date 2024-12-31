@@ -24,18 +24,12 @@ namespace BitPantry.Iota.Test.Playwright.Common
         }
 
         [TestMethod]
-        public async Task NoCardsStartReview_NoCardsView()
+        public async Task NoCardsStartReview_DailyReviewTab()
         {
-            _ = await Init();
+            var userId = await Init();
 
             await Page.GotoAsync(Fixture.Environment.GetUrlBuilder().Build("/review"));
-
-            await Expect(Page.GetByTestId("review.noCards.pnlNoCardsMessage")).ToHaveTextAsync("You don't have any cards to review");
-            await Expect(Page.GetByTestId("review.noCards.btnCreateCards")).ToBeVisibleAsync();
-
-            await Page.GetByTestId("review.noCards.btnCreateCards").ClickAsync();
-
-            Page.Url.Should().BeIgnoreCase(Fixture.Environment.GetUrlBuilder().Build("/card/new"));
+            await Page.WaitForURLAsync(Fixture.Environment.GetUrlBuilder().Build("review/Daily/1"));
         }
 
         [TestMethod]
@@ -52,7 +46,7 @@ namespace BitPantry.Iota.Test.Playwright.Common
             await Page.GotoAsync(Fixture.Environment.GetUrlBuilder().Build("/review"));
 
             await Expect(Page.GetByTestId("review.tabDaily")).ToBeVisibleAsync();
-            await Expect(Page.GetByTestId("review.tabs").GetByRole(AriaRole.Listitem)).ToHaveCountAsync(1);
+            await Expect(Page.GetByTestId("review.tabs").GetByRole(AriaRole.Listitem)).ToHaveCountAsync(4);
 
             await Expect(Page.GetByTestId("review.pnlSummary")).ToContainTextAsync("Reviewing 1 card today");
             await Expect(Page.GetByTestId("review.pnlAddress")).ToContainTextAsync("Romans 1:1 (ESV)");

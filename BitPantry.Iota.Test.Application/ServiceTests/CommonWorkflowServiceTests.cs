@@ -75,7 +75,7 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
                 var path = await wfSvc.GetReviewPath(userId, DateTime.Parse("12/1/2024"), CancellationToken.None);
 
                 path.UserId.Should().Be(userId);
-                path.Path.Count.Should().Be(3);
+                path.Path.Count.Should().Be(4);
 
                 path.Path.ToList()[0].Key.Should().Be(Tab.Daily);
                 path.Path.ToList()[0].Value.Should().Be(1);
@@ -83,8 +83,11 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
                 path.Path.ToList()[1].Key.Should().Be(Tab.Odd);
                 path.Path.ToList()[1].Value.Should().Be(1);
 
-                path.Path.ToList()[2].Key.Should().Be(Tab.Day1);
-                path.Path.ToList()[2].Value.Should().Be(2);
+                path.Path.ToList()[2].Key.Should().Be(Tab.Sunday);
+                path.Path.ToList()[2].Value.Should().Be(0);
+
+                path.Path.ToList()[3].Key.Should().Be(Tab.Day1);
+                path.Path.ToList()[3].Value.Should().Be(2);
             }
         }
 
@@ -160,7 +163,9 @@ namespace BitPantry.Iota.Test.Application.ServiceTests
                 var path = await wfSvc.GetReviewPath(userId, DateTime.Parse("12/1/2024"), CancellationToken.None);
 
                 path.UserId.Should().Be(userId);
-                path.Path.Count.Should().Be(0);
+                path.Path.Count.Should().Be(4);
+                foreach (var key in path.Path.Keys)
+                    path.Path[key].Should().Be(0);
             }
         }
 
