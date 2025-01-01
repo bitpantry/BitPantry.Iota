@@ -55,8 +55,6 @@ namespace BitPantry.Iota.Web
             if(settings.EnableTestInfrastructure)
                 app.UseMiddleware<TestInfrastructureMiddleware>();
 
-            app.UseMiddleware<TimeZoneMiddleware>();
-
             // Configure pipeline for environments
 
             if (app.Environment.IsProduction())
@@ -81,6 +79,8 @@ namespace BitPantry.Iota.Web
                 app.UseMiniProfiler();
 
             app.UseRouting();
+
+            app.UseMiddleware<TimeZoneMiddleware>();
 
             app.UseAuthorization();
 

@@ -356,12 +356,18 @@ namespace BitPantry.Iota.Application.Service
             });
         }
 
-        public async Task<CardDto> GetNextQueueCard(long userId, CancellationToken cancellationToken)
+        public async Task<CardDto> GetNextQueueCard(long userId, CancellationToken cancellationToken = default)
         {
             var card = await _dbCtx.Cards.Where(c => c.UserId == userId && c.Tab == Tab.Queue).OrderBy(c => c.NumberedCard.RowNumber).FirstOrDefaultAsync(cancellationToken);
             return await GetCard_INTERNAL(card, true, cancellationToken);
         }
-    }
 
-    
+        public async Task ResetReviewCount(long id, CancellationToken cancellationToken = default)
+        {
+            await _dbCtx.UseConnection(cancellationToken, async (conn, trans) =>
+            {
+                await conn.ExecuteAsync("UPDATE Cards SET ReviewCount = 0 WHERE Id = @Id", new { Id = id }, trans);
+            });
+        }
+    }
 }

@@ -217,6 +217,40 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Advanced
             }
         }
 
+        [DataTestMethod]
+        [DataRow(Tab.Daily, 1, 1)]
+        [DataRow(Tab.Tuesday, 3, 2, 3)]
+        [DataRow(Tab.Daily, 3, 2)]
+        public async Task ResetReviewCount_CountReset(Tab tab, int cardsInTab, int rowNumberToReset, int reviewCountStart = 1)
+        {
+            var userId = await Init();
+
+            using (var scope = Fixture.Environment.ServiceProvider.CreateScope())
+            {
+                var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
+                var dbCtx = scope.ServiceProvider.GetRequiredService<EntityDataContext>();
+
+                for (int i = 1; i <= cardsInTab; i++)
+                    _ = await cardSvc.CreateCard(userId, Fixture.BibleId, $"rom 1:{i}", tab);
+
+                var cardToReset = await cardSvc.GetCard(userId, tab, rowNumberToReset);
+
+                for (int i = 0; i < reviewCountStart; i++)
+                    await cardSvc.MarkAsReviewed(cardToReset.Id);
+
+                await Page.GotoAsync(Fixture.Environment.GetUrlBuilder().Build($"/review/{tab}/{rowNumberToReset}"));
+
+                await Expect(Page.GetByTestId("review.pnlReviewCountMsg")).ToHaveTextAsync(reviewCountStart.ToString());
+
+                await Page.GetByTestId("review.pnlReviewCountMsg").ClickAsync();
+                await Page.GetByTestId("review.btnConfirmResetReviewCount").ClickAsync();
+
+                await Page.WaitForURLAsync(Fixture.Environment.GetUrlBuilder().Build($"/review/{tab}/{rowNumberToReset}"));
+
+                await Expect(Page.GetByTestId("review.pnlReviewCountMsg")).ToHaveTextAsync("0");
+            }
+        }
+
         private async Task EvaluateTabElements(IPage page, IServiceScope scope, long userId, Tab tab, int expectedCardCount)
         {
             var tabSvc = scope.ServiceProvider.GetRequiredService<TabsService>();

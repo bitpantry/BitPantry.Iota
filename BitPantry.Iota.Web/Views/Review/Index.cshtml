@@ -86,7 +86,7 @@
             </div>
             @if (Model.WorkflowType == WorkflowType.Advanced && Model.CurrentTab < Tab.Day1)
             {
-                <div data-testid="review.pnlReviewCountMsg" class="d-flex flex-fill justify-content-end align-items-center me-3">
+                <div data-testid="review.pnlReviewCountMsg" onclick="confirmResetReviewCount()" style="cursor:pointer" class="d-flex flex-fill justify-content-end align-items-center me-3">
                     <span class="bg-light display-6 px-1 rounded">@Model.Card.ReviewCount</span>
                 </div>
             }
@@ -141,7 +141,7 @@
         </div>
     }
 
-    <!-- Confirmation dialog markup -->
+    <!-- Promotion Confirmation dialog markup -->
 
     <div data-testid="review.diaConfirmPromote" id="promoteConfirmationModal" class="modal fade" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
@@ -167,14 +167,41 @@
         </div>
     </div>
 
+    <!-- Reset Review Count Confirmation dialog markup -->
+
+    <div data-testid="review.diaConfirmResetReviewCount" id="diaConfirmResetReviewCount" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Are you sure?</h5>
+                </div>
+                <div data-testid="review.pnlConfirmResetDialogMessage" class="modal-body">
+                    The review count will be reset to zero.
+                </div>
+                <div class="modal-footer">
+                    <button data-testid="review.btnCancelResetReviewCount" type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cancelResetReviewCount()">Cancel</button>
+                    <a data-testid="review.btnConfirmResetReviewCount" asp-action="ResetReviewCount" asp-controller="Review" asp-route-id="@Model.Card.Id" class="btn btn-primary">Reset</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <script>
         function confirmPromote() {
-        $('#promoteConfirmationModal').modal('show');
+            $('#promoteConfirmationModal').modal('show');
         }
 
         function cancelPromote() {
-        $('#promoteConfirmationModal').modal('hide');
+            $('#promoteConfirmationModal').modal('hide');
+        }
+
+        function confirmResetReviewCount() {
+            $('#diaConfirmResetReviewCount').modal('show');
+        }
+
+        function cancelResetReviewCount() {
+            $('#diaConfirmResetReviewCount').modal('hide');
         }
     </script>
 
@@ -208,8 +235,6 @@ else
     }
     else
     {
-        <p data-testid="review.nodaily.pnlNoCardMsg" class="mt-4">Promote cards </p>
-
         <div class="d-flex mt-4">
             <div class="col d-flex justify-content-end">
                 <a data-testid="review.btnNext" class="btn btn-primary" href="@Model.NextUrl">Next</a>

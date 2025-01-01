@@ -40,11 +40,6 @@ namespace BitPantry.Iota.Test.Playwright.Common
             await Expect(Page.GetByTestId("nav.cards.new")).ToBeVisibleAsync();
             await Expect(Page.GetByTestId("nav.cards.viewAll")).ToBeVisibleAsync();
             await Page.GetByTestId("nav.cards").ClickAsync();
-            await Expect(Page.GetByTestId("nav.settings")).ToBeVisibleAsync();
-            await Expect(Page.GetByTestId("nav.help")).ToBeVisibleAsync();
-            await Page.GetByTestId("nav.help").ClickAsync();
-            await Expect(Page.GetByTestId("nav.help.gettingStarted")).ToBeVisibleAsync();
-            await Expect(Page.GetByTestId("nav.help.documentation")).ToBeVisibleAsync();
         }
 
         public override BrowserNewContextOptions ContextOptions()

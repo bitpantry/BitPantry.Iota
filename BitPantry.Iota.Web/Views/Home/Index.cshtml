@@ -23,5 +23,72 @@
         </div>
     }
 
+    <style>
+        .copy-link {
+            --height: 36px;
+            display: flex;
+            max-width: 350px;
+        }
+
+        .copy-link-input {
+            flex-grow: 1;
+            padding: 0 8px;
+            font-size: 14px;
+            border: 1px solid #cccccc;
+            border-right: none;
+            outline: none;
+        }
+
+            .copy-link-input:hover {
+                background: #eeeeee;
+            }
+
+        .copy-link-button {
+            flex-shrink: 0;
+            width: var(--height);
+            height: var(--height);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #dddddd;
+            color: #333333;
+            outline: none;
+            border: 1px solid #cccccc;
+            cursor: pointer;
+        }
+
+            .copy-link-button:hover {
+                background: #cccccc;
+            }
+
+    </style>
+
+@*     <p class="lead mt-5">Share Tabs with your friends - use the link below.</p>
+
+    <div class="copy-link">
+        <input type="text" disabled class="copy-link-input" value="www.tabsmemory.com" readonly>
+        <button type="button" class="copy-link-button">
+            <span class="material-icons">content_copy</span>
+        </button>
+    </div> *@
+
 </div>
+
+<script>
+        document.querySelectorAll(".copy-link").forEach((copyLinkParent) => {
+      const inputField = copyLinkParent.querySelector(".copy-link-input");
+      const copyButton = copyLinkParent.querySelector(".copy-link-button");
+      const text = inputField.value;
+
+      inputField.addEventListener("focus", () => inputField.select());
+
+      copyButton.addEventListener("click", () => {
+        inputField.select();
+        navigator.clipboard.writeText(text);
+
+        inputField.value = text;
+      });
+    });
+
+</script>
 

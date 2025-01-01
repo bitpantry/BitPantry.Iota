@@ -4,6 +4,7 @@ using BitPantry.Iota.Application.Service;
 using BitPantry.Iota.Common;
 using BitPantry.Iota.Web.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Diagnostics.Latency;
 using System.Security.Cryptography;
 
 namespace BitPantry.Iota.Web.Controllers
@@ -27,6 +28,8 @@ namespace BitPantry.Iota.Web.Controllers
 
         public async Task<IActionResult> Index()
         {
+            _logger.LogDebug("Starting review");
+
             var path = await _workflowSvc.GetReviewPath(_currentUser.UserId, _currentUser.CurrentUserLocalTime, HttpContext.RequestAborted);
             return Route.RedirectTo<ReviewController>(c => c.Index(path.Path.First().Key, 1));
         }
@@ -34,6 +37,8 @@ namespace BitPantry.Iota.Web.Controllers
         [Route("review/{tab:enum}/{ord:int?}")]
         public async Task<IActionResult> Index(Tab tab, int ord = 1)
         {
+            _logger.LogTrace("Reviewing card {Tab}:{RowNumber}", tab, ord);
+
             // redirect to first available card in path if card for given tab / order doesn't exist
 
             var path = await _workflowSvc.GetReviewPath(_currentUser.UserId, _currentUser.CurrentUserLocalTime, HttpContext.RequestAborted);
@@ -68,6 +73,8 @@ namespace BitPantry.Iota.Web.Controllers
         [Route("review/promote/{id:long}")]
         public async Task<IActionResult> Promote(long id)
         {
+            _logger.LogTrace("Promoting card card {CardId}", id);
+
             var card = await _cardSvc.GetCard(id);
 
             // promote the daily card
@@ -89,10 +96,20 @@ namespace BitPantry.Iota.Web.Controllers
 
         public async Task<IActionResult> GetNextQueueCard()
         {
+            _logger.LogTrace("Getting next queue card");
+
             var queueCard = await _cardSvc.GetNextQueueCard(_currentUser.UserId, HttpContext.RequestAborted);
             await _workflowSvc.MoveCard(queueCard.Id, Tab.Daily, true, HttpContext.RequestAborted);
 
             return Route.RedirectTo<ReviewController>(r => r.Index());
+        }
+
+        public async Task<IActionResult> ResetReviewCount(long id)
+        {
+            var card = await _cardSvc.GetCard(id, HttpContext.RequestAborted);
+            await _cardSvc.ResetReviewCount(id, HttpContext.RequestAborted);
+
+            return Route.RedirectTo<ReviewController>(r => r.Index(card.Tab, (int)card.RowNumber));
         }
 
         [Route("review/gotit/{id:long}")]

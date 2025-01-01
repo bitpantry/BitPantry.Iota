@@ -17,8 +17,6 @@ namespace BitPantry.Iota.Application.Service
 
         public async Task<long> SignInUser(string emailAddress, CancellationToken cancellationToken = default)
         {
-            _logger.LogDebug("User signing in :: {EmailAddress}", emailAddress);
-
             var user = await _dbCtx.Users
                 .Where(u => u.EmailAddress.ToUpper().Equals(emailAddress.ToUpper()))
                 .SingleOrDefaultAsync(cancellationToken);
@@ -27,7 +25,7 @@ namespace BitPantry.Iota.Application.Service
             {
                 _logger.LogDebug("Creating new user {EmailAddress}", emailAddress);
 
-                user = new User { EmailAddress = emailAddress };
+                user = new User { EmailAddress = emailAddress, WorkflowType = Common.WorkflowType.Advanced };
                 _dbCtx.Users.Add(user);
             }
 
@@ -36,6 +34,8 @@ namespace BitPantry.Iota.Application.Service
             await _dbCtx.SaveChangesAsync(cancellationToken);
 
             _dbCtx.ChangeTracker.Clear();
+
+            _logger.LogDebug("User signed in :: {EmailAddress}, {Id}", emailAddress, user.Id);
 
             return user.Id;
         }
