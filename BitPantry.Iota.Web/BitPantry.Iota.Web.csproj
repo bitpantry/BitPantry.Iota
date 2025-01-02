@@ -10,6 +10,7 @@
   <ItemGroup>
     <PackageReference Include="BitPantry.Parsing.Strings" Version="2.0.1.6" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="8.0.11" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="8.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0">
       <PrivateAssets>all</PrivateAssets>
@@ -29,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="appsettings.qa.json">
+    <Content Update="appsettings.prod.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="wwwroot\apple-touch-icon.png">
@@ -69,7 +70,7 @@
 
   <ItemGroup>
     <Folder Include="Properties\PublishProfiles\" />
-    <Folder Include="wwwroot\images\getstarted\" />
+    <Folder Include="wwwroot\images\docs\" />
   </ItemGroup>
 
 </Project>

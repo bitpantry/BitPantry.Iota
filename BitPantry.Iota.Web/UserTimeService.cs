@@ -29,7 +29,7 @@ namespace BitPantry.Iota.Web
             }
 
             // Find the user's time zone
-            TimeZoneInfo userTimeZone = TimeZoneInfo.FindSystemTimeZoneById(UserTimezone);
+            TimeZoneInfo userTimeZone = TimeZoneInfo.FindSystemTimeZoneById(UserTimezone ?? "utc");
 
             // Convert the UTC DateTime to the user's local time zone
             DateTime userLocalTime = TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, userTimeZone);

@@ -23,17 +23,26 @@ namespace BitPantry.Iota.Web.Controllers
             _userTimeSvc = userTimeSvc;
         }
 
+        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
-            var totalCardCount = await _cardSvc.GetCardCountForUser(_identity.UserId, HttpContext.RequestAborted);
-            var path = await _workflowSvc.GetReviewPath(_identity.UserId, _userTimeSvc.GetCurrentUserLocalTime(), HttpContext.RequestAborted);
+            if (HttpContext.User.Identity.IsAuthenticated)
+            {
 
-            return View(new HomeModel(
-                totalCardCount > 0,
-                path.CardsToReviewCount
-            ));
+                var totalCardCount = await _cardSvc.GetCardCountForUser(_identity.UserId, HttpContext.RequestAborted);
+                var path = await _workflowSvc.GetReviewPath(_identity.UserId, _userTimeSvc.GetCurrentUserLocalTime(), HttpContext.RequestAborted);
+
+                return View(new HomeModel(
+                    totalCardCount > 0,
+                    path.CardsToReviewCount
+                ));
+
+            }
+
+            return View(new HomeModel(false, 0));
         }
 
+        [AllowAnonymous]
         public IActionResult GetStarted()
         {
             return View();
@@ -56,6 +65,7 @@ namespace BitPantry.Iota.Web.Controllers
             return View(new { RedirectUrl =  redirectUrl });
         }
 
+        [AllowAnonymous]
         public IActionResult Documentation()
             => View(nameof(Documentation));
 

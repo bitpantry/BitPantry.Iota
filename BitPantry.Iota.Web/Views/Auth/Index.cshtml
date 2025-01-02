@@ -5,11 +5,23 @@
 }
 
 <div class="text-center">
-    <div class="display-6 mb-6 mt-5">Please Sign In</div>
-    <a asp-controller="Auth" asp-action="GoogleLogin" class="btn btn-outline-primary mt-5">
-        <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="currentColor" class="bi bi-google" viewBox="0 0 19 19">
-            <path d="M15.545 6.558a9.4 9.4 0 0 1 .139 1.626c0 2.434-.87 4.492-2.384 5.885h.002C11.978 15.292 10.158 16 8 16A8 8 0 1 1 8 0a7.7 7.7 0 0 1 5.352 2.082l-2.284 2.284A4.35 4.35 0 0 0 8 3.166c-2.087 0-3.86 1.408-4.492 3.304a4.8 4.8 0 0 0 0 3.063h.003c.635 1.893 2.405 3.301 4.492 3.301 1.078 0 2.004-.276 2.722-.764h-.003a3.7 3.7 0 0 0 1.599-2.431H8v-3.08z"></path>
-        </svg>
-        Sign in with Google
-    </a>
+    <div class="display-6 mb-6 my-5">Please Sign In</div>
+
+    <div class="align-middle">
+        <a asp-controller="Auth" asp-action="GoogleLogin" class="btn btn-primary" style="width: 250px">
+            <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="25" height="25" viewBox="0,0,256,256">
+                <g fill="#ffffff" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(8.53333,8.53333)"><path d="M15.00391,3c-6.629,0 -12.00391,5.373 -12.00391,12c0,6.627 5.37491,12 12.00391,12c10.01,0 12.26517,-9.293 11.32617,-14h-1.33008h-2.26758h-7.73242v4h7.73828c-0.88958,3.44825 -4.01233,6 -7.73828,6c-4.418,0 -8,-3.582 -8,-8c0,-4.418 3.582,-8 8,-8c2.009,0 3.83914,0.74575 5.24414,1.96875l2.8418,-2.83984c-2.134,-1.944 -4.96903,-3.12891 -8.08203,-3.12891z"></path></g></g>
+            </svg>
+            <span class="ms-1">Sign in with Google</span>
+        </a>
+    </div>
+
+    <div>
+        <a asp-controller="Auth" asp-action="MicrosoftLogin" class="btn btn-primary mt-3" style="width: 250px">
+            <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="25" height="25" viewBox="0,0,256,256">
+                <g fill="#ffffff" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(5.12,5.12)"><path d="M5,4c-0.552,0 -1,0.447 -1,1v19h20v-20zM26,4v20h20v-19c0,-0.553 -0.448,-1 -1,-1zM4,26v19c0,0.553 0.448,1 1,1h19v-20zM26,26v20h19c0.552,0 1,-0.447 1,-1v-19z"></path></g></g>
+            </svg>
+            <span class="ms-1">Sign in with Microsoft</span>
+        </a>
+    </div>
 </div>

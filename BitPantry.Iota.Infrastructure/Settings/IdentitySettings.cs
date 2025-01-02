@@ -9,11 +9,13 @@ namespace BitPantry.Iota.Infrastructure.Settings
 {
     public class IdentitySettings : AppSettingsBase
     {
-        public  GoogleClientSettings Google { get; }
+        public GoogleIdentitySettings Google { get; }
+        public MicrosoftIdentitySettings Microsoft { get; }
 
         public IdentitySettings(IConfiguration config) : base(config, "Identity") 
         {
-            Google = new GoogleClientSettings(config);
+            Google = new GoogleIdentitySettings(config);
+            Microsoft = new MicrosoftIdentitySettings(config);
         }
     }
 }

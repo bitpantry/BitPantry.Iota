@@ -11,15 +11,21 @@ namespace BitPantry.Iota.Web.IoC
     {
         public static IServiceCollection ConfigureWebIdentityServices(this IServiceCollection services, AppSettings settings)
         {
-            services.AddAuthentication(o => 
+            services.AddAuthentication(o =>
                 o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(opt => {
+                .AddCookie(opt =>
+                {
                     opt.LoginPath = "/auth";
                 })
                 .AddGoogle(GoogleDefaults.AuthenticationScheme, opt =>
                 {
                     opt.ClientId = settings.Identity.Google.ClientId;
                     opt.ClientSecret = settings.Identity.Google.ClientSecret;
+                })
+                .AddMicrosoftAccount(opt =>
+                {
+                    opt.ClientId = settings.Identity.Microsoft.ClientId;
+                    opt.ClientSecret = settings.Identity.Microsoft.ClientSecret;
                 });
 
             return services;

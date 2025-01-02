@@ -1,0 +1,50 @@
+﻿@model dynamic
+
+<!--
+
+    Expects a dynamic model containing
+
+        - string Key                A unique key that will prefix all unique names in this view to make it unique
+        - string Title              The title of the modal
+        - string PartialName        The name of the view to show in the modal
+
+-->
+
+<div id="contextDocsModal_@Model.Key" data-testid="docs.contextModal_@Model.Key" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@Model.Title</h5>
+            </div>
+            <div class="modal-body">
+                <partial name="@Model.PartialName" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-testid="docs.contextModal.btnClose_@Model.Key" class="btn btn-primary" data-dismiss="modal" onclick="closeContextDocsModal_@(Model.Key)()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+
+
+    function showContextDocsModal_@(Model.Key)() {
+        $('#contextDocsModal_@Model.Key').modal('show');
+    }
+
+    function closeContextDocsModal_@(Model.Key)() {
+        $('#contextDocsModal_@Model.Key').modal('hide');
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        var element = document.getElementById("contextHelpButton");
+
+        //alert("setting up icon showContextDocsModal_@Model.Key")
+
+        element.style.display = "inline";
+        element.onclick = showContextDocsModal_@Model.Key;
+    });
+
+</script>

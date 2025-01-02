@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace BitPantry.Iota.Infrastructure.Settings
 {
-    public class GoogleClientSettings : AppSettingsBase
+    public class MicrosoftIdentitySettings : AppSettingsBase
     {
-        public GoogleClientSettings(IConfiguration config) : base(config, "Identity:Google") { }
+        public MicrosoftIdentitySettings(IConfiguration config) : base(config, "Identity:Microsoft") { }
 
         public string ClientId => GetValue("ClientId");
         public string ClientSecret => GetValue("ClientSecret");

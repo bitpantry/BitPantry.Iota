@@ -15,7 +15,7 @@ namespace BitPantry.Iota.Console
     {
         static async Task Main(string[] args)
         {
-            var environment = args.Length > 0 ? args[0] : "Development";
+            var environment = args.Length > 0 ? args[0] : "local";
 
             var config = new ConfigurationBuilder()
                 .SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
