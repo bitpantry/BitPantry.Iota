@@ -1,0 +1,146 @@
+﻿@model HomeModel
+
+<div class="mt-4">
+
+    @if(Context.User.Identity.IsAuthenticated)
+    {
+        if(!Model.HasCards)
+        {
+            <div class="display-6 mt-5">
+                You haven't created any cards yet
+            </div>
+            <div class="d-inline-flex mt-4">
+                <a class="btn btn-success" asp-controller="Card" data-testid="home.index.createCardsTwo" asp-action="New">Create Cards</a>
+                <a class="btn btn-primary ms-3" asp-controller="Home" data-testid="home.index.readGettingStarted" asp-action="GetStarted">Read Getting Started</a>
+            </div>
+        }
+        else
+        {
+            <div class="display-6 mt-5">
+                @Model.CardCountToReviewToday cards to review today
+            </div>
+
+
+            <div class="d-inline-flex mt-4">
+                @if(Model.CardCountToReviewToday == 0)
+                {
+                    <a class="btn btn-success" asp-controller="Collection" data-testid="home.index.btnManageCards" asp-action="Index" role="button">Manage Cards</a>
+                    <a class="btn btn-primary ms-3" asp-controller="Home" data-testid="home.index.btnReadGettingStarted" asp-action="GetStarted">Read Getting Started</a>
+                }
+                else
+                {
+                    <a class="btn btn-success" asp-controller="Review" data-testid="home.index.startReview" asp-action="Index" role="button">Review Today's Cards</a>
+                    <a class="btn btn-primary ms-3" asp-controller="Card" data-testid="home.index.createCardOne" asp-action="New" role="button">Create Cards</a>
+                }
+            </div>
+
+        }
+    }
+    else
+    {
+        <div class="text-center">
+            <div class="display-6 mb-6 my-5">
+
+                <div class="display-3 mt-5">
+                    Welcome to Tabs
+                </div>
+
+                <p class="mt-4 display-6">Focused and efficient scripture memory</p>
+
+
+            </div>
+
+            <div class="align-middle">
+                <a asp-controller="Auth" asp-action="GoogleLogin" class="btn btn-primary" style="width: 250px">
+                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="25" height="25" viewBox="0,0,256,256">
+                        <g fill="#ffffff" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(8.53333,8.53333)"><path d="M15.00391,3c-6.629,0 -12.00391,5.373 -12.00391,12c0,6.627 5.37491,12 12.00391,12c10.01,0 12.26517,-9.293 11.32617,-14h-1.33008h-2.26758h-7.73242v4h7.73828c-0.88958,3.44825 -4.01233,6 -7.73828,6c-4.418,0 -8,-3.582 -8,-8c0,-4.418 3.582,-8 8,-8c2.009,0 3.83914,0.74575 5.24414,1.96875l2.8418,-2.83984c-2.134,-1.944 -4.96903,-3.12891 -8.08203,-3.12891z"></path></g></g>
+                    </svg>
+                    <span class="ms-1">Sign in with Google</span>
+                </a>
+            </div>
+
+            <div>
+                <a asp-controller="Auth" asp-action="MicrosoftLogin" class="btn btn-primary mt-3" style="width: 250px">
+                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="25" height="25" viewBox="0,0,256,256">
+                        <g fill="#ffffff" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(5.12,5.12)"><path d="M5,4c-0.552,0 -1,0.447 -1,1v19h20v-20zM26,4v20h20v-19c0,-0.553 -0.448,-1 -1,-1zM4,26v19c0,0.553 0.448,1 1,1h19v-20zM26,26v20h19c0.552,0 1,-0.447 1,-1v-19z"></path></g></g>
+                    </svg>
+                    <span class="ms-1">Sign in with Microsoft</span>
+                </a>
+            </div>
+
+            <div class="pt-5">
+                <a  href="/home/documentation">Learn More</a>
+            </div>
+            
+        </div>
+    }
+
+    <style>
+        .copy-link {
+            --height: 36px;
+            display: flex;
+            max-width: 350px;
+        }
+
+        .copy-link-input {
+            flex-grow: 1;
+            padding: 0 8px;
+            font-size: 14px;
+            border: 1px solid #cccccc;
+            border-right: none;
+            outline: none;
+        }
+
+            .copy-link-input:hover {
+                background: #eeeeee;
+            }
+
+        .copy-link-button {
+            flex-shrink: 0;
+            width: var(--height);
+            height: var(--height);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #dddddd;
+            color: #333333;
+            outline: none;
+            border: 1px solid #cccccc;
+            cursor: pointer;
+        }
+
+            .copy-link-button:hover {
+                background: #cccccc;
+            }
+
+    </style>
+
+@*     <p class="lead mt-5">Share Tabs with your friends - use the link below.</p>
+
+    <div class="copy-link">
+        <input type="text" disabled class="copy-link-input" value="www.tabsmemory.com" readonly>
+        <button type="button" class="copy-link-button">
+            <span class="material-icons">content_copy</span>
+        </button>
+    </div> *@
+
+</div>
+
+<script>
+        document.querySelectorAll(".copy-link").forEach((copyLinkParent) => {
+      const inputField = copyLinkParent.querySelector(".copy-link-input");
+      const copyButton = copyLinkParent.querySelector(".copy-link-button");
+      const text = inputField.value;
+
+      inputField.addEventListener("focus", () => inputField.select());
+
+      copyButton.addEventListener("click", () => {
+        inputField.select();
+        navigator.clipboard.writeText(text);
+
+        inputField.value = text;
+      });
+    });
+
+</script>
+

@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <UserSecretsId>d3688440-c7e1-4541-aa5e-c3ce6f3614bb</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Workflow\**" />
+    <EmbeddedResource Remove="Workflow\**" />
+    <None Remove="Workflow\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.35" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
+    <PackageReference Include="Thinktecture.EntityFrameworkCore.SqlServer" Version="9.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BitPantry.Tabs.Common\BitPantry.Tabs.Common.csproj" />
+    <ProjectReference Include="..\BitPantry.Tabs.Data.Entity\BitPantry.Tabs.Data.Entity.csproj" />
+    <ProjectReference Include="..\BitPantry.Tabs.Infrastructure\BitPantry.Tabs.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

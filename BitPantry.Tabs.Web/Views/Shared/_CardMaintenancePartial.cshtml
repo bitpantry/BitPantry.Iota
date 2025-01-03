@@ -1,0 +1,335 @@
+﻿@using BitPantry.Tabs.Common
+@model CardMaintenanceModel
+
+<h1 class="display-6 mt-5">@Model.Card.Address</h1>
+
+<div class="mt-4">
+    <partial name="_PassagePartial" model='@Model.Card.Passage' />
+</div>
+
+<div class="d-flex mt-5 flex-row">
+
+        @if(Model.Card.Tab == BitPantry.Tabs.Common.Tab.Queue)
+        {
+            if (Model.WorkflowType == BitPantry.Tabs.Common.WorkflowType.Basic)
+            {
+                <a href="#" data-testid="card.maint.btnStartNow" onclick="confirmStartNow()" class="btn btn-secondary me-2">
+                    Start Now
+                </a>
+            }
+            else
+            {
+                <a data-testid="card.maint.btnMoveToDailyTab" asp-action="MoveToDailyTab" asp-route-id="@Model.Card.Id" class="btn btn-secondary me-2">
+                    Move to Daily Tab
+                </a>
+            }
+        }
+        else 
+        {
+            <a href="#" data-testid="card.maint.btnSendBackToQueue" onclick="confirmSendBackToQueue()" class="btn btn-secondary me-2">
+                Send Back to Queue
+            </a>
+        }
+
+        @if(Model.WorkflowType == BitPantry.Tabs.Common.WorkflowType.Advanced)
+        {
+            <a href="#" data-testid="card.maint.btnMove" onclick="confirmMove()" class="btn btn-secondary me-2">
+                Move
+            </a>
+        }
+
+        <a href="#" data-testid="card.maint.btnDelete" onclick="confirmDelete()" class="btn btn-danger me-2">
+            Delete
+        </a>
+
+</div>
+
+<!-- DELETE Confirmation dialog markup -->
+
+<div id="deleteConfirmationModal" data-testid="card.maint.diaConfirmDelete" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Are you sure?</h5>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this card?</p>
+                <p class="fw-bold fs-5">@Model.Card.Passage.Address</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-testid="card.maint.btnConfirmDeleteCancel" class="btn btn-secondary" data-dismiss="modal" onclick="cancelDelete()">Cancel</button>
+                <a asp-action="Delete" asp-controller="Card" asp-route-id="@Model.Card.Id" data-testid="card.maint.btnConfirmDelete" class="btn btn-danger">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- START NOW Confirmation dialog markup -->
+
+@if(Model.WorkflowType == BitPantry.Tabs.Common.WorkflowType.Basic)
+{
+    <div id="startNowConfirmationModal" data-testid="card.maint.diaConfirmStartNow" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Start memorizing now?</h5>
+                </div>
+                <div class="modal-body">
+                    <p>The card in the daily tab will be returned to the top of the queue, and you'll begin memorizing this card now.</p>
+                    <p class="fw-bold fs-5">@Model.Card.Passage.Address</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-testid="card.maint.btnConfirmStartNowCancel" data-dismiss="modal" onclick="cancelStartNow()">Cancel</button>
+                    <a asp-action="StartNow" asp-controller="Card" asp-route-id="@Model.Card.Id" data-testid="card.maint.btnConfirmStartNow" class="btn btn-primary">Ok</a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- SEND BACK TO QUEUE Confirmation dialog markup -->
+
+<div id="sendBackToQueueConfirmationModal" data-testid="card.maint.diaConfirmSendToQueue" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Are you sure?</h5>
+            </div>
+            <div class="modal-body">
+                <p>This card's review progress will be reset and it will be moved to the bottom of the queue.</p>
+                <p class="fw-bold fs-5">@Model.Card.Passage.Address</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" data-testid="card.maint.btnConfirmSendToQueueCancel" onclick="cancelSendBackToQueue()">Cancel</button>
+                <a asp-action="SendBackToQueue" asp-controller="Card" asp-route-id="@Model.Card.Id" data-testid="card.maint.btnConfirmSendToQueue" class="btn btn-primary">Ok</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MOVE dialog markup -->
+
+@if(Model.WorkflowType == WorkflowType.Advanced)
+{
+    <style>
+
+        .top-move-tabs .nav-link {
+            color: black;
+            cursor: pointer;
+        }
+
+        .nested-move-tabs .nav-link {
+            color: black;
+            cursor: pointer;
+        }
+
+        .top-move-tabs .nav-link.active {
+            background-color: #C7E3D4 !important; /* Light GREEN background for active main tabs */
+        }
+
+        /* Styling for active nested tabs */
+        .nested-move-tabs .nav .nav-link.active {
+            background-color: #C7E3D4 !important; /* Light GREEN background for active nested tabs */
+        }
+    </style>
+
+    <div id="moveDialogModal" data-testid="card.maint.diaMoveDialog" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Move Card</h5>
+                </div>
+                <div class="modal-body">
+
+                    <span>
+                        Select a tab to move the <strong>@Model.Card.Address</strong> card to.
+                    </span>
+
+                    <!-- Main Tabs -->
+                    <ul class="nav nav-tabs mt-3 nav-justified w-100 top-move-tabs">
+                        <li class="nav-item" role="presentation">
+                            <a href="#" data-testid="card.maint.move.queueTab" class="nav-link" id="queueTab" data-bs-toggle="tab" data-bs-target="#queueTabContent" data-tab-info="@Tab.Queue" type="button" role="tab">Queue</a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a href="#" data-testid="card.maint.move.dailyTab" class="nav-link" id="dailyTab" data-bs-toggle="tab" data-bs-target="#dailyTabContent" data-tab-info="@Tab.Daily" type="button" role="tab">Daily</a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a href="#" data-testid="card.maint.move.oddTab" class="nav-link" id="oddTab" data-bs-toggle="tab" data-bs-target="#oddTabContent" data-tab-info="@Tab.Odd" type="button" role="tab">Odd</a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a href="#" data-testid="card.maint.move.evenTab" class="nav-link" id="evenTab" data-bs-toggle="tab" data-bs-target="#evenTabContent" data-tab-info="@Tab.Even" type="button" role="tab">Even</a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a href="#" data-testid="card.maint.move.weekTab" class="nav-link" id="weekTab" data-bs-toggle="tab" data-bs-target="#weekTabContent" data-tab-info="Week" type="button" role="tab" aria-controls="weeklyTabContent">Week</a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a href="#" data-testid="card.maint.move.dateTab" class="nav-link" id="monthTab" data-bs-toggle="tab" data-bs-target="#monthTabContent" data-tab-info="Month" type="button" role="tab" aria-controls="monthTabContent">Date</a>
+                        </li>
+                    </ul>
+
+                    <!-- Tab Contents -->
+                    <div class="tab-content" id="myTabContent">
+                        <div class="tab-pane nested-move-tabs fade" id="weekTabContent" role="tabpanel" aria-labelledby="weekTab" style="border-bottom: 1px solid #DEDEDE;">
+                            <nav class="nav py-3">
+                                @foreach (var day in new[] { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" })
+                                {
+                                    <a data-testid="card.maint.move.@(day.ToLower())Tab" id="@day.ToLower()Tab" class="nav-link" data-tab-info="@day">@day</a>
+                                }
+                            </nav>
+                        </div>
+                        <div class="tab-pane nested-move-tabs fade" id="monthTabContent" role="tabpanel" aria-labelledby="monthTab" style="border-bottom: 1px solid #DEDEDE;">
+                            <nav class="nav py-3">
+                                @for (int i = 1; i <= 31; i++)
+                                {
+                                    <a data-testid="card.maint.move.day@(i)Tab" id="@($"day{i}Tab")" class="nav-link" data-tab-info="@($"Day{i}")">@i</a>
+                                }
+                            </nav>
+                        </div>
+                    </div>
+
+
+
+                </div>
+                <div class="modal-footer pt-0" style="border-top: none;">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" data-testid="card.maint.btnCancelMove" onclick="cancelMove()">Cancel</button>
+                    <a id="moveToButton" href="#" data-testid="card.maint.btnConfirmMove" class="btn btn-primary">Move</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const currentTab = "@Model.Card.Tab"; // e.g., "Queue", "Daily", etc.
+            const cardId = @Model.Card.Id;
+            let lastSelectedWeekTab = null;
+            let lastSelectedMonthTab = null;
+
+            // Convert PascalCase to camelCase for IDs
+            function toCamelCase(str) {
+                return str.charAt(0).toLowerCase() + str.slice(1);
+            }
+
+            // Update MoveToButton based on tab
+            function updateMoveToButton(forTab) {
+                const button = document.getElementById("moveToButton");
+                //button.innerText = `Move to ${forTab.replace("Day", "Day ")} Tab`;
+                button.href = `/card/move?id=${cardId}&totab=${forTab}`;
+            }
+
+            // Remove current tab and its content
+            function removeTab(tabId, contentId) {
+                const tab = document.getElementById(tabId);
+                const content = document.getElementById(contentId);
+
+                if (tab?.parentNode.tagName === "LI")
+                {
+                    tab.parentNode.remove();
+                }
+                else
+                {
+                    tab.remove();
+                }
+
+                if (content) content.remove();
+            }
+
+            // Show or hide nested tab content for Week or Month
+            function toggleNestedTabContent(showWeek, showMonth) {
+                document.getElementById('weekTabContent').style.display = showWeek ? 'block' : 'none';
+                document.getElementById('monthTabContent').style.display = showMonth ? 'block' : 'none';
+            }
+
+            // Remove the current main tab based on `currentTab`
+            const tabId = toCamelCase(currentTab) + "Tab";
+            const contentId = toCamelCase(currentTab) + "Content";
+            removeTab(tabId, contentId);
+
+            // Main Tab Event Listeners
+            document.querySelectorAll('ul.nav-tabs a[data-bs-toggle="tab"]').forEach(tab => {
+                tab.addEventListener('shown.bs.tab', function (event) {
+                    const tabInfo = event.target.getAttribute('data-tab-info');
+
+                    // Show nested tabs for the Week or Month main tab, otherwise hide them
+                    if (tabInfo === "Week") {
+                        toggleNestedTabContent(true, false);
+                        const activeNestedTab = lastSelectedWeekTab || document.querySelector('#weekTabContent .nav-link');
+                        if (activeNestedTab) activateNestedTab(activeNestedTab);
+                        lastSelectedWeekTab = activeNestedTab;
+                        updateMoveToButton(activeNestedTab ? activeNestedTab.getAttribute('data-tab-info') : tabInfo);
+                    } else if (tabInfo === "Month") {
+                        toggleNestedTabContent(false, true);
+                        const activeNestedTab = lastSelectedMonthTab || document.querySelector('#monthTabContent .nav-link');
+                        if (activeNestedTab) activateNestedTab(activeNestedTab);
+                        lastSelectedMonthTab = activeNestedTab;
+                        updateMoveToButton(activeNestedTab ? activeNestedTab.getAttribute('data-tab-info') : tabInfo);
+                    } else {
+                        toggleNestedTabContent(false, false);
+                        updateMoveToButton(tabInfo);
+                    }
+                });
+            });
+
+            // Activate a nested tab within a content area
+            function activateNestedTab(nestedTab) {
+                nestedTab.closest(".nav").querySelectorAll(".nav-link").forEach(link => link.classList.remove("active"));
+                nestedTab.classList.add("active");
+            }
+
+            // Nested Tab Event Listeners for Week and Month
+            document.querySelectorAll('#weekTabContent .nav-link, #monthTabContent .nav-link').forEach(tab => {
+                tab.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    const tabInfo = event.target.getAttribute('data-tab-info');
+
+                    // Track the last selected nested tab for Week or Month
+                    if (event.target.closest('#weekTabContent')) lastSelectedWeekTab = tab;
+                    else if (event.target.closest('#monthTabContent')) lastSelectedMonthTab = tab;
+
+                    activateNestedTab(tab);
+                    updateMoveToButton(tabInfo);
+                });
+            });
+
+            // Activate the first available tab
+            const firstTab = document.getElementById("queueTab") || document.getElementById("dailyTab");
+            if (firstTab) new bootstrap.Tab(firstTab).show();
+        });
+    </script>
+}
+
+<script>
+
+    function confirmDelete() {
+        $('#deleteConfirmationModal').modal('show');
+    }
+
+    function cancelDelete() {
+        $('#deleteConfirmationModal').modal('hide');
+    }
+
+    function confirmStartNow() {
+        $('#startNowConfirmationModal').modal('show');
+    }
+
+    function cancelStartNow() {
+        $('#startNowConfirmationModal').modal('hide');
+    }
+
+    function confirmSendBackToQueue() {
+        $('#sendBackToQueueConfirmationModal').modal('show');
+    }
+
+    function cancelSendBackToQueue() {
+        $('#sendBackToQueueConfirmationModal').modal('hide');
+    }
+
+    function confirmMove() {
+        $('#moveDialogModal').modal('show');
+    }
+
+    function cancelMove() {
+        $('#moveDialogModal').modal('hide');
+    }
+
+</script>

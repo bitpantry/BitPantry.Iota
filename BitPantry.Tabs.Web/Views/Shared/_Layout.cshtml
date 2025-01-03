@@ -1,0 +1,99 @@
+﻿@using Microsoft.AspNetCore.Http
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tabs</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/BitPantry.Tabs.Web.styles.css" asp-append-version="true" />
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-titl" content="Tabs" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=help" />
+</head>
+<body>
+
+    <style>
+        .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24
+        }
+    </style>
+
+    <header>
+        <nav class="navbar navbar-expand navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <img src="~/logo.png" alt="BitPantry Logo" style="height: 35px;" />
+                </a>
+                <button class="navbar-toggler" data-testid="nav.togglemenu" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+
+                    @if (Context.User.Identity.IsAuthenticated)
+                    {
+                        <ul class="navbar-nav flex-grow-1">
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" data-testid="nav.startReview" asp-area="" asp-controller="Review" asp-action="Index">Start Review</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link dropdown-toggle text-dark" data-testid="nav.cards" href="#" id="nestedDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Cards
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="nestedDropdown">
+                                    <li><a class="dropdown-item" asp-area="" data-testid="nav.cards.new" asp-controller="Card" asp-action="New">New</a></li>
+                                    <li><a class="dropdown-item" asp-area="" data-testid="nav.cards.viewAll" asp-controller="Collection" asp-action="Index">View All</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link dropdown-toggle text-dark" data-testid="nav.help" href="#" id="nestedDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Help
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="nestedDropdown">
+                                    <li><a class="dropdown-item" asp-area="" data-testid="nav.help.gettingStarted" asp-controller="Home" asp-action="GetStarted">Getting Started</a></li>
+                                    <li><a class="dropdown-item" asp-area="" data-testid="nav.help.documentation" asp-controller="Home" asp-action="Documentation">Full Documentation</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" data-testid="nav.logout" asp-area="" asp-controller="Auth" asp-action="Logout">Logout</a>
+                            </li>
+                        </ul>
+                    }
+                    <div class="d-flex flex me-2 align-self-center">
+                        <span id="contextHelpButton" class="material-symbols-outlined" style="display: none; cursor: pointer">
+                            help
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+    <script>
+        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        document.cookie = `@(Constants.TIMEZONE_KEY_NAME)=${timeZone}; path=/; secure; samesite=strict`;
+    </script>
+    <mini-profiler />
+@* 	<div class="d-none d-xl-block" style="background: #007bff; color: #fff; padding: 5px; text-align: center;">XL</div>
+    <div class="d-none d-lg-block d-xl-none" style="background: #27a745; color: #fff; padding: 5px; text-align: center;">LG</div>
+    <div class="d-none d-md-block d-lg-none" style="background: #ffc108; color: #fff; padding: 5px; text-align: center;">MD</div>
+    <div class="d-none d-sm-block d-md-none" style="background: #18a2b8; color: #fff; padding: 5px; text-align: center;">SM</div>
+    <div class="d-block d-sm-none" style="background: #dc3545; color: #fff; padding: 5px; text-align: center;">XS</div>  *@
+</body>
+</html>

@@ -1,0 +1,33 @@
+﻿@using Humanizer
+
+@model CardMaintenanceModel
+
+@{
+    var backUrl = Url.Action<BitPantry.Tabs.Web.Controllers.CollectionController>(t => t.Index(Model.Card.Tab));
+}
+
+
+<div class="row justify-content-center mb-2">
+
+    <div class="col-8 d-flex align-items-center">
+        <a href="@backUrl" data-testid="card.maint.btnClose" class="btn btn-primary px-3">
+            Close
+        </a>
+    </div>
+
+    <div class="col-4 d-flex justify-content-end">
+            
+        <ul class="nav nav-tabs nav-justified w-100">
+            <li class="nav-item">
+                <a class="nav-link active" data-testid="card.maint.tab" style="background-color: #e0f2ff">@Model.Card.Tab.Humanize()</a>
+            </li>
+        </ul>
+
+    </div>
+
+</div>
+
+<div class="row mb-2 border-top"></div>
+
+<partial name="_CardMaintenancePartial" model="@Model" />
+

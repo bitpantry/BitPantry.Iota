@@ -1,0 +1,87 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35122.118
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitPantry.Tabs.Application", "BitPantry.Tabs.Application\BitPantry.Tabs.Application.csproj", "{26CC1DC4-56D3-4AEE-AE9B-72E3C0FB060A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitPantry.Tabs.Data.Entity", "BitPantry.Tabs.Data.Entity\BitPantry.Tabs.Data.Entity.csproj", "{C2BE6733-B6F2-4EA0-B877-6BCEA5636A4C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitPantry.Tabs.Infrastructure", "BitPantry.Tabs.Infrastructure\BitPantry.Tabs.Infrastructure.csproj", "{1D1E4DF0-7F7D-401C-BA64-B495C15F2DA9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitPantry.Tabs.Web", "BitPantry.Tabs.Web\BitPantry.Tabs.Web.csproj", "{C20E987C-5AC3-4CF6-823C-12AD7285F63C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Files", "Solution Files", "{37E72863-8978-43D8-B6F4-00D64D4F4E98}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Bibles", "Bibles", "{E30F5795-7606-4CAD-810E-5EA23EF5CC81}"
+	ProjectSection(SolutionItems) = preProject
+		Solution Files\Bibles\ESV.xml = Solution Files\Bibles\ESV.xml
+		Solution Files\Bibles\MSG.xml = Solution Files\Bibles\MSG.xml
+		Solution Files\Bibles\NASB.xml = Solution Files\Bibles\NASB.xml
+		Solution Files\Bibles\NET.xml = Solution Files\Bibles\NET.xml
+		Solution Files\Bibles\NIV.xml = Solution Files\Bibles\NIV.xml
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitPantry.Tabs.Common", "BitPantry.Tabs.Common\BitPantry.Tabs.Common.csproj", "{C9870D51-603C-4DCA-B36D-6DB5FB381076}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitPantry.Tabs.Test.Playwright", "BitPantry.Tabs.Test.Playwright\BitPantry.Tabs.Test.Playwright.csproj", "{37C84118-88F2-4AE1-813E-AC01D1DCC3AD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitPantry.Tabs.Test.Application", "BitPantry.Tabs.Test.Application\BitPantry.Tabs.Test.Application.csproj", "{98AA06D2-77E3-4BD8-A2E1-3BA22A947B33}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitPantry.Tabs.Test", "BitPantry.Tabs.Test\BitPantry.Tabs.Test.csproj", "{88411CD1-A81B-4BCB-B84D-70CC3FDB8EB8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitPantry.Tabs.Shell", "BitPantry.Tabs.Shell\BitPantry.Tabs.Shell.csproj", "{C0071AC6-5CEE-48A9-9AD4-6343FADE1FC2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{26CC1DC4-56D3-4AEE-AE9B-72E3C0FB060A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26CC1DC4-56D3-4AEE-AE9B-72E3C0FB060A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26CC1DC4-56D3-4AEE-AE9B-72E3C0FB060A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26CC1DC4-56D3-4AEE-AE9B-72E3C0FB060A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2BE6733-B6F2-4EA0-B877-6BCEA5636A4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2BE6733-B6F2-4EA0-B877-6BCEA5636A4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2BE6733-B6F2-4EA0-B877-6BCEA5636A4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2BE6733-B6F2-4EA0-B877-6BCEA5636A4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D1E4DF0-7F7D-401C-BA64-B495C15F2DA9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D1E4DF0-7F7D-401C-BA64-B495C15F2DA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D1E4DF0-7F7D-401C-BA64-B495C15F2DA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D1E4DF0-7F7D-401C-BA64-B495C15F2DA9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C20E987C-5AC3-4CF6-823C-12AD7285F63C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C20E987C-5AC3-4CF6-823C-12AD7285F63C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C20E987C-5AC3-4CF6-823C-12AD7285F63C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C20E987C-5AC3-4CF6-823C-12AD7285F63C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9870D51-603C-4DCA-B36D-6DB5FB381076}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9870D51-603C-4DCA-B36D-6DB5FB381076}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9870D51-603C-4DCA-B36D-6DB5FB381076}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9870D51-603C-4DCA-B36D-6DB5FB381076}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37C84118-88F2-4AE1-813E-AC01D1DCC3AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37C84118-88F2-4AE1-813E-AC01D1DCC3AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37C84118-88F2-4AE1-813E-AC01D1DCC3AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37C84118-88F2-4AE1-813E-AC01D1DCC3AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98AA06D2-77E3-4BD8-A2E1-3BA22A947B33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98AA06D2-77E3-4BD8-A2E1-3BA22A947B33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98AA06D2-77E3-4BD8-A2E1-3BA22A947B33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98AA06D2-77E3-4BD8-A2E1-3BA22A947B33}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88411CD1-A81B-4BCB-B84D-70CC3FDB8EB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88411CD1-A81B-4BCB-B84D-70CC3FDB8EB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88411CD1-A81B-4BCB-B84D-70CC3FDB8EB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88411CD1-A81B-4BCB-B84D-70CC3FDB8EB8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C0071AC6-5CEE-48A9-9AD4-6343FADE1FC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0071AC6-5CEE-48A9-9AD4-6343FADE1FC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0071AC6-5CEE-48A9-9AD4-6343FADE1FC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0071AC6-5CEE-48A9-9AD4-6343FADE1FC2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E30F5795-7606-4CAD-810E-5EA23EF5CC81} = {37E72863-8978-43D8-B6F4-00D64D4F4E98}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {549A16DE-01BD-4927-B006-D867C86DD596}
+	EndGlobalSection
+EndGlobal
