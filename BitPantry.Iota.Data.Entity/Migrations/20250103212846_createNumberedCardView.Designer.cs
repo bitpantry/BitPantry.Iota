@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BitPantry.Iota.Data.Entity.Migrations
 {
     [DbContext(typeof(EntityDataContext))]
-    [Migration("20241230030934_addedNumberedCardView")]
-    partial class addedNumberedCardView
+    [Migration("20250103212846_createNumberedCardView")]
+    partial class createNumberedCardView
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

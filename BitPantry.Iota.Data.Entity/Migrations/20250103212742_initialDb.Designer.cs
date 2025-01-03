@@ -12,15 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BitPantry.Iota.Data.Entity.Migrations
 {
     [DbContext(typeof(EntityDataContext))]
-    [Migration("20241030195633_renamedDividerToTabInCardModel")]
-    partial class renamedDividerToTabInCardModel
+    [Migration("20250103212742_initialDb")]
+    partial class initialDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.8")
+                .HasAnnotation("ProductVersion", "9.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -89,28 +89,49 @@ namespace BitPantry.Iota.Data.Entity.Migrations
                     b.Property<DateTime>("AddedOn")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("BibleId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("EndVerseId")
+                        .HasColumnType("bigint");
+
+                    b.Property<double>("FractionalOrder")
+                        .HasColumnType("float");
+
                     b.Property<DateTime>("LastMovedOn")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("LastReviewedOn")
+                    b.Property<DateTime?>("LastReviewedOn")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Order")
-                        .HasColumnType("int");
+                    b.Property<int>("ReviewCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<long>("StartVerseId")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Tab")
                         .HasColumnType("int");
-
-                    b.Property<string>("Thumbprint")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("UserId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("BibleId");
+
+                    b.HasIndex("EndVerseId");
+
+                    b.HasIndex("StartVerseId");
+
+                    b.HasIndex("UserId", "Tab", "FractionalOrder")
+                        .HasDatabaseName("IX_Cards_UserId_Tab_Order");
 
                     b.ToTable("Cards");
                 });
@@ -158,36 +179,22 @@ namespace BitPantry.Iota.Data.Entity.Migrations
                     b.ToTable("DataProtectionKeys");
                 });
 
-            modelBuilder.Entity("BitPantry.Iota.Data.Entity.ReviewSession", b =>
+            modelBuilder.Entity("BitPantry.Iota.Data.Entity.NumberedCard", b =>
                 {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnOrder(1);
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("CardIdsToIgnore")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("LastAccessed")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ReviewPath")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("StartedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long>("UserId")
+                    b.Property<long>("CardId")
                         .HasColumnType("bigint");
 
-                    b.HasKey("Id");
+                    b.Property<long>("RowNumber")
+                        .HasColumnType("bigint");
 
-                    b.HasIndex("UserId")
+                    b.HasKey("CardId", "RowNumber");
+
+                    b.HasIndex("CardId")
                         .IsUnique();
 
-                    b.ToTable("ReviewSessions");
+                    b.ToTable((string)null);
+
+                    b.ToView("NumberedCardView", (string)null);
                 });
 
             modelBuilder.Entity("BitPantry.Iota.Data.Entity.Testament", b =>
@@ -229,7 +236,13 @@ namespace BitPantry.Iota.Data.Entity.Migrations
                     b.Property<DateTime>("LastLogin")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("WorkflowType")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("EmailAddress")
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });
@@ -259,21 +272,6 @@ namespace BitPantry.Iota.Data.Entity.Migrations
                     b.ToTable("Verses");
                 });
 
-            modelBuilder.Entity("CardVerse", b =>
-                {
-                    b.Property<long>("CardId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("VerseId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("CardId", "VerseId");
-
-                    b.HasIndex("VerseId");
-
-                    b.ToTable("CardVerse");
-                });
-
             modelBuilder.Entity("BitPantry.Iota.Data.Entity.Book", b =>
                 {
                     b.HasOne("BitPantry.Iota.Data.Entity.Testament", "Testament")
@@ -287,6 +285,24 @@ namespace BitPantry.Iota.Data.Entity.Migrations
 
             modelBuilder.Entity("BitPantry.Iota.Data.Entity.Card", b =>
                 {
+                    b.HasOne("BitPantry.Iota.Data.Entity.Bible", null)
+                        .WithMany()
+                        .HasForeignKey("BibleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BitPantry.Iota.Data.Entity.Verse", null)
+                        .WithMany()
+                        .HasForeignKey("EndVerseId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("BitPantry.Iota.Data.Entity.Verse", null)
+                        .WithMany()
+                        .HasForeignKey("StartVerseId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("BitPantry.Iota.Data.Entity.User", "User")
                         .WithMany("Cards")
                         .HasForeignKey("UserId")
@@ -307,15 +323,15 @@ namespace BitPantry.Iota.Data.Entity.Migrations
                     b.Navigation("Book");
                 });
 
-            modelBuilder.Entity("BitPantry.Iota.Data.Entity.ReviewSession", b =>
+            modelBuilder.Entity("BitPantry.Iota.Data.Entity.NumberedCard", b =>
                 {
-                    b.HasOne("BitPantry.Iota.Data.Entity.User", "User")
-                        .WithOne("ReviewSession")
-                        .HasForeignKey("BitPantry.Iota.Data.Entity.ReviewSession", "UserId")
+                    b.HasOne("BitPantry.Iota.Data.Entity.Card", "Card")
+                        .WithOne("NumberedCard")
+                        .HasForeignKey("BitPantry.Iota.Data.Entity.NumberedCard", "CardId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("User");
+                    b.Navigation("Card");
                 });
 
             modelBuilder.Entity("BitPantry.Iota.Data.Entity.Testament", b =>
@@ -340,21 +356,6 @@ namespace BitPantry.Iota.Data.Entity.Migrations
                     b.Navigation("Chapter");
                 });
 
-            modelBuilder.Entity("CardVerse", b =>
-                {
-                    b.HasOne("BitPantry.Iota.Data.Entity.Card", null)
-                        .WithMany()
-                        .HasForeignKey("CardId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BitPantry.Iota.Data.Entity.Verse", null)
-                        .WithMany()
-                        .HasForeignKey("VerseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("BitPantry.Iota.Data.Entity.Bible", b =>
                 {
                     b.Navigation("Testaments");
@@ -363,6 +364,11 @@ namespace BitPantry.Iota.Data.Entity.Migrations
             modelBuilder.Entity("BitPantry.Iota.Data.Entity.Book", b =>
                 {
                     b.Navigation("Chapters");
+                });
+
+            modelBuilder.Entity("BitPantry.Iota.Data.Entity.Card", b =>
+                {
+                    b.Navigation("NumberedCard");
                 });
 
             modelBuilder.Entity("BitPantry.Iota.Data.Entity.Chapter", b =>
@@ -378,8 +384,6 @@ namespace BitPantry.Iota.Data.Entity.Migrations
             modelBuilder.Entity("BitPantry.Iota.Data.Entity.User", b =>
                 {
                     b.Navigation("Cards");
-
-                    b.Navigation("ReviewSession");
                 });
 #pragma warning restore 612, 618
         }

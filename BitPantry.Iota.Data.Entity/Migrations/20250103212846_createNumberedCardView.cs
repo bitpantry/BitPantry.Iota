@@ -5,7 +5,7 @@
 namespace BitPantry.Iota.Data.Entity.Migrations
 {
     /// <inheritdoc />
-    public partial class addedNumberedCardView : Migration
+    public partial class createNumberedCardView : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
