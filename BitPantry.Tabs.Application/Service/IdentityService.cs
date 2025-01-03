@@ -35,7 +35,7 @@ namespace BitPantry.Tabs.Application.Service
 
             _dbCtx.ChangeTracker.Clear();
 
-            _logger.LogDebug("User signed in :: {EmailAddress}, {Id}", emailAddress, user.Id);
+            _logger.LogDebug("User signed in :: {EmailAddress}, {UserId}", emailAddress, user.Id);
 
             return user.Id;
         }
