@@ -54,7 +54,7 @@ namespace BitPantry.Iota.Web.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-        public IActionResult Delay(int delay, string redirectUrl)
+        public IActionResult Delay(int delay, string redirectUrl = "/")
         {
             return View(new { Delay = delay, RedirectUrl = redirectUrl });
         }

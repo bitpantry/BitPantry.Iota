@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Diagnostics.Enrichment;
+using BitPantry.Iota.Infrastructure;
 
 namespace BitPantry.Iota.Web.Logging
 {
@@ -13,10 +14,12 @@ namespace BitPantry.Iota.Web.Logging
     public class IotaLogEnricher : ILogEnricher
     {
         private readonly IHttpContextAccessor _httpCtxAccessor;
+        private readonly IWebHostEnvironment _env;
 
-        public IotaLogEnricher(IHttpContextAccessor httpCtxAccessor)
+        public IotaLogEnricher(IHttpContextAccessor httpCtxAccessor, IWebHostEnvironment env)
         {
             _httpCtxAccessor = httpCtxAccessor;
+            _env = env;
         }
 
         public void Enrich(IEnrichmentTagCollector collector)
@@ -25,6 +28,7 @@ namespace BitPantry.Iota.Web.Logging
             if (props.IsAvailable)
             {
                 collector.Add("UserId", _httpCtxAccessor.HttpContext.GetLogEnricherProperties().CurrentUserId);
+                collector.Add("Environment", _env.EnvironmentName.FirstCharToUpper());
             }
         }
     }

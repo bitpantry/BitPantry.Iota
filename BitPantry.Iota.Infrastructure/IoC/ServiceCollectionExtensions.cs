@@ -18,7 +18,7 @@ namespace BitPantry.Iota.Infrastructure.IoC
     {
         public static void ConfigureInfrastructureServices(
             this IServiceCollection services,
-            AppSettings settings,
+            InfrastructureAppSettings settings,
             CachingStrategy cachingStrategy)
         {
             // entity framework
@@ -27,10 +27,6 @@ namespace BitPantry.Iota.Infrastructure.IoC
             {
                 o.UseSqlServer(settings.ConnectionStrings.EntityDataContext, ssOpts => { ssOpts.AddWindowFunctionsSupport(); });
             });
-
-            // components
-
-            services.AddSingleton(settings);
 
             // configure caching
 

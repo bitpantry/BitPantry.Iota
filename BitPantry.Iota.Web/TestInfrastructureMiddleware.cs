@@ -1,5 +1,6 @@
 ﻿
 using BitPantry.Iota.Infrastructure.Settings;
+using BitPantry.Iota.Web.Settings;
 using Microsoft.AspNetCore.Http.Extensions;
 using System.CodeDom;
 
@@ -7,10 +8,10 @@ namespace BitPantry.Iota.Web
 {
     public class TestInfrastructureMiddleware : IMiddleware
     {
-        private readonly AppSettings _appSettings;
+        private readonly WebAppSettings _appSettings;
         private readonly TestSettings _testSettings;
 
-        public TestInfrastructureMiddleware(AppSettings appSettings, TestSettings testSettings)
+        public TestInfrastructureMiddleware(WebAppSettings appSettings, TestSettings testSettings)
         {
             _appSettings = appSettings;
             _testSettings = testSettings;

@@ -1,4 +1,5 @@
 ﻿using BitPantry.Iota.Infrastructure.Settings;
+using BitPantry.Iota.Web.Settings;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.DataProtection;
@@ -9,7 +10,7 @@ namespace BitPantry.Iota.Web.IoC
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection ConfigureWebIdentityServices(this IServiceCollection services, AppSettings settings)
+        public static IServiceCollection ConfigureWebIdentityServices(this IServiceCollection services, WebAppSettings settings)
         {
             services.AddAuthentication(o =>
                 o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme)
@@ -31,7 +32,7 @@ namespace BitPantry.Iota.Web.IoC
             return services;
         }
 
-        public static IServiceCollection ConfigureWebServices(this IServiceCollection services, AppSettings settings)
+        public static IServiceCollection ConfigureWebServices(this IServiceCollection services, WebAppSettings settings)
         {
             // components
 
@@ -73,7 +74,7 @@ namespace BitPantry.Iota.Web.IoC
             return services;
         }
 
-        public static void ConfigureMiniProfiler(this IServiceCollection services, AppSettings settings)
+        public static void ConfigureMiniProfiler(this IServiceCollection services, WebAppSettings settings)
         {
             services.AddMiniProfiler(options =>
             {

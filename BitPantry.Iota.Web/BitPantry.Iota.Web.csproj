@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>dbd08906-09de-4dfd-acf4-7996847e52d8</UserSecretsId>
+    <UserSecretsId>d3688440-c7e1-4541-aa5e-c3ce6f3614bb</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,6 +16,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Telemetry" Version="8.10.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.4" />
     <PackageReference Include="MiniProfiler.AspNetCore.Mvc" Version="4.3.8" />
@@ -30,7 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="appsettings.prod.json">
+    <Content Update="appsettings.production.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="wwwroot\apple-touch-icon.png">

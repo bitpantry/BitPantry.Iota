@@ -50,7 +50,8 @@ namespace BitPantry.Iota.Test.Playwright.Common
 
             await Expect(Page.GetByTestId("review.pnlSummary")).ToContainTextAsync("Reviewing 1 card today");
             await Expect(Page.GetByTestId("review.pnlAddress")).ToContainTextAsync("Romans 1:1 (ESV)");
-            await Expect(Page.GetByText("Click to Show passage")).ToBeVisibleAsync();
+
+            await Expect(Page.GetByTestId("review.pnlPassageCollapsed")).ToBeVisibleAsync();
             await Expect(Page.GetByTestId("review.btnPromote")).ToBeVisibleAsync();
             await Expect(Page.GetByTestId("review.btnNext")).ToBeVisibleAsync();
         }

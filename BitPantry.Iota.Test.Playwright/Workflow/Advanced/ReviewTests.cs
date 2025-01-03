@@ -1,4 +1,5 @@
-﻿using BitPantry.Iota.Application.Service;
+﻿using BitPantry.Iota.Application;
+using BitPantry.Iota.Application.Service;
 using BitPantry.Iota.Common;
 using BitPantry.Iota.Data.Entity;
 using BitPantry.Iota.Data.Entity.Migrations;
@@ -220,7 +221,7 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Advanced
         [DataTestMethod]
         [DataRow(Tab.Daily, 1, 1)]
         [DataRow(Tab.Tuesday, 3, 2, 3)]
-        [DataRow(Tab.Daily, 3, 2)]
+        [DataRow(Tab.Daily, 2, 2)]
         public async Task ResetReviewCount_CountReset(Tab tab, int cardsInTab, int rowNumberToReset, int reviewCountStart = 1)
         {
             var userId = await Init();
@@ -232,6 +233,9 @@ namespace BitPantry.Iota.Test.Playwright.Workflow.Advanced
 
                 for (int i = 1; i <= cardsInTab; i++)
                     _ = await cardSvc.CreateCard(userId, Fixture.BibleId, $"rom 1:{i}", tab);
+
+                await Page.SetUserTimezoneOverride("utc");
+                await Page.SetUserCurrentTimeUtcOverride(tab.GetValidReviewDateTime());
 
                 var cardToReset = await cardSvc.GetCard(userId, tab, rowNumberToReset);
 

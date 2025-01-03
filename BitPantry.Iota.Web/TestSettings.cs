@@ -1,10 +1,11 @@
 ﻿using BitPantry.Iota.Infrastructure.Settings;
+using BitPantry.Iota.Web.Settings;
 
 namespace BitPantry.Iota.Web
 {
     public class TestSettings
     {
-        private readonly AppSettings _appSettings;
+        private readonly WebAppSettings _appSettings;
 
         private DateTime? _userCurrentTimeUtcOverride = null;
         public DateTime UserCurrentTimeUtc
@@ -36,7 +37,7 @@ namespace BitPantry.Iota.Web
             }
         }
 
-        public TestSettings(AppSettings appSettings)
+        public TestSettings(WebAppSettings appSettings)
         {
             _appSettings = appSettings;
         }

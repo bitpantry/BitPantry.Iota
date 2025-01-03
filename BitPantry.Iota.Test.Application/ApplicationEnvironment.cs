@@ -15,7 +15,6 @@ namespace BitPantry.Iota.Test.Application
         private readonly object _lock = new object();
 
         private bool _isDeployed = false;
-        private readonly AppSettings _appSettings;
 
         public string ContextId { get; } = Crypt.GenerateSecureRandomString(8);
         public IServiceProvider ServiceProvider { get; }
@@ -24,12 +23,13 @@ namespace BitPantry.Iota.Test.Application
         {
             System.Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
 
-            var config = IotaAppBootstrap.BuildIotaConfiguration("Test");
+            var config = IotaAppBootstrap.BuildIotaAppConfiguration("Test");
 
-            _appSettings = new AppSettings(config, ContextId);
+            var settings = new InfrastructureAppSettings(config, ContextId);
 
-            var services = new ServiceCollection().AddCoreIotaServices<DefaultWorkflowServiceProvider>(_appSettings);
+            var services = new ServiceCollection().AddCoreIotaServices<DefaultWorkflowServiceProvider>(settings);
 
+            services.AddSingleton(settings);
             services.AddScoped<LocalDb>();
 
             services.AddLogging(cfg =>

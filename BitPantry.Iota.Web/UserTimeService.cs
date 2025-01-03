@@ -1,14 +1,15 @@
 ﻿using BitPantry.Iota.Infrastructure.Settings;
+using BitPantry.Iota.Web.Settings;
 
 namespace BitPantry.Iota.Web
 {
     public class UserTimeService
     {
         private IHttpContextAccessor _httpContextAccessor;
-        private readonly AppSettings _appSettings;
+        private readonly WebAppSettings _appSettings;
         private readonly TestSettings _testSettings;
 
-        public UserTimeService(IHttpContextAccessor httpContextAccessor, AppSettings appSettings, TestSettings testSettings)
+        public UserTimeService(IHttpContextAccessor httpContextAccessor, WebAppSettings appSettings, TestSettings testSettings)
         {
             _httpContextAccessor = httpContextAccessor;
             _appSettings = appSettings;

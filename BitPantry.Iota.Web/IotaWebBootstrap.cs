@@ -10,6 +10,10 @@ using BitPantry.Iota.Application.IoC;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using BitPantry.Iota.Application;
+using Microsoft.Extensions.Configuration.AzureAppConfiguration;
+using Azure.Messaging.EventGrid.SystemEvents;
+using BitPantry.Iota.Web.Settings;
+using BitPantry.Iota.Web.Controllers;
 
 namespace BitPantry.Iota.Web
 {
@@ -21,8 +25,11 @@ namespace BitPantry.Iota.Web
 
             // configure app settings
 
-            builder.Configuration.ConfigureForIota(builder.Environment.EnvironmentName);
-            var settings = new AppSettings(builder.Configuration, contextId);
+            builder.Configuration.ConfigureForIotaWeb(builder.Environment.EnvironmentName);
+            var settings = new WebAppSettings(builder.Configuration, contextId);
+
+            builder.Services.AddSingleton(settings);
+            builder.Services.AddSingleton<InfrastructureAppSettings>(settings);
 
             // configure logging
 
@@ -43,7 +50,7 @@ namespace BitPantry.Iota.Web
             return builder.Build().ConfigureIotaWebApplication(settings);
         }
 
-        private static WebApplication ConfigureIotaWebApplication(this WebApplication app, AppSettings settings)
+        private static WebApplication ConfigureIotaWebApplication(this WebApplication app, WebAppSettings settings)
         {
             if (settings.EnableTestInfrastructure)
                 app.Logger.LogWarning("Test infrastructure is enabled");
@@ -92,7 +99,7 @@ namespace BitPantry.Iota.Web
             return app;
         }
 
-        public static IServiceCollection AddIotaWebServices(this IServiceCollection services, AppSettings settings)
+        public static IServiceCollection AddIotaWebServices(this IServiceCollection services, WebAppSettings settings)
         {
             services.ConfigureWebServices(settings);
             services.ConfigureWebIdentityServices(settings);
@@ -113,9 +120,35 @@ namespace BitPantry.Iota.Web
 
         public static void LogConfiguration(this WebApplication app)
         {
-            var settings = app.Services.GetRequiredService<AppSettings>();
+            var settings = app.Services.GetRequiredService<WebAppSettings>();
             var connStrBuilder = new SqlConnectionStringBuilder(settings.ConnectionStrings.EntityDataContext);
             app.Logger.LogInformation("BitPantry.Iota.Web created :: {Environment}, {DataSource} {Catalog}", app.Environment.EnvironmentName, connStrBuilder.DataSource, connStrBuilder.InitialCatalog);
+        }
+
+        public static IConfigurationRoot BuildIotaWebConfiguration(string environmentName)
+            => new ConfigurationManager().ConfigureForIotaWeb(environmentName).Build();
+
+        public static IConfigurationBuilder ConfigureForIotaWeb(this IConfigurationBuilder mgr, string environmentName)
+        {
+            mgr.SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{environmentName}.json", optional: true, reloadOnChange: true)
+                .AddUserSecrets<HomeController>()
+                .AddEnvironmentVariables("IOTA_");
+
+            var config = mgr.Build();
+            var settings = new WebAppSettings(config);
+
+            if (!string.IsNullOrEmpty(settings.ConnectionStrings.AzureAppConfiguration))
+            {
+                mgr.AddAzureAppConfiguration(opt =>
+                {
+                    opt.Connect(settings.ConnectionStrings.AzureAppConfiguration)
+                        .Select(KeyFilter.Any, environmentName);
+                });
+            }
+
+            return mgr;
         }
     }
 }

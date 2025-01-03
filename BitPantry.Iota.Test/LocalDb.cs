@@ -17,7 +17,7 @@ namespace BitPantry.Iota.Test
         private SqlConnectionStringBuilder ConnectionStringBuilder { get; }
         private SqlConnectionStringBuilder MasterDbConnectionStringBuilder { get; }
 
-        public LocalDb(ILogger<LocalDb> logger, AppSettings appSettings)
+        public LocalDb(ILogger<LocalDb> logger, InfrastructureAppSettings appSettings)
         {
             _logger = logger;
 

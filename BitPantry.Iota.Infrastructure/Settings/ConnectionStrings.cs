@@ -37,5 +37,7 @@ namespace BitPantry.Iota.Infrastructure.Settings
                 return _entityDataContext_withCtx ?? _entityDataContext_og;
             }
         }
+
+        public string AzureAppConfiguration => GetValue("AzureAppConfiguration");
     }
 }

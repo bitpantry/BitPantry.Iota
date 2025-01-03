@@ -6,6 +6,7 @@ using System.Security.Claims;
 using BitPantry.Iota.Infrastructure.Settings;
 using AspNetCoreGeneratedDocument;
 using Microsoft.AspNetCore.Authorization;
+using BitPantry.Iota.Web.Settings;
 
 namespace BitPantry.Iota.Web.Controllers
 {
@@ -13,11 +14,11 @@ namespace BitPantry.Iota.Web.Controllers
     public class TestInfrastructureController : Controller
     {
         private ILogger<TestInfrastructureController> _logger;
-        private AppSettings _settings;
+        private WebAppSettings _settings;
         private UserService _userService;
         private UserIdentity _userIdentity;
 
-        public TestInfrastructureController(ILogger<TestInfrastructureController> logger, AppSettings settings, UserService userService, UserIdentity userIdentity)
+        public TestInfrastructureController(ILogger<TestInfrastructureController> logger, WebAppSettings settings, UserService userService, UserIdentity userIdentity)
         {
             _logger = logger;
             _settings = settings;
