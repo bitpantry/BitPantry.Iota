@@ -59,7 +59,7 @@ namespace BitPantry.Tabs.Web.Controllers
 
             var nextUrl = nextStep == null
                 ? Url.Action<ReviewController>(c => c.Done())
-                : Url.Action<ReviewController>(c => c.Index(nextStep.Value.Key, nextStep.Value.Value));
+                : Url.Action<ReviewController>(c => c.Index(nextStep.Value.Key, (int)nextStep.Value.Value));
 
             // if on daily tab, evaluate if should show bring up from queue button
 
@@ -91,7 +91,7 @@ namespace BitPantry.Tabs.Web.Controllers
             if(nextStep == null)
                 return Route.RedirectTo<ReviewController>(c => c.Done());
             else
-                return Route.RedirectTo<ReviewController>(c => c.Index(nextStep.Value.Key, nextStep.Value.Value));
+                return Route.RedirectTo<ReviewController>(c => c.Index(nextStep.Value.Key, (int)nextStep.Value.Value));
         }
 
         public async Task<IActionResult> GetNextQueueCard()
@@ -124,12 +124,14 @@ namespace BitPantry.Tabs.Web.Controllers
             var card = await _cardSvc.GetCard(id, HttpContext.RequestAborted);
             var path = await _workflowSvc.GetReviewPath(_currentUser.UserId, _currentUser.CurrentUserLocalTime, HttpContext.RequestAborted);
 
-            var nextTab = path.GetNextStep(card.Tab);
+            var helper = new ReviewPathHelper(path.Path);
+
+            var nextTab = helper.GetNextStep(card.Tab, card.RowNumber);
 
             if(nextTab == null)
                 return Route.RedirectTo<ReviewController>(c => c.Done());
 
-            return Route.RedirectTo<ReviewController>(c => c.Index(nextTab.Value, 1));
+            return Route.RedirectTo<ReviewController>(c => c.Index(nextTab.Value.Key, (int)nextTab.Value.Value));
         }
 
         public IActionResult Done()

@@ -12,19 +12,19 @@ namespace BitPantry.Tabs.Application
             _path = path;
         }
 
-        public KeyValuePair<Tab, int>? GetNextStep(Tab tab, int order)
+        public KeyValuePair<Tab, long>? GetNextStep(Tab tab, long order)
         {
             // try to return next order for current tab
 
             var nextOrd = order + 1;
             if (_path[tab] >= nextOrd)
-                return new KeyValuePair<Tab, int>(tab, nextOrd);
+                return new KeyValuePair<Tab, long>(tab, nextOrd);
 
             // return next tab
 
             var nextTabIndex = _path.Keys.AsList().IndexOf(tab) + 1;
              if (_path.Count > nextTabIndex)
-                return new KeyValuePair<Tab, int>(_path.AsList()[nextTabIndex].Key, 1);
+                return new KeyValuePair<Tab, long>(_path.AsList()[nextTabIndex].Key, 1);
 
             // at end of tabs;
 

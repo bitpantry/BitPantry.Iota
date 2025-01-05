@@ -82,6 +82,41 @@ namespace BitPantry.Tabs.Test.Playwright.Workflow.Advanced
                 await CommonReviewLogic.ProgressThroughMultipleCardTabsWithNextButton_AllElementsRight(Page, scope, scope.ServiceProvider.GetRequiredService<AdvancedWorkflowService>(), userId, tab, EvaluateTabElements);
         }
 
+        [DataTestMethod]
+        [DataRow(Tab.Daily, 1, Tab.Odd)]
+        [DataRow(Tab.Daily, 3, Tab.Odd)]
+        public async Task ProgressThroughMultipleCardTabsWithGotItButton_AllElementsRight(Tab startTab, int startCardCount, Tab nextTab)
+        {
+            var userId = await Init();
+
+            using (var scope = Fixture.Environment.ServiceProvider.CreateScope())
+            {
+                var cardSvc = scope.ServiceProvider.GetRequiredService<CardService>();
+
+                for (int i = 1; i <= startCardCount; i++)
+                    _ = await cardSvc.CreateCard(userId, Fixture.BibleId, $"rom 1:{i}", startTab);
+
+                _ = await cardSvc.CreateCard(userId, Fixture.BibleId, $"rom 2:1", nextTab);
+
+                var userDateTime = startTab.GetValidReviewDateTime();
+
+                await Page.SetUserTimezoneOverride("utc");
+                await Page.SetUserCurrentTimeUtcOverride(userDateTime);
+
+                await Page.GotoAsync(Fixture.Environment.GetUrlBuilder().Build("/review"));
+
+                var cardIndex = 0;
+                do
+                {
+                    cardIndex++;
+                    await Page.WaitForURLAsync(Fixture.Environment.GetUrlBuilder().Build($"review/{startTab}/{cardIndex}"));
+                    await Page.GetByTestId("review.btnGotIt").ClickAsync();
+                } while (cardIndex < startCardCount);
+
+                await Page.WaitForURLAsync(Fixture.Environment.GetUrlBuilder().Build($"review/{nextTab}/1"));
+            }
+        }
+
         [TestMethod]
         public async Task DoneViewRestart_Restarted()
         {

@@ -15,15 +15,15 @@ namespace BitPantry.Tabs.Application.DTO
 
         public int CardsToReviewCount => Path.Sum(p => p.Value);
 
-        public Tab? GetNextStep(Tab forTab)
-        {
-            var keys = Path.Keys.Where(k => k > forTab).OrderBy(k => k).ToList();
+        //public Tab? GetNextTab(Tab forTab)
+        //{
+        //    var keys = Path.Keys.Where(k => k > forTab).OrderBy(k => k).ToList();
 
-            if(keys.Any()) 
-                return keys.FirstOrDefault();
+        //    if(keys.Any()) 
+        //        return keys.FirstOrDefault();
 
-            return null;
-        }
+        //    return null;
+        //}
             
     }
 }
