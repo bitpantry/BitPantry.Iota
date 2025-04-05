@@ -24,6 +24,8 @@ namespace BitPantry.Tabs.Data.Entity
             CardMapping.OnModelCreating(modelBuilder);
             NumberedCardMapping.OnModelCreating(modelBuilder);
 
+            CliRefreshTokenMapping.OnModelCreating(modelBuilder);
+
         }
 
         public DbSet<User> Users { get; set; }
@@ -37,6 +39,8 @@ namespace BitPantry.Tabs.Data.Entity
 
         public DbSet<Card> Cards { get; set; }
         public DbSet<NumberedCard> NumberedCards { get; set; }
+
+        public DbSet<CliRefreshToken> CliRefreshTokens { get; set; }
 
     }
 

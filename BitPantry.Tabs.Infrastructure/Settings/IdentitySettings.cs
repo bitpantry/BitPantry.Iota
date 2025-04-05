@@ -11,6 +11,7 @@ namespace BitPantry.Tabs.Infrastructure.Settings
     {
         public GoogleIdentitySettings Google { get; }
         public MicrosoftIdentitySettings Microsoft { get; }
+        public string CliJwtSecret => GetValue("CliJwtSecret");
 
         public IdentitySettings(IConfiguration config) : base(config, "Identity") 
         {

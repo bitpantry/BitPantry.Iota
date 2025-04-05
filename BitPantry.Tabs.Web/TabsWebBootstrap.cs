@@ -14,6 +14,9 @@ using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Azure.Messaging.EventGrid.SystemEvents;
 using BitPantry.Tabs.Web.Settings;
 using BitPantry.Tabs.Web.Controllers;
+using BitPantry.CommandLine.Remote.SignalR.Server.Configuration;
+using BitPantry.Tabs.Web.Cli;
+using BitPantry.CommandLine.Remote.SignalR.Server.Authentication;
 
 namespace BitPantry.Tabs.Web
 {
@@ -30,6 +33,16 @@ namespace BitPantry.Tabs.Web
 
             builder.Services.AddSingleton(settings);
             builder.Services.AddSingleton<InfrastructureAppSettings>(settings);
+
+            builder.Services.AddScoped<IApiKeyStore, CliKeyStore>();
+            builder.Services.AddScoped<IRefreshTokenStore, CliRefreshTokenStore>();
+
+            // add the command line hub
+
+            builder.Services.AddCommandLineHub(opt =>
+            {
+                opt.AddJwtAuthentication<CliKeyStore, CliRefreshTokenStore>(settings.Identity.CliJwtSecret);
+            });
 
             // configure logging
 
@@ -90,6 +103,8 @@ namespace BitPantry.Tabs.Web
             app.UseMiddleware<TimeZoneMiddleware>();
 
             app.UseAuthorization();
+
+            app.ConfigureCommandLineHub();
 
             app.MapControllerRoute(
                 name: "default",
