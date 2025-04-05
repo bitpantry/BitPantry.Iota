@@ -12,6 +12,9 @@ namespace BitPantry.Tabs.Application
     {
         public static UserDto ToDto(this User user)
         {
+            if (user == null)
+                return null;
+
             return new UserDto(
                 user.Id,
                 user.EmailAddress,

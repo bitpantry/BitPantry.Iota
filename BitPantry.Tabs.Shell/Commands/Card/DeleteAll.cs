@@ -1,37 +1,37 @@
-﻿using BitPantry.CommandLine.API;
-using BitPantry.Tabs.Application.Service;
-using System.Net.Sockets;
+﻿//using BitPantry.CommandLine.API;
+//using BitPantry.Tabs.Application.Service;
+//using System.Net.Sockets;
 
-namespace BitPantry.Tabs.Shell.Commands.Card
-{
-    [Command(Namespace = "Card")]
-    public class DeleteAll : CommandBase
-    {
-        private readonly CardService _cardSvc;
+//namespace BitPantry.Tabs.Shell.Commands.Card
+//{
+//    [Command(Namespace = "Card")]
+//    public class DeleteAll : CommandBase
+//    {
+//        private readonly CardService _cardSvc;
 
-        [Argument]
-        [Alias('u')]
-        public long UserId { get; set; }
+//        [Argument]
+//        [Alias('u')]
+//        public long UserId { get; set; }
 
-        public DeleteAll(CardService cardSvc)
-        {
-            _cardSvc = cardSvc;
-        }
+//        public DeleteAll(CardService cardSvc)
+//        {
+//            _cardSvc = cardSvc;
+//        }
 
-        public async Task Execute(CommandExecutionContext context)
-        {
-            if (UserId > 0)
-            {
-                if (Confirm($"All cards will be deleted for user {UserId}"))
-                    await _cardSvc.DeleteAllCards(UserId, context.CancellationToken);
-            }
-            else
-            {
-                if (Confirm("All cards will be deleted"))
-                    await _cardSvc.DeleteAllCards(null, context.CancellationToken);
-            }
+//        public async Task Execute(CommandExecutionContext context)
+//        {
+//            if (UserId > 0)
+//            {
+//                if (Confirm($"All cards will be deleted for user {UserId}"))
+//                    await _cardSvc.DeleteAllCards(UserId, context.CancellationToken);
+//            }
+//            else
+//            {
+//                if (Confirm("All cards will be deleted"))
+//                    await _cardSvc.DeleteAllCards(null, context.CancellationToken);
+//            }
 
-        }
-    }
-}
+//        }
+//    }
+//}
 

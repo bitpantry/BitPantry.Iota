@@ -9,5 +9,6 @@ namespace BitPantry.Tabs.Data.Entity
         public DateTime LastLogin { get; set; }
         public List<Card> Cards { get; set; }
         public WorkflowType? WorkflowType { get; set; }
+        public string CliApiKey { get; set; }
     }
 }

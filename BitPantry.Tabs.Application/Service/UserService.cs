@@ -20,5 +20,10 @@ namespace BitPantry.Tabs.Application.Service
 
         public async Task<UserDto> GetUser(long userId)
             => (await _dbCtx.Users.AsNoTracking().SingleAsync(u => u.Id == userId)).ToDto();
+
+        public async Task<UserDto> GetUser(string cliApiKey)
+            => (await _dbCtx.Users.AsNoTracking().FirstOrDefaultAsync(u => u.CliApiKey.Equals(cliApiKey))).ToDto();
+
+
     }
 }

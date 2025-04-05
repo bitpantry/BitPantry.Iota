@@ -28,5 +28,8 @@ internal static class UserMapping
 
         modelBuilder.Entity<User>()
             .Property(u => u.WorkflowType);
+
+        modelBuilder.Entity<User>()
+            .Property(u => u.CliApiKey);
     }
 }
