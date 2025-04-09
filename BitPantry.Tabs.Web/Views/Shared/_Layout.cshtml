@@ -17,7 +17,7 @@
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=help" />
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
 
     <style>
         .material-symbols-outlined {
@@ -75,12 +75,16 @@
         </nav>
     </header>
 
-
-    <div class="container">
+    <div class="container flex-grow-1">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
+
+    <footer class="text-center py-3 mt-auto" style="color: #b0b0b0;">
+        @AppVersionHelper.GetInformationalVersion()
+    </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
@@ -95,5 +99,6 @@
     <div class="d-none d-md-block d-lg-none" style="background: #ffc108; color: #fff; padding: 5px; text-align: center;">MD</div>
     <div class="d-none d-sm-block d-md-none" style="background: #18a2b8; color: #fff; padding: 5px; text-align: center;">SM</div>
     <div class="d-block d-sm-none" style="background: #dc3545; color: #fff; padding: 5px; text-align: center;">XS</div>  *@
+
 </body>
 </html>
