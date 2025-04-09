@@ -60,7 +60,11 @@ namespace BitPantry.Tabs.Web
 
             // build the application
 
-            return builder.Build().ConfigureTabsWebApplication(settings);
+            var app = builder.Build().ConfigureTabsWebApplication(settings);
+
+            app.MapGet("/version", () => { return Results.Ok(new { version = AppVersionHelper.GetInformationalVersion() }); });
+
+            return app;
         }
 
         private static WebApplication ConfigureTabsWebApplication(this WebApplication app, WebAppSettings settings)
