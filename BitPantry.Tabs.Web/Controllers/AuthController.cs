@@ -30,20 +30,29 @@ namespace BitPantry.Tabs.Web.Controllers
             return View();
         }
 
-        public async Task GoogleLogin()
+        public async Task GoogleLogin(string returnUrl = null)
         {
-            await HttpContext.ChallengeAsync(GoogleDefaults.AuthenticationScheme, new AuthenticationProperties
-            {
-                RedirectUri = Url.Action("GoogleLoginResponse")
-            });
+            await HttpContext.ChallengeAsync(GoogleDefaults.AuthenticationScheme,
+                BuildAuthenticationProperties(nameof(GoogleLoginResponse), returnUrl));
         }
 
-        public async Task MicrosoftLogin()
+        public async Task MicrosoftLogin(string returnUrl = null)
         {
-            await HttpContext.ChallengeAsync(MicrosoftAccountDefaults.AuthenticationScheme, new AuthenticationProperties
+            await HttpContext.ChallengeAsync(MicrosoftAccountDefaults.AuthenticationScheme,
+                BuildAuthenticationProperties(nameof(MicrosoftLoginResponse), returnUrl));
+        }
+
+        private AuthenticationProperties BuildAuthenticationProperties(string authRedirectUrl, string returnUrl)
+        {
+            var properties = new AuthenticationProperties
             {
-                RedirectUri = Url.Action("MicrosoftLoginResponse")
-            });
+                RedirectUri = Url.Action(authRedirectUrl)
+            };
+
+            if (!string.IsNullOrEmpty(returnUrl))
+                properties.Items["returnUrl"] = returnUrl;
+
+            return properties;
         }
 
         [Route("/auth/microsoft-login-response")]
@@ -56,7 +65,11 @@ namespace BitPantry.Tabs.Web.Controllers
 
             _userIdentity.UserId = id;
 
-            return Route.RedirectTo<HomeController>(c => c.Delay(50, Url.Action<HomeController>(c => c.Index())));
+            var returnUrl = result.Properties.Items.ContainsKey("returnUrl") 
+                ? result.Properties.Items["returnUrl"] 
+                : Url.Action<HomeController>(c => c.Index());
+
+            return Redirect(returnUrl);
         }
 
         [Route("/auth/google-login-response")]
@@ -69,7 +82,11 @@ namespace BitPantry.Tabs.Web.Controllers
 
             _userIdentity.UserId = id;
 
-            return Route.RedirectTo<HomeController>(c => c.Delay(50, Url.Action<HomeController>(c => c.Index())));
+            var returnUrl = result.Properties.Items.ContainsKey("returnUrl")
+                ? result.Properties.Items["returnUrl"]
+                : Url.Action<HomeController>(c => c.Index());
+
+            return Redirect(returnUrl);
         }
 
         public async Task<IActionResult> Logout()
