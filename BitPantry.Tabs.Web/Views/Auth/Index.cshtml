@@ -2,13 +2,14 @@
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
+    var returnUrl = Context.Request.Query["returnUrl"].ToString();
 }
 
 <div class="text-center">
     <div class="display-6 mb-6 my-5">Please Sign In</div>
 
     <div class="align-middle">
-        <a asp-controller="Auth" asp-action="GoogleLogin" class="btn btn-primary" style="width: 250px">
+        <a asp-controller="Auth" asp-action="GoogleLogin" asp-route-returnUrl="@returnUrl" class="btn btn-primary" style="width: 250px">
             <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="25" height="25" viewBox="0,0,256,256">
                 <g fill="#ffffff" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(8.53333,8.53333)"><path d="M15.00391,3c-6.629,0 -12.00391,5.373 -12.00391,12c0,6.627 5.37491,12 12.00391,12c10.01,0 12.26517,-9.293 11.32617,-14h-1.33008h-2.26758h-7.73242v4h7.73828c-0.88958,3.44825 -4.01233,6 -7.73828,6c-4.418,0 -8,-3.582 -8,-8c0,-4.418 3.582,-8 8,-8c2.009,0 3.83914,0.74575 5.24414,1.96875l2.8418,-2.83984c-2.134,-1.944 -4.96903,-3.12891 -8.08203,-3.12891z"></path></g></g>
             </svg>
@@ -17,7 +18,7 @@
     </div>
 
     <div>
-        <a asp-controller="Auth" asp-action="MicrosoftLogin" class="btn btn-primary mt-3" style="width: 250px">
+        <a asp-controller="Auth" asp-action="MicrosoftLogin" asp-route-returnUrl="@returnUrl" class="btn btn-primary mt-3" style="width: 250px">
             <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="25" height="25" viewBox="0,0,256,256">
                 <g fill="#ffffff" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(5.12,5.12)"><path d="M5,4c-0.552,0 -1,0.447 -1,1v19h20v-20zM26,4v20h20v-19c0,-0.553 -0.448,-1 -1,-1zM4,26v19c0,0.553 0.448,1 1,1h19v-20zM26,26v20h19c0.552,0 1,-0.447 1,-1v-19z"></path></g></g>
             </svg>
