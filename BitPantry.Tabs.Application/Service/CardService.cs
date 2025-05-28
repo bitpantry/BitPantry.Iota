@@ -317,7 +317,7 @@ namespace BitPantry.Tabs.Application.Service
                     new
                     {
                         Timestamp = DateTime.UtcNow,
-                        Cardid = cardId
+                        CardId = cardId
                     }, trans);
             });
         }
