@@ -182,10 +182,6 @@ namespace BitPantry.Tabs.Test.Playwright.Common
 
                 await Page.GetByTestId("collection.tabQueue").ClickAsync();
 
-                await Page.ScreenshotAsync(new PageScreenshotOptions
-                {
-                    Path = "c:\\src\\reorder.png"
-                });
 
                 await reorderAction(cards[0], cards[1]);
                 await reorderAction(cards[0], cards[3]);
