@@ -97,6 +97,7 @@ namespace BitPantry.Tabs.Web
         {
             return new SessionStateException(
                 $"A session state error occured while getting the value for key \"{FormatKey(key)}\"",
+
                 innerException);
         }
 
