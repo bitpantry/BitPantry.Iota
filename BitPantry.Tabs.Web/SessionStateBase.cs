@@ -96,7 +96,7 @@ namespace BitPantry.Tabs.Web
         private SessionStateException CreateSessionStateException(string key, Exception innerException)
         {
             return new SessionStateException(
-                $"An application setting error occured while getting the value for key \"{FormatKey(key)}\"",
+                $"An application setting error occurred while getting the value for key \"{FormatKey(key)}\"",
                 innerException);
         }
 

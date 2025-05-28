@@ -61,7 +61,7 @@ namespace BitPantry.Tabs.Infrastructure.Settings
         private AppSettingsException CreateAppConfigurationException(string key, Exception innerException)
         {
             return new AppSettingsException(
-                $"An application setting error occured while getting the value for key \"{FormatKey(key)}\"",
+                $"An application setting error occurred while getting the value for key \"{FormatKey(key)}\"",
                 innerException);
         }
     }

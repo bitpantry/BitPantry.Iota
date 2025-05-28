@@ -64,7 +64,7 @@ namespace BitPantry.Tabs.Shell
                 catch (Exception ex)
                 {
                     System.Console.ForegroundColor = ConsoleColor.Red;
-                    System.Console.WriteLine($"An unhandled exception occured :: {ex.Message}");
+                    System.Console.WriteLine($"An unhandled exception occurred :: {ex.Message}");
                     System.Console.ResetColor();
                 }
             } while (true);
